@@ -1,3 +1,6 @@
+import re
+from pathlib import Path
+from lxml import etree
 from cc3d.core import XMLUtils
 from cc3d import CompuCellSetup
 from deprecated import deprecated
@@ -46,11 +49,18 @@ class XML2ObjConverterAdapter:
 
 def init_modules(sim, _cc3dXML2ObjConverter):
     """
-
+    Performs a basic analysis of the CC3D XML content and passes XML structures to C++ code for further initialization
     :param sim:
     :param _cc3dXML2ObjConverter:
     :return:
     """
+    skip_schema_validation_list = _cc3dXML2ObjConverter.root.getElements("SkipSchemaValidation")
+    validate_schema = not len(skip_schema_validation_list)
+    if validate_schema:
+        validate_cc3d_schema(root_element=_cc3dXML2ObjConverter.root)
+
+    # note, we can always check for multiply defined XML sections in the code belo but introducing
+    # XML schema can give us more benefits later in more general cases
     plugin_data_list = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Plugin"))
     for pluginData in plugin_data_list:
         sim.ps.addPluginDataCC3D(pluginData)
@@ -82,6 +92,140 @@ def parseXML( xml_fname):
     cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
     root_element = cc3dXML2ObjConverter.Parse(xml_fname)
     return cc3dXML2ObjConverter
+
+
+
+
+def validate_cc3d_schema(root_element):
+
+    # -------------------------------------
+    # Load schema
+    # -------------------------------------
+    schema_path = (
+        Path(CompuCellSetup.__file__).parent
+            / "xml_schema"
+            / "cc3d_schema.xsd"
+    )
+
+    xml_str = root_element.getCC3DXMLElementString()
+    xml_lines = xml_str.splitlines()  # needed for error->tag resolution
+
+    schema_doc = etree.parse(str(schema_path))
+    schema = etree.XMLSchema(schema_doc)
+
+    try:
+        doc = etree.fromstring(xml_str.encode("utf-8"))
+    except Exception as err:
+        raise RuntimeError(f"Invalid XML before schema validation: {err}")
+
+    # -------------------------------------
+    # Validate
+    # -------------------------------------
+    if schema.validate(doc):
+        print("XML is valid!")
+        return True
+
+    # -------------------------------------
+    # Human-readable messages
+    # -------------------------------------
+    clean_messages = []
+
+    for error in schema.error_log:
+        msg = error.message
+        etype = error.type           # stable schema error code
+        line = error.line            # stable
+        handled = False
+
+        # ----------------------------------------------------------
+        # Resolve offending tag WITHOUT using error.node
+        # ----------------------------------------------------------
+        tag = None
+        if line and 1 <= line <= len(xml_lines):
+            line_text = xml_lines[line - 1].strip()
+            m = re.match(r"<\s*([A-Za-z0-9_:-]+)", line_text)
+            if m:
+                tag = m.group(1)
+
+        # ----------------------------------------------------------
+        # Duplicate Plugin Name
+        # ----------------------------------------------------------
+        if "AllPluginsHaveUniqueNames" in msg:
+            # Extract plugin name safely
+            m = re.search(r"\['(.+?)'\]", msg)
+            plugin_name = m.group(1) if m else "UNKNOWN"
+
+            clean_messages.append(
+                f"Plugin '{plugin_name}' appears more than once.\n"
+                f"Each Plugin Name must be unique in a CC3D XML file."
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # Duplicate Steppable Type
+        # ----------------------------------------------------------
+        if "AllSteppablesHaveUniqueTypes" in msg:
+            m = re.search(r"\['(.+?)'\]", msg)
+            step_type = m.group(1) if m else "UNKNOWN"
+
+            clean_messages.append(
+                f"Steppable '{step_type}' appears more than once.\n"
+                f"Each Steppable Type must be unique."
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # More than one Potts (maxOccurs=1)
+        # ----------------------------------------------------------
+        if tag == "Potts" and etype in {
+            "SCHEMAV_ELEMENT_CONTENT",
+            "SCHEMAV_CVC_COMPLEX_TYPE",
+        }:
+            clean_messages.append(
+                "Your CC3D XML contains more than one <Potts> section.\n"
+                "Only one <Potts> block is allowed."
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # More than one Metadata (maxOccurs=1)
+        # ----------------------------------------------------------
+        if tag == "Metadata" and etype in {
+            "SCHEMAV_ELEMENT_CONTENT",
+            "SCHEMAV_CVC_COMPLEX_TYPE",
+        }:
+            clean_messages.append(
+                "Your CC3D XML contains more than one <Metadata> section.\n"
+                "Only one <Metadata> block is allowed."
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # Missing required attribute (safe to report)
+        # ----------------------------------------------------------
+        if etype == "SCHEMAV_MISSING_ATTRIBUTE" and tag:
+            clean_messages.append(
+                f"Element <{tag}> is missing a required attribute.\n"
+                f"Details: {msg}"
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # Generic fallback (safe, stable metadata only)
+        # ----------------------------------------------------------
+        if not handled:
+            clean_messages.append(
+                f"XML Schema Validation Error:\n"
+                f"  type={etype}, line={line}, tag={tag}\n"
+                f"  {msg}"
+            )
+
+    # Deduplicate
+    clean_messages = list(dict.fromkeys(clean_messages))
+
+    raise RuntimeError(
+        "Invalid CC3D XML:\n\n" +
+        "\n\n".join(clean_messages)
+    )
 
 
 @deprecated(version='4.0.0', reason="You should use : set_simulation_xml_description")

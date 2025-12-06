@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- ========================================================= -->
+    <!-- Attribute Groups                                           -->
+    <!-- ========================================================= -->
+
+    <!-- Optional id attribute for ALL CC3D XML nodes -->
+    <xs:attributeGroup name="commonIdAttr">
+        <xs:attribute name="id" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+
+    <!-- ONLY CompuCell3D root can have Revision / Version -->
+    <xs:attributeGroup name="compuCell3DAttrs">
+        <xs:attribute name="Revision" type="xs:string" use="optional"/>
+        <xs:attribute name="Version" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+
+    <!-- ========================================================= -->
+    <!-- Root element: CompuCell3D                                 -->
+    <!-- ========================================================= -->
+
+    <xs:element name="CompuCell3D">
+        <xs:complexType>
+            <xs:sequence>
+
+                <!-- Metadata: optional, at most one -->
+                <xs:element name="Metadata" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attributeGroup ref="commonIdAttr"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Potts: required, exactly one -->
+                <xs:element name="Potts" minOccurs="1" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attributeGroup ref="commonIdAttr"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Plugin list -->
+                <xs:element name="Plugin" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                        <xs:attributeGroup ref="commonIdAttr"/>
+                    </xs:complexType>
+
+                    <!-- ensure plugin names are unique -->
+                    <xs:unique name="UniquePluginName">
+                        <xs:selector xpath="."/>
+                        <xs:field xpath="@Name"/>
+                    </xs:unique>
+                </xs:element>
+
+                <!-- Steppable list -->
+                <xs:element name="Steppable" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+
+                        <xs:attribute name="Type" type="xs:string" use="required"/>
+                        <xs:attributeGroup ref="commonIdAttr"/>
+                    </xs:complexType>
+
+                    <!-- ensure steppable types are unique -->
+                    <xs:unique name="UniqueSteppableType">
+                        <xs:selector xpath="."/>
+                        <xs:field xpath="@Type"/>
+                    </xs:unique>
+                </xs:element>
+                <!-- allowing arbitrary element inside <Extensions> that are placed after all other top level elements - order and location of this schema element matters -->
+                <xs:element name="Extensions" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+
+            <!-- Root attributes -->
+            <xs:attributeGroup ref="commonIdAttr"/>
+            <xs:attributeGroup ref="compuCell3DAttrs"/>
+
+        </xs:complexType>
+
+        <!-- Global uniqueness constraints (only simple fields allowed) -->
+        <xs:unique name="AllPluginsHaveUniqueNames">
+            <xs:selector xpath="Plugin"/>
+            <xs:field xpath="@Name"/>
+        </xs:unique>
+
+        <xs:unique name="AllSteppablesHaveUniqueTypes">
+            <xs:selector xpath="Steppable"/>
+            <xs:field xpath="@Type"/>
+        </xs:unique>
+
+    </xs:element>
+
+</xs:schema>
