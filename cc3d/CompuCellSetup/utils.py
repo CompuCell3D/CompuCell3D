@@ -54,7 +54,10 @@ def init_modules(sim, _cc3dXML2ObjConverter):
     :param _cc3dXML2ObjConverter:
     :return:
     """
-    validate_cc3d_schema(root_element=_cc3dXML2ObjConverter.root)
+    skip_schema_validation_list = _cc3dXML2ObjConverter.root.getElements("SkipSchemaValidation")
+    validate_schema = not len(skip_schema_validation_list)
+    if validate_schema:
+        validate_cc3d_schema(root_element=_cc3dXML2ObjConverter.root)
 
     # note, we can always check for multiply defined XML sections in the code belo but introducing
     # XML schema can give us more benefits later in more general cases
