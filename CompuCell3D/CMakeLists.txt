@@ -12,15 +12,18 @@ if (${CMAKE_VERSION} VERSION_GREATER 3.1.0)
 endif()
 
 ##APPLE CHECK
-IF (APPLE)
-    # note: added -Wno-implicit-function-declaration -Wno-implicit-int to handle implicit function declarations in flex/bison generated code
-    # this is stop gap measure and we need to either fix Units module or remove it since it is not used almost at all
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C++ compiler" FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C compiler" FORCE)
-    # SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
+if(APPLE)
+    message(STATUS "Configuring macOS compile options")
 
-    MESSAGE ("GOT APPLE")
-ENDIF (APPLE)
+    add_compile_options(
+            -mmacosx-version-min=10.6
+            -fpermissive
+            -m64
+            -Wno-implicit-function-declaration
+            -Wno-implicit-int
+    )
+endif()
+
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -117,13 +120,19 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 OPTION(USE_DOLFIN "Build modules that depend on dolfin FEM solver" ${USE_DOLFIN_OPTION})
 
+# Default build type (only for single-config generators)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-    "MinSizeRel" "RelWithDebInfo")
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+
+    # Allow user to choose among these build types
+    set_property(
+            CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+            Debug Release RelWithDebInfo MinSizeRel
+    )
 endif()
+
+
 
 OPTION(USE_LIBRARY_VERSIONS "Use version numbers in libraries" OFF)
 
