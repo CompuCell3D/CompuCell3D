@@ -7,7 +7,7 @@
 #include "ChengbangAlgorithm.h"
 #include "DefaultAlgorithm.h"
 
-using namespace std;
+//using namespace std;
 
 namespace CompuCell3D {
 
@@ -20,11 +20,11 @@ namespace CompuCell3D {
 
     public:
 
-        static const string chengbang;
-        static const string Default;
+        static const std::string chengbang;
+        static const std::string Default;
 
-        static Algorithm *createAlgorithm(string algorithm, int index,
-                                          int size, string inputfile) {
+        static Algorithm *createAlgorithm(std::string algorithm, int index,
+                                          int size, std::string inputfile) {
 
             if (algorithm == chengbang) {
                 Algorithm *ca = new ChengbangAlgorithm();
@@ -42,8 +42,8 @@ namespace CompuCell3D {
 
     };
 
-    const string AlgorithmFactory::chengbang("Chengbang");
-    const string AlgorithmFactory::Default("Default");
+    const std::string AlgorithmFactory::chengbang("Chengbang");
+    const std::string AlgorithmFactory::Default("Default");
 };
 
 #endif

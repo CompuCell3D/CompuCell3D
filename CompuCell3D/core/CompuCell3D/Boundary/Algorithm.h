@@ -3,7 +3,7 @@
 
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 #include <CompuCell3D/Field3D/Dim3D.h>
 
@@ -19,7 +19,7 @@ namespace CompuCell3D {
     public:
         virtual ~Algorithm() {}
 
-        virtual void readFile(const int index, const int size, string inputfile) = 0;
+        virtual void readFile(const int index, const int size, std::string inputfile) = 0;
 
         virtual bool inGrid(const Point3D &pt) = 0;
 

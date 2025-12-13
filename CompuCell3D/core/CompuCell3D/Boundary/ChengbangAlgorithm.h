@@ -18,7 +18,7 @@ namespace CompuCell3D {
     public:
         ChengbangAlgorithm() { evolution = -1; }
 
-        void readFile(const int index, const int size, string inputfile);
+        void readFile(const int index, const int size, std::string inputfile);
 
         bool inGrid(const Point3D &pt);
 
@@ -26,10 +26,10 @@ namespace CompuCell3D {
 
         int i;
         int s;
-        string filetoread;
+        std::string filetoread;
         int evolution;
     private:
-        vector <vector<vector < float>> >
+        std::vector <std::vector<std::vector < float>> >
         dataStructure;
 
         void readFile(const char *inputFile);

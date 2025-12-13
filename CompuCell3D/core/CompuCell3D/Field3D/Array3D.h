@@ -144,7 +144,7 @@ namespace CompuCell3D {
         }
 
         virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
-            vector<double> tmpContainer = container;
+            std::vector<double> tmpContainer = container;
             tmpContainer.swap(container);// swapping vector content  => copy old vec to new
 
             Dim3D oldInternalDim = internalDim;
@@ -292,7 +292,7 @@ namespace CompuCell3D {
         }
 
         virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
-            vector<double> tmpContainer = container;
+            std::vector<double> tmpContainer = container;
             tmpContainer.swap(container);// swapping vector content  => copy old vec to new
 
             Dim3D oldInternalDim = internalDim;

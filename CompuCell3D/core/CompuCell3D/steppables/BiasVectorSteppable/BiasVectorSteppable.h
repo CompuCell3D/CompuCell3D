@@ -109,7 +109,7 @@ namespace CompuCell3D {
 
         BiasVectorSteppable::step_t stepFcnPtr;
 
-        typedef vector<double>(BiasVectorSteppable::*noise_t)();
+        typedef std::vector<double>(BiasVectorSteppable::*noise_t)();
 
         BiasVectorSteppable::noise_t noiseFcnPtr;
 
@@ -158,7 +158,7 @@ namespace CompuCell3D {
 
         virtual void gen_persistent_bias(const double alpha, CellG *cell);
 
-        void output_test(const double alpha, const CellG *cell, const vector<double> noise);
+        void output_test(const double alpha, const CellG *cell, const std::vector<double> noise);
 
         void gen_persistent_bias_3d(const double alpha, CellG *cell);
 
@@ -169,11 +169,11 @@ namespace CompuCell3D {
         void gen_persistent_bias_2d_z(const double alpha, CellG *cell);
 
 
-        virtual vector<double> noise_vec_generator();
+        virtual std::vector<double> noise_vec_generator();
 
-        vector<double> white_noise_2d();
+        std::vector<double> white_noise_2d();
 
-        vector<double> white_noise_3d();
+        std::vector<double> white_noise_3d();
 
 
         virtual void finish() {}

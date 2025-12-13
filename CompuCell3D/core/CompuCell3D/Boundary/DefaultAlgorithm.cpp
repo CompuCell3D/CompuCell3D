@@ -1,6 +1,6 @@
 #include "Algorithm.h"
 #include "DefaultAlgorithm.h"
-
+using namespace std;
 using namespace CompuCell3D;
 
 /*

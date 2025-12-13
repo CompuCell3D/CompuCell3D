@@ -25,7 +25,14 @@ if(APPLE)
 endif()
 
 
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if (MSVC AND CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+    add_compile_options(/Zc:__cplusplus)
+endif()
 
 # to get openmp detected via conda - start cmake from the conda environment that contains
 # openmp installation on OSX . on OSX install llvm-openmp to get openmp with clang

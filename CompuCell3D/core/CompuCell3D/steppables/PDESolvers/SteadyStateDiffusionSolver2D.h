@@ -85,11 +85,11 @@ namespace CompuCell3D {
 
 
         double *scratch;
-        vector<double> scratchVec;
-        vector<double> bdaVec;
-        vector<double> bdbVec;
-        vector<double> bdcVec;
-        vector<double> bddVec;
+        std::vector<double> scratchVec;
+        std::vector<double> bdaVec;
+        std::vector<double> bdbVec;
+        std::vector<double> bdcVec;
+        std::vector<double> bddVec;
 
         // vector<vector<vector<float> > > scratchVec;
 

@@ -15,7 +15,7 @@
 #include "BoundaryTypeDefinitions.h"
 #include <Logger/CC3DLogger.h>
 
-using namespace std;
+//using namespace std;
 
 template<typename T>
 class Coordinates3D;
@@ -122,8 +122,8 @@ namespace CompuCell3D {
         Algorithm *algorithm;
         unsigned int maxNeighborOrder;
 
-        BoundaryStrategy(const string& boundary_x, const string& boundary_y,
-                         const string& boundary_z, string alg, int index, int size, string inputfile,
+        BoundaryStrategy(const std::string& boundary_x, const std::string& boundary_y,
+                         const std::string& boundary_z, std::string alg, int index, int size, std::string inputfile,
                          LatticeType latticeType = SQUARE_LATTICE, DimensionType dimensionType=DIM_DEFAULT);
 
         BoundaryStrategy();
@@ -148,9 +148,9 @@ namespace CompuCell3D {
 
         ~BoundaryStrategy();
 
-        static void instantiate(string boundary_x, string boundary_y,
-                                string boundary_z, string alg,
-                                int index, int size, string inputfile,
+        static void instantiate(std::string boundary_x, std::string boundary_y,
+                                std::string boundary_z, std::string alg,
+                                int index, int size, std::string inputfile,
                                 LatticeType latticeType = SQUARE_LATTICE,DimensionType dimensionType=DIM_DEFAULT) {
 
 

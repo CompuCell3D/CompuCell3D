@@ -87,7 +87,7 @@ class SecretionDataFast;*/
         typedef Array2DContiguous <precision_t> ConcentrationField_t;
 
         float *scratch;
-        vector <vector<vector < float>> >
+        std::vector <std::vector<std::vector < float>> >
         scratchVec;
 
 

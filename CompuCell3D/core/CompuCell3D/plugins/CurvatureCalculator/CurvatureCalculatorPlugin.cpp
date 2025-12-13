@@ -1,6 +1,6 @@
 
 #include <CompuCell3D/CC3D.h>
-
+using namespace std;
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>

@@ -13,7 +13,7 @@ namespace CompuCell3D {
 
     public:
 
-        void readFile(const int index, const int size, string inputfile);
+        void readFile(const int index, const int size, std::string inputfile);
 
         bool inGrid(const Point3D &pt);
 

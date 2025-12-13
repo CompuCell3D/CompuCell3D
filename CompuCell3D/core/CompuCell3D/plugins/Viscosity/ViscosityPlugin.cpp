@@ -1,7 +1,7 @@
 #include <CompuCell3D/CC3D.h>
 
 #include "ViscosityPlugin.h"
-
+using namespace std;
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>

@@ -690,7 +690,25 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     for (int i = 0; i < subgridSectionOrderVec.size(); ++i) {
         subgridSectionOrderVec[i] = i;
     }
-    random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
+    //random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
+
+  // TODO17:
+    static std::mt19937 rng{ std::random_device{}() };
+    std::shuffle(subgridSectionOrderVec.begin(),
+        subgridSectionOrderVec.end(),
+        rng);
+
+//#if __cplusplus >= 201703L
+//    // C++17 and newer
+//    static std::mt19937 rng{ std::random_device{}() };
+//    std::shuffle(subgridSectionOrderVec.begin(),
+//        subgridSectionOrderVec.end(),
+//        rng);
+//#else
+//    // C++11 / C++14
+//    std::random_shuffle(subgridSectionOrderVec.begin(),
+//        subgridSectionOrderVec.end());
+//#endif
 
     unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();
     unsigned int numberOfThreads = pUtils->getNumberOfWorkNodesPotts();
@@ -1039,7 +1057,13 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     for (int i = 0; i < subgridSectionOrderVec.size(); ++i) {
         subgridSectionOrderVec[i] = i;
     }
-    random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
+    //TOD17:
+    static std::mt19937 rng{ std::random_device{}() };
+    std::shuffle(subgridSectionOrderVec.begin(),
+        subgridSectionOrderVec.end(),
+        rng);
+
+    //random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
 
 
     unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();

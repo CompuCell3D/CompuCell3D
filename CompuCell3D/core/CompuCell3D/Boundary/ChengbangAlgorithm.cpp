@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <Logger/CC3DLogger.h>
 
+using namespace std;
 using namespace CompuCell3D;
 
 /*

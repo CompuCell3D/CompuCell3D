@@ -34,7 +34,7 @@ namespace CompuCell3D {
 	VolumeTrackerPlugin();
 	virtual ~VolumeTrackerPlugin();
 	
-	void initVec(const vector<int> & _vec);
+	void initVec(const std::vector<int> & _vec);
 	void initVec(const Dim3D & _dim);
 
 	// SimObject interface
