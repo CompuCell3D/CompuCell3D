@@ -22,6 +22,7 @@ namespace CompuCell3D {
     class AdjacentNeighbor {
     public:
         explicit AdjacentNeighbor() :
+                depth(1),
                 periodicX(false),
                 periodicY(false),
                 periodicZ(false) {}
@@ -88,7 +89,7 @@ namespace CompuCell3D {
         bool periodicY;
         bool periodicZ;
         Field3DIndex field3DIndex;
-        int depth;
+        short depth;
         Dim3D fieldDim;
     };
 };

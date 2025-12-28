@@ -23,7 +23,7 @@ namespace CompuCell3D {
         void init(CC3DXMLElement *_xmlData) override {}
 
         double
-        changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt) override;
+        changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const size_t _flipAttempt) override;
 
         virtual void get_current_mcs_accepted_mask_npy_array(int *intvec, int n) {}
 

@@ -17,7 +17,7 @@ namespace CompuCell3D {
         double firstOrderTerm;
     public:
         FirstOrderExpansionAcceptanceFunction(const double _k = 1.0, const double _offset = 0.0) : k(_k),
-                                                                                                   offset(_offset) {}
+                                                                                                   offset(_offset), firstOrderTerm(0.0){}
 
         virtual void setOffset(double _offset) { offset = _offset; }
 

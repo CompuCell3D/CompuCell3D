@@ -68,7 +68,7 @@ namespace CompuCell3D {
          * @return delta E
          */
         virtual double changeEnergy(Point3D &pt, const CellG *newCell,
-                                    const CellG *oldCell, const unsigned int _flipAttempt);
+                                    const CellG *oldCell, const size_t _flipAttempt);
 
         virtual void setPotts(Potts3D *_potts) { potts = _potts; }
 

@@ -67,7 +67,8 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
 
     if (aVec[0] != 0.0) {
         //setting coefficients so that aVec[0]=1.0
-        for (int i = aVec.size() - 1; i >= 0; --i) {
+//        for (std::size_t i = aVec.size(); i-- > 0; ) {
+        for (int i = static_cast<int>(aVec.size()) - 1; i >= 0; --i) {
             aVec[i] /= aVec[0];
             CC3D_Log(CompuCell3D::LOG_TRACE) << "coeff["<<i<<"]="<<aVec[i];
         }
@@ -223,9 +224,12 @@ namespace CompuCell3D {
         zCM += shiftedPt.z*(_volumeIncrement > 0 ? 1 : -1);
 
         //shift back centroids
-        xCM += shiftVec.x * (_cell->volume + _volumeIncrement);
-        yCM += shiftVec.y * (_cell->volume + _volumeIncrement);
-        zCM += shiftVec.z * (_cell->volume + _volumeIncrement);
+        const double factor =
+            static_cast<double>(_cell->volume) +
+            static_cast<double>(_volumeIncrement);;
+        xCM += shiftVec.x * factor;
+        yCM += shiftVec.y * factor;
+        zCM += shiftVec.z * factor;
 
         return Coordinates3D<double>(xCM, yCM, zCM);
     }
@@ -319,21 +323,24 @@ namespace CompuCell3D {
         if (x1_t < 0) {
             x1_t += _fieldDim.x;
         }
-        else if (x1_t > _fieldDim.x - 1) {
-            x1_t -= _fieldDim.x;
+        else if (x1_t > static_cast<double>(_fieldDim.x) - 1.0) {
+            x1_t -= static_cast<double>(_fieldDim.x);
         }
+        //else if (x1_t > static_cast<double>(_fieldDim.x) - 1.0) {
+        //    x1_t -= _fieldDim.x;
+        //}
 
         if (y1_t < 0) {
             y1_t += _fieldDim.y;
         }
-        else if (y1_t > _fieldDim.y - 1) {
+        else if (y1_t > static_cast<double>(_fieldDim.y) - 1.0) {
             y1_t -= _fieldDim.y;
         }
 
         if (z1_t < 0) {
             z1_t += _fieldDim.z;
         }
-        else if (z1_t > _fieldDim.z - 1) {
+        else if (z1_t > static_cast<double>(_fieldDim.z) - 1.0) {
             z1_t -= _fieldDim.z;
         }
         
@@ -343,281 +350,281 @@ namespace CompuCell3D {
 
 
 
-    //works only on a square lattice for now
-    CenterOfMassPair_t precalculateAfterFlipCM(
-        const Point3D &pt,
-        const CellG *newCell,
-        const CellG *oldCell,
-        const Point3D & fieldDim,
-        const Point3D & boundaryConditionIndicator
-        )
+    ////works only on a square lattice for now
+    //CenterOfMassPair_t precalculateAfterFlipCM(
+    //    const Point3D &pt,
+    //    const CellG *newCell,
+    //    const CellG *oldCell,
+    //    const Point3D & fieldDim,
+    //    const Point3D & boundaryConditionIndicator
+    //    )
 
-    {
+    //{
 
-        CenterOfMassPair_t centerOfMassPair;
-        centerOfMassPair.first = Coordinates3D<float>(0., 0., 0.);
-        centerOfMassPair.second = Coordinates3D<float>(0., 0., 0.);
+    //    CenterOfMassPair_t centerOfMassPair;
+    //    centerOfMassPair.first = Coordinates3D<Real_t>(0., 0., 0.);
+    //    centerOfMassPair.second = Coordinates3D<Real_t>(0., 0., 0.);
 
-        Coordinates3D<float> &newCellCM = centerOfMassPair.first;
-        Coordinates3D<float> &oldCellCM = centerOfMassPair.second;
+    //    Coordinates3D<Real_t> &newCellCM = centerOfMassPair.first;
+    //    Coordinates3D<Real_t> &oldCellCM = centerOfMassPair.second;
 
-        //if no boundary conditions are present
-        if (!boundaryConditionIndicator.x && !boundaryConditionIndicator.y && !boundaryConditionIndicator.z) {
+    //    //if no boundary conditions are present
+    //    if (!boundaryConditionIndicator.x && !boundaryConditionIndicator.y && !boundaryConditionIndicator.z) {
 
 
-            if (oldCell) {
-                oldCellCM.XRef() = oldCell->xCM - pt.x;
-                oldCellCM.YRef() = oldCell->xCM - pt.y;
-                oldCellCM.ZRef() = oldCell->xCM - pt.z;
+    //        if (oldCell) {
+    //            oldCellCM.XRef() = static_cast<Real_t>(oldCell->xCM - pt.x);
+    //            oldCellCM.YRef() = static_cast<Real_t>(oldCell->xCM - pt.y);
+    //            oldCellCM.ZRef() = static_cast<Real_t>(oldCell->xCM - pt.z);
 
-                if (oldCell->volume > 1) {
-                    oldCellCM.XRef() = (oldCell->xCM - pt.x) / ((float)oldCell->volume - 1);
-                    oldCellCM.YRef() = (oldCell->yCM - pt.y) / ((float)oldCell->volume - 1);
-                    oldCellCM.ZRef() = (oldCell->zCM - pt.z) / ((float)oldCell->volume - 1);
-                }
-                else {
+    //            if (oldCell->volume > 1) {
+    //                oldCellCM.XRef() = static_cast<Real_t>((oldCell->xCM - pt.x) / static_cast<Real_t>(oldCell->volume - 1));
+    //                oldCellCM.YRef() = static_cast<Real_t>((oldCell->yCM - pt.y) / static_cast<Real_t>(oldCell->volume - 1));
+    //                oldCellCM.ZRef() = static_cast<Real_t>((oldCell->zCM - pt.z) / static_cast<Real_t>(oldCell->volume - 1));
+    //            }
+    //            else {
 
-                    oldCellCM.XRef() = oldCell->xCM;
-                    oldCellCM.YRef() = oldCell->xCM;
-                    oldCellCM.ZRef() = oldCell->xCM;
+    //                oldCellCM.XRef() = static_cast<Real_t>(oldCell->xCM);
+    //                oldCellCM.YRef() = static_cast<Real_t>(oldCell->xCM);
+    //                oldCellCM.ZRef() = static_cast<Real_t>(oldCell->xCM);
 
 
 
-                }
+    //            }
 
-            }
+    //        }
 
-            if (newCell) {
+    //        if (newCell) {
 
-                newCellCM.XRef() = (newCell->xCM + pt.x) / ((float)newCell->volume + 1);
-                newCellCM.YRef() = (newCell->xCM + pt.y) / ((float)newCell->volume + 1);
-                newCellCM.ZRef() = (newCell->xCM + pt.z) / ((float)newCell->volume + 1);
+    //            newCellCM.XRef() = static_cast<Real_t>((newCell->xCM + pt.x) / ((float)newCell->volume + 1));
+    //            newCellCM.YRef() = static_cast<Real_t>((newCell->xCM + pt.y) / ((float)newCell->volume + 1));
+    //            newCellCM.ZRef() = static_cast<Real_t>((newCell->xCM + pt.z) / ((float)newCell->volume + 1));
 
 
-            }
+    //        }
 
-            return centerOfMassPair;
-        }
+    //        return centerOfMassPair;
+    //    }
 
-        //if there are boundary conditions defined that we have to do some shifts to correctly calculate center of mass
-        //This approach will work only for cells whose span is much smaller that lattice dimension in the "periodic "direction
-        //e.g. cell that is very long and "wraps lattice" will have miscalculated CM using this algorithm. On the other hand, you do not real expect
-        //cells to have dimensions comparable to lattice...
+    //    //if there are boundary conditions defined that we have to do some shifts to correctly calculate center of mass
+    //    //This approach will work only for cells whose span is much smaller that lattice dimension in the "periodic "direction
+    //    //e.g. cell that is very long and "wraps lattice" will have miscalculated CM using this algorithm. On the other hand, you do not real expect
+    //    //cells to have dimensions comparable to lattice...
 
 
 
-        Point3D shiftVec;
-        Point3D shiftedPt;
-        int xCM, yCM, zCM; //temp centroids
+    //    Point3D shiftVec;
+    //    Point3D shiftedPt;
+    //    int xCM, yCM, zCM; //temp centroids
 
-        int x, y, z;
-        int xo, yo, zo;
+    //    int x, y, z;
+    //    int xo, yo, zo;
 
-        if (oldCell) {
+    //    if (oldCell) {
 
-            xo = oldCell->xCM;
-            yo = oldCell->yCM;
-            zo = oldCell->zCM;
+    //        xo = oldCell->xCM;
+    //        yo = oldCell->yCM;
+    //        zo = oldCell->zCM;
 
 
 
-            x = oldCell->xCM - pt.x;
-            y = oldCell->yCM - pt.y;
-            z = oldCell->zCM - pt.z;
-            //calculating shiftVec - to translate CM
+    //        x = oldCell->xCM - pt.x;
+    //        y = oldCell->yCM - pt.y;
+    //        z = oldCell->zCM - pt.z;
+    //        //calculating shiftVec - to translate CM
 
 
-            //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-            shiftVec.x = (short)((oldCell->xCM / (float)(oldCell->volume) - fieldDim.x / 2)*boundaryConditionIndicator.x);
-            shiftVec.y = (short)((oldCell->yCM / (float)(oldCell->volume) - fieldDim.y / 2)*boundaryConditionIndicator.y);
-            shiftVec.z = (short)((oldCell->zCM / (float)(oldCell->volume) - fieldDim.z / 2)*boundaryConditionIndicator.z);
+    //        //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
+    //        shiftVec.x = (short)((oldCell->xCM / (float)(oldCell->volume) - fieldDim.x / 2)*boundaryConditionIndicator.x);
+    //        shiftVec.y = (short)((oldCell->yCM / (float)(oldCell->volume) - fieldDim.y / 2)*boundaryConditionIndicator.y);
+    //        shiftVec.z = (short)((oldCell->zCM / (float)(oldCell->volume) - fieldDim.z / 2)*boundaryConditionIndicator.z);
 
-            //shift CM to approximately center of lattice, new centroids are:
-            xCM = oldCell->xCM - shiftVec.x*(oldCell->volume);
-            yCM = oldCell->yCM - shiftVec.y*(oldCell->volume);
-            zCM = oldCell->zCM - shiftVec.z*(oldCell->volume);
-            //Now shift pt
-            shiftedPt = pt;
-            shiftedPt -= shiftVec;
+    //        //shift CM to approximately center of lattice, new centroids are:
+    //        xCM = oldCell->xCM - shiftVec.x*(oldCell->volume);
+    //        yCM = oldCell->yCM - shiftVec.y*(oldCell->volume);
+    //        zCM = oldCell->zCM - shiftVec.z*(oldCell->volume);
+    //        //Now shift pt
+    //        shiftedPt = pt;
+    //        shiftedPt -= shiftVec;
 
-            //making sure that shifterd point is in the lattice
-            if (shiftedPt.x < 0) {
-                shiftedPt.x += fieldDim.x;
-            }
-            else if (shiftedPt.x > fieldDim.x - 1) {
-                shiftedPt.x -= fieldDim.x;
-            }
+    //        //making sure that shifterd point is in the lattice
+    //        if (shiftedPt.x < 0) {
+    //            shiftedPt.x += fieldDim.x;
+    //        }
+    //        else if (shiftedPt.x > fieldDim.x - 1) {
+    //            shiftedPt.x -= fieldDim.x;
+    //        }
 
-            if (shiftedPt.y < 0) {
-                shiftedPt.y += fieldDim.y;
-            }
-            else if (shiftedPt.y > fieldDim.y - 1) {
-                shiftedPt.y -= fieldDim.y;
-            }
+    //        if (shiftedPt.y < 0) {
+    //            shiftedPt.y += fieldDim.y;
+    //        }
+    //        else if (shiftedPt.y > fieldDim.y - 1) {
+    //            shiftedPt.y -= fieldDim.y;
+    //        }
 
-            if (shiftedPt.z < 0) {
-                shiftedPt.z += fieldDim.z;
-            }
-            else if (shiftedPt.z > fieldDim.z - 1) {
-                shiftedPt.z -= fieldDim.z;
-            }
-            //update shifted centroids
-            xCM -= shiftedPt.x;
-            yCM -= shiftedPt.y;
-            zCM -= shiftedPt.z;
-
-            //shift back centroids
-            xCM += shiftVec.x * (oldCell->volume - 1);
-            yCM += shiftVec.y * (oldCell->volume - 1);
-            zCM += shiftVec.z * (oldCell->volume - 1);
-
-            //Check if CM is in the lattice
-            if (xCM / ((float)oldCell->volume - 1) < 0) {
-                xCM += fieldDim.x*(oldCell->volume - 1);
-            }
-            else if (xCM / ((float)oldCell->volume - 1) > fieldDim.x) { //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
-                                                                //to avoid rollovers for unsigned int from oldCell->xCM
-
-
-                xCM -= fieldDim.x*(oldCell->volume - 1);
-
-
-            }
-
-            if (yCM / ((float)oldCell->volume - 1) < 0) {
-                yCM += fieldDim.y*(oldCell->volume - 1);
-            }
-            else if (yCM / ((float)oldCell->volume - 1) > fieldDim.y) {
-                yCM -= fieldDim.y*(oldCell->volume - 1);
-            }
-
-            if (zCM / ((float)oldCell->volume - 1) < 0) {
-                zCM += fieldDim.z*(oldCell->volume - 1);
-            }
-            else if (zCM / ((float)oldCell->volume - 1) > fieldDim.z) {
-                zCM -= fieldDim.z*(oldCell->volume - 1);
-            }
-
-
-            if (oldCell->volume > 1) {
-                oldCellCM.XRef() = xCM / ((float)oldCell->volume - 1);
-                oldCellCM.YRef() = yCM / ((float)oldCell->volume - 1);
-                oldCellCM.ZRef() = zCM / ((float)oldCell->volume - 1);
-            }
-            else {
-
-                oldCellCM.XRef() = zCM;
-                oldCellCM.YRef() = yCM;
-                oldCellCM.ZRef() = zCM;
-
-            }
-
-
-        }
-
-        if (newCell) {
-
-            xo = newCell->xCM;
-            yo = newCell->yCM;
-            zo = newCell->zCM;
-
-
-            x = newCell->xCM + pt.x;
-            y = newCell->yCM + pt.y;
-            z = newCell->zCM + pt.z;
-
-
-            if (newCell->volume == 1) {
-                shiftVec.x = 0;
-                shiftVec.y = 0;
-                shiftVec.z = 0;
-            }
-            else {
-                shiftVec.x = (short)((newCell->xCM / (float)(newCell->volume) - fieldDim.x / 2)*boundaryConditionIndicator.x);
-                shiftVec.y = (short)((newCell->yCM / (float)(newCell->volume) - fieldDim.y / 2)*boundaryConditionIndicator.y);
-                shiftVec.z = (short)((newCell->zCM / (float)(newCell->volume) - fieldDim.z / 2)*boundaryConditionIndicator.z);
-
-
-            }
-
-            //if CM of the cell is too close to the "middle" of the lattice correct shift vector
-
-
-            //shift CM to approximately center of lattice , new centroids are:
-            xCM = newCell->xCM - shiftVec.x*(newCell->volume);
-            yCM = newCell->yCM - shiftVec.y*(newCell->volume);
-            zCM = newCell->zCM - shiftVec.z*(newCell->volume);
-            //Now shift pt
-            shiftedPt = pt;
-            shiftedPt -= shiftVec;
-
-            //making sure that shifted point is in the lattice
-            if (shiftedPt.x < 0) {
-                shiftedPt.x += fieldDim.x;
-            }
-            else if (shiftedPt.x > fieldDim.x - 1) {
-                CC3D_Log(CompuCell3D::LOG_TRACE) << "shifted pt="<<shiftedPt;
-                shiftedPt.x -= fieldDim.x;
-            }
-
-            if (shiftedPt.y < 0) {
-                shiftedPt.y += fieldDim.y;
-            }
-            else if (shiftedPt.y > fieldDim.y - 1) {
-                shiftedPt.y -= fieldDim.y;
-            }
-
-            if (shiftedPt.z < 0) {
-                shiftedPt.z += fieldDim.z;
-            }
-            else if (shiftedPt.z > fieldDim.z - 1) {
-                shiftedPt.z -= fieldDim.z;
-            }
-
-            //update shifted centroids
-            xCM += shiftedPt.x;
-            yCM += shiftedPt.y;
-            zCM += shiftedPt.z;
-
-            //shift back centroids
-            xCM += shiftVec.x * (newCell->volume + 1);
-            yCM += shiftVec.y * (newCell->volume + 1);
-            zCM += shiftVec.z * (newCell->volume + 1);
-
-            //Check if CM is in the lattice
-            if (xCM / ((float)newCell->volume + 1) < 0) {
-                xCM += fieldDim.x*(newCell->volume + 1);
-            }
-            else if (xCM / ((float)newCell->volume + 1) > fieldDim.x) { //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
-                                                                //to avoid rollovers for unsigned int from oldCell->xCM
-                xCM -= fieldDim.x*(newCell->volume + 1);
-            }
-
-            if (yCM / ((float)newCell->volume + 1) < 0) {
-                yCM += fieldDim.y*(newCell->volume + 1);
-            }
-            else if (yCM / ((float)newCell->volume + 1) > fieldDim.y) {
-                yCM -= fieldDim.y*(newCell->volume + 1);
-            }
-
-            if (zCM / ((float)newCell->volume + 1) < 0) {
-                zCM += fieldDim.z*(newCell->volume + 1);
-            }
-            else if (zCM / ((float)newCell->volume + 1) > fieldDim.z) {
-                zCM -= fieldDim.z*(newCell->volume + 1);
-            }
-
-
-            newCellCM.XRef() = xCM / ((float)newCell->volume + 1);
-            newCellCM.YRef() = yCM / ((float)newCell->volume + 1);
-            newCellCM.ZRef() = zCM / ((float)newCell->volume + 1);
-
-            return centerOfMassPair;
-
-
-        }
-
-    }
+    //        if (shiftedPt.z < 0) {
+    //            shiftedPt.z += fieldDim.z;
+    //        }
+    //        else if (shiftedPt.z > fieldDim.z - 1) {
+    //            shiftedPt.z -= fieldDim.z;
+    //        }
+    //        //update shifted centroids
+    //        xCM -= shiftedPt.x;
+    //        yCM -= shiftedPt.y;
+    //        zCM -= shiftedPt.z;
+
+    //        //shift back centroids
+    //        xCM += shiftVec.x * (oldCell->volume - 1);
+    //        yCM += shiftVec.y * (oldCell->volume - 1);
+    //        zCM += shiftVec.z * (oldCell->volume - 1);
+
+    //        //Check if CM is in the lattice
+    //        if (xCM / ((float)oldCell->volume - 1) < 0) {
+    //            xCM += fieldDim.x*(oldCell->volume - 1);
+    //        }
+    //        else if (xCM / ((float)oldCell->volume - 1) > fieldDim.x) { //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
+    //                                                            //to avoid rollovers for unsigned int from oldCell->xCM
+
+
+    //            xCM -= fieldDim.x*(oldCell->volume - 1);
+
+
+    //        }
+
+    //        if (yCM / ((float)oldCell->volume - 1) < 0) {
+    //            yCM += fieldDim.y*(oldCell->volume - 1);
+    //        }
+    //        else if (yCM / ((float)oldCell->volume - 1) > fieldDim.y) {
+    //            yCM -= fieldDim.y*(oldCell->volume - 1);
+    //        }
+
+    //        if (zCM / ((float)oldCell->volume - 1) < 0) {
+    //            zCM += fieldDim.z*(oldCell->volume - 1);
+    //        }
+    //        else if (zCM / ((float)oldCell->volume - 1) > fieldDim.z) {
+    //            zCM -= fieldDim.z*(oldCell->volume - 1);
+    //        }
+
+
+    //        if (oldCell->volume > 1) {
+    //            oldCellCM.XRef() = xCM / ((float)oldCell->volume - 1);
+    //            oldCellCM.YRef() = yCM / ((float)oldCell->volume - 1);
+    //            oldCellCM.ZRef() = zCM / ((float)oldCell->volume - 1);
+    //        }
+    //        else {
+
+    //            oldCellCM.XRef() = zCM;
+    //            oldCellCM.YRef() = yCM;
+    //            oldCellCM.ZRef() = zCM;
+
+    //        }
+
+
+    //    }
+
+    //    if (newCell) {
+
+    //        xo = newCell->xCM;
+    //        yo = newCell->yCM;
+    //        zo = newCell->zCM;
+
+
+    //        x = newCell->xCM + pt.x;
+    //        y = newCell->yCM + pt.y;
+    //        z = newCell->zCM + pt.z;
+
+
+    //        if (newCell->volume == 1) {
+    //            shiftVec.x = 0;
+    //            shiftVec.y = 0;
+    //            shiftVec.z = 0;
+    //        }
+    //        else {
+    //            shiftVec.x = (short)((newCell->xCM / (float)(newCell->volume) - fieldDim.x / 2)*boundaryConditionIndicator.x);
+    //            shiftVec.y = (short)((newCell->yCM / (float)(newCell->volume) - fieldDim.y / 2)*boundaryConditionIndicator.y);
+    //            shiftVec.z = (short)((newCell->zCM / (float)(newCell->volume) - fieldDim.z / 2)*boundaryConditionIndicator.z);
+
+
+    //        }
+
+    //        //if CM of the cell is too close to the "middle" of the lattice correct shift vector
+
+
+    //        //shift CM to approximately center of lattice , new centroids are:
+    //        xCM = newCell->xCM - shiftVec.x*(newCell->volume);
+    //        yCM = newCell->yCM - shiftVec.y*(newCell->volume);
+    //        zCM = newCell->zCM - shiftVec.z*(newCell->volume);
+    //        //Now shift pt
+    //        shiftedPt = pt;
+    //        shiftedPt -= shiftVec;
+
+    //        //making sure that shifted point is in the lattice
+    //        if (shiftedPt.x < 0) {
+    //            shiftedPt.x += fieldDim.x;
+    //        }
+    //        else if (shiftedPt.x > fieldDim.x - 1) {
+    //            CC3D_Log(CompuCell3D::LOG_TRACE) << "shifted pt="<<shiftedPt;
+    //            shiftedPt.x -= fieldDim.x;
+    //        }
+
+    //        if (shiftedPt.y < 0) {
+    //            shiftedPt.y += fieldDim.y;
+    //        }
+    //        else if (shiftedPt.y > fieldDim.y - 1) {
+    //            shiftedPt.y -= fieldDim.y;
+    //        }
+
+    //        if (shiftedPt.z < 0) {
+    //            shiftedPt.z += fieldDim.z;
+    //        }
+    //        else if (shiftedPt.z > fieldDim.z - 1) {
+    //            shiftedPt.z -= fieldDim.z;
+    //        }
+
+    //        //update shifted centroids
+    //        xCM += shiftedPt.x;
+    //        yCM += shiftedPt.y;
+    //        zCM += shiftedPt.z;
+
+    //        //shift back centroids
+    //        xCM += shiftVec.x * (newCell->volume + 1);
+    //        yCM += shiftVec.y * (newCell->volume + 1);
+    //        zCM += shiftVec.z * (newCell->volume + 1);
+
+    //        //Check if CM is in the lattice
+    //        if (xCM / ((float)newCell->volume + 1) < 0) {
+    //            xCM += fieldDim.x*(newCell->volume + 1);
+    //        }
+    //        else if (xCM / ((float)newCell->volume + 1) > fieldDim.x) { //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
+    //                                                            //to avoid rollovers for unsigned int from oldCell->xCM
+    //            xCM -= fieldDim.x*(newCell->volume + 1);
+    //        }
+
+    //        if (yCM / ((float)newCell->volume + 1) < 0) {
+    //            yCM += fieldDim.y*(newCell->volume + 1);
+    //        }
+    //        else if (yCM / ((float)newCell->volume + 1) > fieldDim.y) {
+    //            yCM -= fieldDim.y*(newCell->volume + 1);
+    //        }
+
+    //        if (zCM / ((float)newCell->volume + 1) < 0) {
+    //            zCM += fieldDim.z*(newCell->volume + 1);
+    //        }
+    //        else if (zCM / ((float)newCell->volume + 1) > fieldDim.z) {
+    //            zCM -= fieldDim.z*(newCell->volume + 1);
+    //        }
+
+
+    //        newCellCM.XRef() = xCM / ((float)newCell->volume + 1);
+    //        newCellCM.YRef() = yCM / ((float)newCell->volume + 1);
+    //        newCellCM.ZRef() = zCM / ((float)newCell->volume + 1);
+
+    //        return centerOfMassPair;
+
+
+    //    }
+    //    return centerOfMassPair;
+    //}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     std::pair<InertiaTensorComponents, InertiaTensorComponents>precalculateInertiaTensorComponentsAfterFlip(const Coordinates3D<double> & ptTrans, const CellG *newCell, const CellG *oldCell) {
@@ -648,13 +655,13 @@ namespace CompuCell3D {
                 zcm = ptTrans.z;
             }
 
-            newCellInertiaTensor.iXX = newCell->iXX + (newCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (newCell->volume + 1)*(ycm*ycm + zcm*zcm) + ptTrans.y*ptTrans.y + ptTrans.z*ptTrans.z;
-            newCellInertiaTensor.iYY = newCell->iYY + (newCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (newCell->volume + 1)*(xcm*xcm + zcm*zcm) + ptTrans.x*ptTrans.x + ptTrans.z*ptTrans.z;
-            newCellInertiaTensor.iZZ = newCell->iZZ + (newCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (newCell->volume + 1)*(xcm*xcm + ycm*ycm) + ptTrans.x*ptTrans.x + ptTrans.y*ptTrans.y;
+            newCellInertiaTensor.iXX = newCell->iXX + (newCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (newCell->volume + 1L)*(ycm*ycm + zcm*zcm) + ptTrans.y*ptTrans.y + ptTrans.z*ptTrans.z;
+            newCellInertiaTensor.iYY = newCell->iYY + (newCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (newCell->volume + 1L)*(xcm*xcm + zcm*zcm) + ptTrans.x*ptTrans.x + ptTrans.z*ptTrans.z;
+            newCellInertiaTensor.iZZ = newCell->iZZ + (newCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (newCell->volume + 1L)*(xcm*xcm + ycm*ycm) + ptTrans.x*ptTrans.x + ptTrans.y*ptTrans.y;
 
-            newCellInertiaTensor.iXY = newCell->iXY - (newCell->volume)*xcmOld*ycmOld + (newCell->volume + 1)*xcm*ycm - ptTrans.x*ptTrans.y;
-            newCellInertiaTensor.iXZ = newCell->iXZ - (newCell->volume)*xcmOld*zcmOld + (newCell->volume + 1)*xcm*zcm - ptTrans.x*ptTrans.z;
-            newCellInertiaTensor.iYZ = newCell->iYZ - (newCell->volume)*ycmOld*zcmOld + (newCell->volume + 1)*ycm*zcm - ptTrans.y*ptTrans.z;
+            newCellInertiaTensor.iXY = newCell->iXY - (newCell->volume)*xcmOld*ycmOld + (newCell->volume + 1L)*xcm*ycm - ptTrans.x*ptTrans.y;
+            newCellInertiaTensor.iXZ = newCell->iXZ - (newCell->volume)*xcmOld*zcmOld + (newCell->volume + 1L)*xcm*zcm - ptTrans.x*ptTrans.z;
+            newCellInertiaTensor.iYZ = newCell->iYZ - (newCell->volume)*ycmOld*zcmOld + (newCell->volume + 1L)*ycm*zcm - ptTrans.y*ptTrans.z;
 
         }
 
@@ -682,13 +689,13 @@ namespace CompuCell3D {
 
             }
 
-            oldCellInertiaTensor.iXX = oldCell->iXX + (oldCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (oldCell->volume - 1)*(ycm*ycm + zcm*zcm) - ptTrans.y*ptTrans.y - ptTrans.z*ptTrans.z;
-            oldCellInertiaTensor.iYY = oldCell->iYY + (oldCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (oldCell->volume - 1)*(xcm*xcm + zcm*zcm) - ptTrans.x*ptTrans.x - ptTrans.z*ptTrans.z;
-            oldCellInertiaTensor.iZZ = oldCell->iZZ + (oldCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (oldCell->volume - 1)*(xcm*xcm + ycm*ycm) - ptTrans.x*ptTrans.x - ptTrans.y*ptTrans.y;
+            oldCellInertiaTensor.iXX = oldCell->iXX + (oldCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (oldCell->volume - 1L)*(ycm*ycm + zcm*zcm) - ptTrans.y*ptTrans.y - ptTrans.z*ptTrans.z;
+            oldCellInertiaTensor.iYY = oldCell->iYY + (oldCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (oldCell->volume - 1L)*(xcm*xcm + zcm*zcm) - ptTrans.x*ptTrans.x - ptTrans.z*ptTrans.z;
+            oldCellInertiaTensor.iZZ = oldCell->iZZ + (oldCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (oldCell->volume - 1L)*(xcm*xcm + ycm*ycm) - ptTrans.x*ptTrans.x - ptTrans.y*ptTrans.y;
 
-            oldCellInertiaTensor.iXY = oldCell->iXY - (oldCell->volume)*xcmOld*ycmOld + (oldCell->volume - 1)*xcm*ycm + ptTrans.x*ptTrans.y;
-            oldCellInertiaTensor.iXZ = oldCell->iXZ - (oldCell->volume)*xcmOld*zcmOld + (oldCell->volume - 1)*xcm*zcm + ptTrans.x*ptTrans.z;
-            oldCellInertiaTensor.iYZ = oldCell->iYZ - (oldCell->volume)*ycmOld*zcmOld + (oldCell->volume - 1)*ycm*zcm + ptTrans.y*ptTrans.z;
+            oldCellInertiaTensor.iXY = oldCell->iXY - (oldCell->volume)*xcmOld*ycmOld + (oldCell->volume - 1L)*xcm*ycm + ptTrans.x*ptTrans.y;
+            oldCellInertiaTensor.iXZ = oldCell->iXZ - (oldCell->volume)*xcmOld*zcmOld + (oldCell->volume - 1L)*xcm*zcm + ptTrans.x*ptTrans.z;
+            oldCellInertiaTensor.iYZ = oldCell->iYZ - (oldCell->volume)*ycmOld*zcmOld + (oldCell->volume - 1L)*ycm*zcm + ptTrans.y*ptTrans.z;
 
 
         }
@@ -712,9 +719,9 @@ namespace CompuCell3D {
             Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
 
             if (oldCell->volume > 1) {
-                oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (double) (oldCell->volume - 1);
-                oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (double) (oldCell->volume - 1);
-                oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (double) (oldCell->volume - 1);
+                oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (double) (oldCell->volume - 1L);
+                oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (double) (oldCell->volume - 1L);
+                oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (double) (oldCell->volume - 1L);
             } else {
 
                 oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume,
@@ -736,9 +743,9 @@ namespace CompuCell3D {
             Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
 
 
-            newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (double) (newCell->volume + 1);
-            newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (double) (newCell->volume + 1);
-            newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (double) (newCell->volume + 1);
+            newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (double) (newCell->volume + 1L);
+            newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (double) (newCell->volume + 1L);
+            newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (double) (newCell->volume + 1L);
 
 
             Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume,

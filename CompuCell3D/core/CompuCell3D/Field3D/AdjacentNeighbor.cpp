@@ -20,17 +20,18 @@ AdjacentNeighbor::AdjacentNeighbor(const Dim3D &_dim) :
 void AdjacentNeighbor::initialize(const Dim3D &_dim) {
 
     depth = 1;
+    size_t  depth_wide = depth;
     fieldDim = _dim;
     field3DIndex = Field3DIndex(_dim);
 
-    adjNeighborOffsetsInner.assign((2 * depth + 1) * (2 * depth + 1) * (2 * depth + 1) - 1,
+    adjNeighborOffsetsInner.assign((2 * depth_wide + 1) * (2 * depth_wide + 1) * (2 * depth_wide + 1) - 1,
                                    Point3D(0, 0, 0));   //will not include 0 in the offset table -
     // that's why I subract 1 from vector dimension
 
     adjFace2FaceNeighborOffsetsInner.assign(6, Point3D(0, 0, 0));
 
     //remove it later - testing now
-    adjNeighborOffsets.assign((2 * depth + 1) * (2 * depth + 1) * (2 * depth + 1) - 1, 0);
+    adjNeighborOffsets.assign((2 * depth_wide + 1) * (2 * depth_wide + 1) * (2 * depth_wide + 1) - 1, 0);
     adjFace2FaceNeighborOffsets.assign(6, 0);
 
     long index;

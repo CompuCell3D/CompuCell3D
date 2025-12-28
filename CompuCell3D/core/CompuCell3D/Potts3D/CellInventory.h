@@ -60,9 +60,9 @@ namespace CompuCell3D {
         compartmentInventoryContainerType &getContainer() { return inventory; }
 
         //iterator part
-        std::map<long, CellG *>::size_type getInventorySize() { return inventory.size(); }
+        size_t getInventorySize() { return inventory.size(); }
 
-        int getSize() { return inventory.size(); }
+        size_t getSize() { return inventory.size(); }
 
         compartmentInventoryIterator inventoryBegin() { return inventory.begin(); }
 
@@ -113,9 +113,9 @@ namespace CompuCell3D {
 
         virtual void removeFromInventory(CellG *_cell);
 
-        std::map<long, CellG *>::size_type getCellInventorySize() { return inventory.size(); }
+        size_t getCellInventorySize() { return inventory.size(); }
 
-        int getSize() { return inventory.size(); }
+        size_t getSize() { return inventory.size(); }
 
         cellInventoryIterator cellInventoryBegin() { return inventory.begin(); }
 

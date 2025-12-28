@@ -1,13 +1,32 @@
 #include "WindowsGlob.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <string>
 #include <Logger/CC3DLogger.h>
 
-static int glob_compare(const void *arg1, const void *arg2)
+//static int glob_compare(const void *arg1, const void *arg2)
+//{
+//    /* Compare all of both strings: */
+//    return stricmp(*(char **)arg1, *(char **)arg2);
+//}
+
+static int glob_compare(const void* arg1, const void* arg2)
 {
-    /* Compare all of both strings: */
-    return stricmp(*(char **)arg1, *(char **)arg2);
+    const std::string a = *static_cast<char* const*>(arg1);
+    const std::string b = *static_cast<char* const*>(arg2);
+
+    auto lower = [](unsigned char c) { return std::tolower(c); };
+
+    std::string al = a;
+    std::string bl = b;
+
+    std::transform(al.begin(), al.end(), al.begin(), lower);
+    std::transform(bl.begin(), bl.end(), bl.begin(), lower);
+
+    if (al < bl) return -1;
+    if (al > bl) return 1;
+    return 0;
 }
 
 char* getfname(const   char * path)
@@ -30,7 +49,8 @@ int glob(const   char  *pattern, int  flags, void * unused, glob_t* glob)
 {
 
     struct _finddata_t ff;
-    long ff_handle;
+    //long ff_handle;
+    intptr_t ff_handle;
     size_t found = 0;
     char path[MAX_PATH + 1];
     char * p;

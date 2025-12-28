@@ -72,7 +72,7 @@ void EnergyFunctionCalculator::unregisterEnergyFunction(std::string _functionNam
 }
 
 double EnergyFunctionCalculator::changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell,
-                                              const unsigned int _flipAttempt) {
+    const size_t _flipAttempt) {
 
 
     double change = 0;

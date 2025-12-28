@@ -435,10 +435,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 
     // in a regular run we do randomly select a neighbor with which we make a new link. In test run or test data generate run we do not perform this randomization
     if (!potts->get_test_output_generate_flag() && !potts->get_test_run_flag()) {
-        //TODO17:
-        static std::mt19937 rng{ std::random_device{}() };
-        std::shuffle(randNeighborIndex.begin(), randNeighborIndex.end(), rng);
-        //std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+        randomize_container(randNeighborIndex);
     }
 
     for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) {
@@ -525,10 +522,8 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
     // Randomly shuffle neighbor selection
     std::vector<unsigned int> randNeighborIndex = std::vector<unsigned int>(maxNeighborIndexLocal + 1, 0);
     for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) randNeighborIndex[nIdx] = nIdx;
-    //TODO17:
-    static std::mt19937 rng{ std::random_device{}() };
-    std::shuffle(randNeighborIndex.begin(), randNeighborIndex.end(), rng);
-    //std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+
+    randomize_container(randNeighborIndex);
 
     for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) {
         neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D &>(pt), randNeighborIndex[nIdx]);

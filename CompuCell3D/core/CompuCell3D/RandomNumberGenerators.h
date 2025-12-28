@@ -4,6 +4,7 @@
 #include <random>
 #include <string>
 #include <sys/timeb.h>
+#include "CC3DTypes.h"
 
 #include "CC3DExceptions.h"
 
@@ -39,7 +40,8 @@ namespace CompuCell3D {
         virtual void setSeed(const unsigned int& _seed) { seed = _seed; }
 
         bool getBool();
-        long getInteger(const long& min = 0, const long& max = RAND_MAX) { return min + long(((max - min) + 1) * getRatio()); }
+        virtual cc3d_long_t getInteger(cc3d_long_t min, cc3d_long_t max){ return min + static_cast<cc3d_long_t>(((max - min) + 1) * getRatio()); }
+//        long getInteger(const long& min = 0, const long& max = RAND_MAX) { return min + long(((max - min) + 1) * getRatio()); }
 
         virtual double getRatio() = 0;
         virtual std::string name() = 0;

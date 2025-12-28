@@ -71,7 +71,7 @@ EnergyFunctionCalculatorStatistics::~EnergyFunctionCalculatorStatistics() {
 
 
 double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell,
-                                                        const unsigned int _flipAttempt) {
+                                                        const size_t _flipAttempt) {
 
     ParallelUtilsOpenMP *pUtils = sim->getParallelUtils();
 
@@ -142,7 +142,7 @@ void EnergyFunctionCalculatorStatistics::range(int *rangevec, int n) {
 }
 
 long EnergyFunctionCalculatorStatistics::get_number_energy_fcn_calculations() {
-    return accNotAccList.size();
+    return static_cast<long>(accNotAccList.size());
 }
 
 void EnergyFunctionCalculatorStatistics::get_current_mcs_accepted_mask_npy_array(int *intvec, int n) {
@@ -253,7 +253,7 @@ void EnergyFunctionCalculatorStatistics::initialize() {
     NRej = 0;
     NTot = 0;
 
-    int energyFunctionsVecSize = energyFunctions.size();
+    size_t energyFunctionsVecSize = energyFunctions.size();
 
     lastEnergyVec.assign(energyFunctionsVecSize, 0.0);
     stdDevEnergyVectorTot.assign(energyFunctionsVecSize, 0.0);
@@ -282,7 +282,7 @@ void EnergyFunctionCalculatorStatistics::prepareNextStep() {
 
 
 void EnergyFunctionCalculatorStatistics::calculateStatData() {
-    unsigned int energyFunctionCount = energyFunctions.size();
+    size_t energyFunctionCount = energyFunctions.size();
 
     avgEnergyVectorTot.assign(energyFunctionCount, 0.0);
     stdDevEnergyVectorTot.assign(energyFunctionCount, 0.0);
@@ -310,24 +310,24 @@ void EnergyFunctionCalculatorStatistics::calculateStatData() {
     for (lVecItr = totEnergyDataList.begin(); lVecItr != totEnergyDataList.end(); ++lVecItr) {
         ++NTot;
         vector<double> &energyData = *lVecItr;
-        for (int i = 0; i < energyFunctionCount; ++i) {
+        for (unsigned int i = 0; i < energyFunctionCount; ++i) {
             avgEnergyVectorTot[i] += energyData[i];
         }
         if (*lItr) {//accepted flip
             ++NAcc;
-            for (int i = 0; i < energyFunctionCount; ++i) {
+            for (unsigned int i = 0; i < energyFunctionCount; ++i) {
                 avgEnergyVectorAcc[i] += energyData[i];
             }
         } else {//rejected flip
             ++NRej;
-            for (int i = 0; i < energyFunctionCount; ++i) {
+            for (unsigned int i = 0; i < energyFunctionCount; ++i) {
                 avgEnergyVectorRej[i] += energyData[i];
             }
         }
         ++lItr;
     }
 
-    for (int i = 0; i < energyFunctions.size(); ++i) {
+    for (unsigned  int i = 0; i < energyFunctions.size(); ++i) {
         if (NTot)
             avgEnergyVectorTot[i] /= NTot;
         if (NAcc)
@@ -344,17 +344,17 @@ void EnergyFunctionCalculatorStatistics::calculateStatData() {
     lItr = accNotAccList.begin();
     for (lVecItr = totEnergyDataList.begin(); lVecItr != totEnergyDataList.end(); ++lVecItr) {
         vector<double> &energyData = *lVecItr;
-        for (int i = 0; i < energyFunctionCount; ++i) {
+        for (unsigned int i = 0; i < energyFunctionCount; ++i) {
             stdDevEnergyVectorTot[i] +=
                     (energyData[i] - avgEnergyVectorTot[i]) * (energyData[i] - avgEnergyVectorTot[i]);
         }
         if (*lItr) {//accepted flip
-            for (int i = 0; i < energyFunctionCount; ++i) {
+            for (unsigned int i = 0; i < energyFunctionCount; ++i) {
                 stdDevEnergyVectorAcc[i] +=
                         (energyData[i] - avgEnergyVectorAcc[i]) * (energyData[i] - avgEnergyVectorAcc[i]);
             }
         } else {//rejected flip
-            for (int i = 0; i < energyFunctionCount; ++i) {
+            for (unsigned int i = 0; i < energyFunctionCount; ++i) {
                 stdDevEnergyVectorRej[i] +=
                         (energyData[i] - avgEnergyVectorRej[i]) * (energyData[i] - avgEnergyVectorRej[i]);
             }

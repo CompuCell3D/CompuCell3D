@@ -4,6 +4,7 @@
     #include <PublicUtilities/Vector3.h>
     #include <PublicUtilities/NumericalUtils.h>
     #include <PublicUtilities/StringUtils.h>
+    #include <PublicUtilities/RandomUtils.h>
     #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 #endif

@@ -16,7 +16,8 @@ namespace CompuCell3D {
                 x_size(0),
                 y_size(0),
                 z_size(0),
-                xy_size(x_size * y_size) {}
+                xy_size(x_size * y_size)                
+        {}
 
         Field3DIndex(const Dim3D &_dim);
 
@@ -42,7 +43,7 @@ namespace CompuCell3D {
         int y_size;
         int z_size;
         int xy_size;
-        int maxIndex;
+        int maxIndex=0;
 
     };
 

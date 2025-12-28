@@ -50,16 +50,35 @@ void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::
    
 }
 
-std::vector<std::string> splitString(const std::string& str, const std::string& token) {
-   std::vector<std::string> o;
-   char* cStr = strdup(str.c_str());
-   char* cTok = strdup(token.c_str());
-   char* oStr = strtok(cStr, cTok);
-   while (oStr) {
-      o.push_back(oStr);
-      oStr = strtok(NULL, cTok);
-   }
-   return o;
+//std::vector<std::string> splitString(const std::string& str, const std::string& token) {
+//   std::vector<std::string> o;
+//   char* cStr = strdup(str.c_str());
+//   char* cTok = strdup(token.c_str());
+//   char* oStr = strtok(cStr, cTok);
+//   while (oStr) {
+//      o.push_back(oStr);
+//      oStr = strtok(NULL, cTok);
+//   }
+//   return o;
+//}
+
+std::vector<std::string>
+splitString(const std::string& str, const std::string& token)
+{
+    std::vector<std::string> out;
+
+    size_t start = 0;
+    size_t pos;
+
+    while ((pos = str.find(token, start)) != std::string::npos) {
+        out.emplace_back(str.substr(start, pos - start));
+        start = pos + token.size();
+    }
+
+    // last segment
+    out.emplace_back(str.substr(start));
+
+    return out;
 }
 
 void changeToLower(std::string & str){

@@ -1,6 +1,9 @@
 #ifndef BOUNDARY_STRATEGY_H
 #define BOUNDARY_STRATEGY_H
 
+#include <CompuCell3D/windows/CC3DMSVCWarnings.h>
+
+
 #include "BoundaryDLLSpecifier.h"
 #include "Boundary.h"
 #include "Algorithm.h"
@@ -19,6 +22,8 @@
 
 template<typename T>
 class Coordinates3D;
+
+
 
 
 namespace CompuCell3D {
