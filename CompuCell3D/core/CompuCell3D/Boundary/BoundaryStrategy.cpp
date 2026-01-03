@@ -431,9 +431,10 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
         // we are dealing with 3D case but we want to make sure that if we set one dimension to 2 we
         // get center point that is truly in the middle of the lattice therefore minimum
         // dimension in 3D for a test field is set to 3
-        dim_test_field.x = std::max((short) 3, dim.x);
-        dim_test_field.y = std::max((short) 3, dim.y);
-        dim_test_field.z = std::max((short) 3, dim.z);
+        constexpr cc3d_dim_t min_dim = 3;
+        dim_test_field.x = std::max(min_dim, dim.x);
+        dim_test_field.y = std::max(min_dim, dim.y);
+        dim_test_field.z = std::max(min_dim, dim.z);
     }
 
     Field3DImpl<char> tempField(dim_test_field, a);

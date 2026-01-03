@@ -19,7 +19,16 @@ import_array();  // REQUIRED for NumPy C API
 // Let SWIG know about NumPy
 %include "swig_includes/numpy.i"
 
+%include <stdint.i>
 
+//TODO - move it to a separate file
+typedef int32_t cc3d_dim_t;
+typedef int64_t cc3d_long_t;
+typedef size_t  cc3d_index_t;
+//Value semantic
+%apply int        { cc3d_dim_t };
+%apply long long { cc3d_long_t };
+%apply size_t    { cc3d_index_t };
 
 %include "windows.i"
 

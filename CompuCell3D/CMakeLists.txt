@@ -29,14 +29,27 @@ endif()
 if(APPLE)
     message(STATUS "Configuring macOS compile options")
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+#    add_compile_options(
+##            -mmacosx-version-min=10.6
+##            -fpermissive
+#            -m64
+#            -Wno-implicit-function-declaration
+#            -Wno-implicit-int
+#    )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(
-#            -mmacosx-version-min=10.6
-            -fpermissive
-            -m64
-            -Wno-implicit-function-declaration
-            -Wno-implicit-int
+            -Wall -Wextra -Wpedantic
+            -Wconversion -Wsign-conversion -Wsign-compare
+            -Wshorten-64-to-32
+            -Wimplicit-int-conversion
+            -Wimplicit-float-conversion
+            -Woverflow -Wshift-overflow -Wshift-sign-overflow
+            -Wnon-virtual-dtor
     )
 endif()
+
 
 
 

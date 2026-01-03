@@ -239,7 +239,7 @@ namespace CompuCell3D {
 
         unsigned int getNumSteps() { return ppdCC3DPtr->numSteps; }
 
-        int getStep() { return currstep; }
+        unsigned int getStep()  { return currstep; }
 
         void setStep(int currstep) { this->currstep = currstep; }
 

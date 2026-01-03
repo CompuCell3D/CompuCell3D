@@ -22,10 +22,10 @@ namespace CompuCell3D {
     class AdjacentNeighbor {
     public:
         explicit AdjacentNeighbor() :
-                depth(1),
                 periodicX(false),
                 periodicY(false),
-                periodicZ(false) {}
+                periodicZ(false),
+                depth(1) {}
 
         explicit AdjacentNeighbor(const Dim3D &_dim);
 
