@@ -10,10 +10,13 @@
         <xs:attribute name="id" type="xs:string" use="optional"/>
     </xs:attributeGroup>
 
-    <!-- ONLY CompuCell3D root can have Revision / Version -->
+    <!-- ONLY CompuCell3D root can have Revision / Version / revision / version -->
     <xs:attributeGroup name="compuCell3DAttrs">
         <xs:attribute name="Revision" type="xs:string" use="optional"/>
         <xs:attribute name="Version" type="xs:string" use="optional"/>
+        <xs:attribute name="revision" type="xs:string" use="optional"/>
+        <xs:attribute name="version" type="xs:string" use="optional"/>
+
     </xs:attributeGroup>
 
     <!-- ========================================================= -->
