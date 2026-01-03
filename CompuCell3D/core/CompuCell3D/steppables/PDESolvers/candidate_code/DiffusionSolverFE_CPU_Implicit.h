@@ -3,7 +3,7 @@
 
 #include <CompuCell3D/CC3DEvents.h>
 
-#include "DiffusionSolverFE.h"
+#include "../DiffusionSolverFE.h"
 #include <Eigen/Sparse>
 
 #include <Eigen/Core>

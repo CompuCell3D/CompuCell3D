@@ -16,7 +16,7 @@
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 #include "DiffusionSolverFE_CPU.h"
-#include "DiffusionSolverFE_CPU_Implicit.h"
+// #include "DiffusionSolverFE_CPU_Implicit.h"
 #include "GPUEnabled.h"
 
 #include "MyTime.h"
@@ -1272,8 +1272,8 @@ std::string DiffusionSolverFE<Cruncher>::steerableName() {
 template
 class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU>;
 
-template
-class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>;
+// template
+// class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>;
 
 #if OPENCL_ENABLED == 1
 template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_OpenCL>;

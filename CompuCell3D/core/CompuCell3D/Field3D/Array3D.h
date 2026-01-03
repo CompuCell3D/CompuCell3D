@@ -1451,7 +1451,7 @@ void Array2DBorders<T>::allocateMemory(const Dim3D &_dim, T &val) {
         }
 
         void storeSecData(int x, int y, int z, T t) {
-            vector<float> fourVector(4);
+            std::vector<float> fourVector(4);
             fourVector[0] = x;
             fourVector[1] = y;
             fourVector[2] = z;

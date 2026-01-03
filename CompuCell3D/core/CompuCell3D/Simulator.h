@@ -218,7 +218,7 @@ namespace CompuCell3D {
                     return static_cast<NumpyArrayWrapper3DImpl<T>*>(it->second.get());
                 } else {
                     std::cerr << "Error: Type mismatch when retrieving field '" << name << "'.\n";
-                    std::cerr<<"The underlying field type is:" <<endl;
+                    std::cerr<<"The underlying field type is:" <<std::endl;
                     it->second->displayType();
                 }
             } else {

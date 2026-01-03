@@ -15,6 +15,7 @@ endif()
 # C++ standard selection (default = 17)
 # ------------------------------------------------------------
 set(CC3D_CXX_STANDARD 17 CACHE STRING "C++ standard to use for CompuCell3D (11, 14, 17, 20)")
+set(CMAKE_CXX_STANDARD ${CC3D_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -24,13 +25,12 @@ if (MSVC)
 endif()
 
 
-
 ##APPLE CHECK
 if(APPLE)
     message(STATUS "Configuring macOS compile options")
-
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
     add_compile_options(
-            -mmacosx-version-min=10.6
+#            -mmacosx-version-min=10.6
             -fpermissive
             -m64
             -Wno-implicit-function-declaration
@@ -53,7 +53,8 @@ IF(OPENMP_FOUND)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     IF((APPLE) AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+#        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -stdlib=libc++")
     ENDIF()
 ENDIF()
 

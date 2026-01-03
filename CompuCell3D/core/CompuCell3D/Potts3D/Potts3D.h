@@ -75,10 +75,10 @@ namespace CompuCell3D {
     struct Point3DHasher {
         size_t operator()(const Point3D& pt) const noexcept {
             const int64_t hash_val =
-                static_cast<int64_t>(pt.x) * 1'000'000'000'000LL +
-                static_cast<int64_t>(pt.y) * 1'000'000LL +
+                static_cast<int64_t>(pt.x) * 1000000000000LL +
+                static_cast<int64_t>(pt.y) * 1000000LL +
                 static_cast<int64_t>(pt.z);
-            return std::hash<int64_t>{}(hash_val);
+            return std::hash<int64_t>()(hash_val);
         }
     };
 

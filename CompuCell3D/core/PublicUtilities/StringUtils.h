@@ -30,44 +30,81 @@ std::vector<std::string> splitString(const std::string& str, const std::string& 
 // Functors (C++17 compliant)
 // ----------------------------
 
-class isWhiteSpaceFunctor {
-private:
-    std::locale loc;
 
+// class isWhiteSpaceFunctor {
+// private:
+//     std::locale loc;
+//
+// public:
+//     isWhiteSpaceFunctor() : loc(std::locale()) {}
+//
+//     bool operator()(char c) const {
+//         // C++17: std::isspace(c) is safe since it uses global C locale
+//         return std::isspace(static_cast<unsigned char>(c));
+//     }
+// };
+
+class isWhiteSpaceFunctor {
 public:
     isWhiteSpaceFunctor() : loc(std::locale()) {}
 
     bool operator()(char c) const {
-        // C++17: std::isspace(c) is safe since it uses global C locale
-        return std::isspace(static_cast<unsigned char>(c));
+        return std::use_facet<std::ctype<char>>(loc).is(std::ctype_base::space, c);
     }
+
+private:
+    std::locale loc;
 };
 
 
-struct ToLower
-{
+struct ToLower {
     explicit ToLower(const std::locale& l = std::locale()) : loc(l) {}
 
     char operator()(char c) const {
-        return static_cast<char>(std::tolower(static_cast<unsigned char>(c), loc));
+        // use the ctype<char> facet; safe for all char values
+        return std::use_facet<std::ctype<char>>(loc).tolower(c);
     }
 
 private:
-    const std::locale& loc;
+    std::locale loc;  // store by value (safer than ref)
 };
 
-
-struct ToUpper
-{
+struct ToUpper {
     explicit ToUpper(const std::locale& l = std::locale()) : loc(l) {}
 
     char operator()(char c) const {
-        return static_cast<char>(std::toupper(static_cast<unsigned char>(c), loc));
+        return std::use_facet<std::ctype<char>>(loc).toupper(c);
     }
 
 private:
-    const std::locale& loc;
+    std::locale loc;
 };
+
+
+// struct ToLower
+// {
+//     explicit ToLower(const std::locale& l = std::locale()) : loc(l) {}
+//
+//     char operator()(char c) const {
+//         return static_cast<char>(std::tolower(static_cast<unsigned char>(c), loc));
+//     }
+//
+// private:
+//     const std::locale& loc;
+// };
+//
+//
+// struct ToUpper
+// {
+//     explicit ToUpper(const std::locale& l = std::locale()) : loc(l) {}
+//
+//     char operator()(char c) const {
+//         return static_cast<char>(std::toupper(static_cast<unsigned char>(c), loc));
+//     }
+//
+// private:
+//     const std::locale& loc;
+// };
 
 
 // ----------------------------

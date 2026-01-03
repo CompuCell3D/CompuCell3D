@@ -1732,7 +1732,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             if (bcField.getDirect(x, y, z) == BoundaryConditionSpecifier::INTERNAL) {//internal pixel
 
                                 const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                                for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+                                for (int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
                                     const Point3D &offset = offsetVecRef[i];
 
                                     int offX = x + offset.x;
@@ -1761,7 +1761,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                     //loop over nearest neighbors
                                     const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                                    for (register int i = 0; i <= maxNeighborIndex; ++i) {
+                                    for (int i = 0; i <= maxNeighborIndex; ++i) {
                                         const Point3D &offset = offsetVecRef[i];
                                         varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x + offset.x, y + offset.y,
                                                                                            z + offset.z)] *
@@ -1777,7 +1777,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 //loop over nearest neighbors
                                 const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                                for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+                                for (int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
 
                                     const Point3D &offset = offsetVecRef[i];
                                     signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y,
@@ -1844,7 +1844,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                                     const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                                    for (register int i = 0; i <= maxNeighborIndex; ++i) {
+                                    for (int i = 0; i <= maxNeighborIndex; ++i) {
                                         const Point3D &offset = offsetVecRef[i];
                                         signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y,
                                                                                      z + offset.z);
@@ -1929,7 +1929,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             //loop over nearest neighbors
                             if (diffusiveSite) {
                                 const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                                for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+                                for (int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
                                     const Point3D &offset = offsetVecRef[i];
 
                                     int offX = x + offset.x;
@@ -1959,7 +1959,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 //loop over nearest neighbors
                                 const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                                for (register int i = 0; i <= maxNeighborIndex; ++i) {
+                                for (int i = 0; i <= maxNeighborIndex; ++i) {
                                     const Point3D &offset = offsetVecRef[i];
                                     varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x + offset.x, y + offset.y,
                                                                                        z + offset.z)] *
