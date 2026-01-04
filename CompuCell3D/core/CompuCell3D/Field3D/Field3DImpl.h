@@ -139,7 +139,8 @@ namespace CompuCell3D {
 
         //}
 
-        virtual void setDim(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
+        // virtual void setDim(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
+        virtual void setDim(const Dim3D theDim) {
             this->resizeAndShift(theDim);
         }
 

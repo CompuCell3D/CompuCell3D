@@ -8,8 +8,12 @@ using namespace CompuCell3D;
  * our 3D vector.
  * @ return void.
  */
-void DefaultAlgorithm::readFile(const int index, const int size, string
-inputfile) {}
+void DefaultAlgorithm::readFile(const int index, const int size, string inputfile) {
+    (void) index;
+    (void)size;
+    (void)inputfile;
+
+}
 
 
 /*

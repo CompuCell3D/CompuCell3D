@@ -21,26 +21,40 @@ using namespace CompuCell3D;
  */
 bool PeriodicBoundary::applyCondition(int &coordinate, const int &max_value) {
 
-    short val;
-
     if (coordinate < 0) {
-
-
-        val = abs((float) (coordinate % max_value));
+        const int val = std::abs(coordinate % max_value);
         coordinate = max_value - val;
         return true;
-
-
-    } else if (coordinate >= max_value) {
-
-
+    }
+    else if (coordinate >= max_value) {
         coordinate = coordinate % max_value;
         return true;
-
     }
 
     return false;
-
-
 }
+// bool PeriodicBoundary::applyCondition(int &coordinate, const int &max_value) {
+//
+//     short val;
+//
+//     if (coordinate < 0) {
+//
+//
+//         val = abs((float) (coordinate % max_value));
+//         coordinate = max_value - val;
+//         return true;
+//
+//
+//     } else if (coordinate >= max_value) {
+//
+//
+//         coordinate = coordinate % max_value;
+//         return true;
+//
+//     }
+//
+//     return false;
+//
+//
+// }
 

@@ -14,6 +14,9 @@ using namespace CompuCell3D;
  */
 bool NoFluxBoundary::applyCondition(int &coordinate, const int &max_value) {
 
+    (void) coordinate;
+    (void) max_value;
+
     return false;
 }
  
