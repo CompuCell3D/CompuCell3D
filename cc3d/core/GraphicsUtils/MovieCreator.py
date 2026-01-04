@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
+from concurrent.futures import ThreadPoolExecutor
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Tuple
 
+
+def makeMovieAsync(simulationPath, frameRate, quality, enableDrawingMCS=True, callback=None) -> Tuple[int, Path]:
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future = executor.submit(makeMovie, simulationPath, frameRate, quality, enableDrawingMCS)
+        if callback:
+            future.add_done_callback(callback)
 
 def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tuple[int, Path]:
     """
