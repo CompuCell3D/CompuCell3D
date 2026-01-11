@@ -53,7 +53,7 @@ namespace CompuCell3D {
                 field[i] = initialValue;
         }
 
-        virtual ~Field3DImpl() {
+        ~Field3DImpl() override {
             if (field) {
                 delete[] field;
                 field = 0;
@@ -61,12 +61,12 @@ namespace CompuCell3D {
 
         }
 
-        virtual void set(const Point3D &pt, const T value) {
+        void set(const Point3D &pt, const T value) override {
             if (!isValid(pt)) throw CC3DException("set() point out of range!");
             field[PT2IDX(pt)] = value;
         }
 
-        virtual void resizeAndShift(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
+        void resizeAndShift(const Dim3D theDim, Dim3D shiftVec) override {
 
             const std::size_t nx = static_cast<std::size_t>(theDim.x);
             const std::size_t ny = static_cast<std::size_t>(theDim.y);
@@ -108,40 +108,10 @@ namespace CompuCell3D {
         }
 
 
-        //virtual void resizeAndShift(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
-        //    std::size_t len =
-        //        static_cast<std::size_t>(theDim.x) *
-        //        static_cast<std::size_t>(theDim.y) *
-        //        static_cast<std::size_t>(theDim.z);
-        //    T *field2 = new T[len];
-        //    //first initialize the lattice with initial value
-        //    for (size_t i = 0; i < len; ++i)
-        //        field2[i] = initialValue;
-
-        //    //then  copy old field
-        //    for (int x = 0; x < theDim.x; x++)
-        //        for (int y = 0; y < theDim.y; y++)
-        //            for (int z = 0; z < theDim.z; z++)
-        //                if ((x - shiftVec.x >= 0) && (x - shiftVec.x < dim.x) && (y - shiftVec.y >= 0) &&
-        //                    (y - shiftVec.y < dim.y) && (z - shiftVec.z >= 0) && (z - shiftVec.z < dim.z)) {
-        //                    field2[x + ((y + (z * theDim.y)) * theDim.x)] = getQuick(
-        //                            Point3D(x - shiftVec.x, y - shiftVec.y, z - shiftVec.z));
-        //                }
 
 
-        //    delete[]  field;
-        //    field = field2;
-        //    dim = theDim;
-
-
-        //    //Set dimension for the Boundary Strategy
-        //    BoundaryStrategy::getInstance()->setDim(dim);
-
-        //}
-
-        // virtual void setDim(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
-        virtual void setDim(const Dim3D theDim) {
-            this->resizeAndShift(theDim);
+        void setDim(const Dim3D theDim) override{
+            this->resizeAndShift(theDim, Dim3D());
         }
 
         T getQuick(const Point3D &pt) const {
@@ -156,25 +126,35 @@ namespace CompuCell3D {
         }
 
 
-        virtual T get(const Point3D &pt) const {
+        T get(const Point3D &pt) const override{
 
             return (isValid(pt) ? field[PT2IDX(pt)] : initialValue);
         }
 
-        virtual T getByIndex(long _offset) const {
+        T getByIndex(long _offset) const override{
+            if (_offset < 0) {
+                return initialValue;
+            }
 
-            return (((0 <= _offset) && (_offset < len)) ? field[_offset] : initialValue);
+            const auto idx = static_cast<std::size_t>(_offset);
+            return (idx < len) ? field[idx] : initialValue;
         }
 
-        virtual void setByIndex(long _offset, const T _value) {
-            if ((0 <= _offset) && (_offset < len))
-                field[_offset] = _value;
+        void setByIndex(long _offset, const T _value) override {
+            if (_offset < 0) {
+                return;
+            }
+
+            const auto idx = static_cast<std::size_t>(_offset);
+            if (idx < len) {
+                field[idx] = _value;
+            }
         }
 
 
-        virtual Dim3D getDim() const { return dim; }
+        Dim3D getDim() const override { return dim; }
 
-        virtual bool isValid(const Point3D &pt) const {
+        bool isValid(const Point3D &pt) const override {
             return (0 <= pt.x && pt.x < dim.x &&
                     0 <= pt.y && pt.y < dim.y &&
                     0 <= pt.z && pt.z < dim.z);

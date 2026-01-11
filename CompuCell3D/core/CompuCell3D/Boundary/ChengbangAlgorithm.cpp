@@ -277,7 +277,7 @@ int ChengbangAlgorithm::getNumPixels(int x, int y, int z) {
 
                 // case 2: z2 >= z
                 if (y2 >= static_cast<float>(y)) {
-                    num += y - y1;
+                    num += static_cast<float>(y) - y1;
                     break;
                 }
 

@@ -1,0 +1,15 @@
+-G "Unix Makefiles"
+-DCMAKE_OSX_SYSROOT:PATH=/opt/MacOSX11.3.sdk
+-DCMAKE_INSTALL_PREFIX:PATH=/Users/m/src-install/CompuCell3D_arm64_310
+-DPython3_EXECUTABLE:PATH=/Users/m/miniconda3_arm64/envs/cc3d_450_310/bin/python
+-DVTK_DIR:PATH=/Users/m/miniconda3_arm64/envs/cc3d_450_310/lib/cmake/vtk-9.2
+-DSWIG_EXECUTABLE:FILEPATH=/Users/m/miniconda3_arm64/envs/cc3d_450_310/bin/swig
+-DSWIG_DIR:PATH=/Users/m/miniconda3_arm64/envs/cc3d_450_310/share/swig/4.2.1
+-DSWIG_VERSION:STRING=4.2.1
+-DOpenMP_C_FLAGS:STRING="-fopenmp=libomp -I/Users/m/miniconda3_arm64/envs/cc3d_450_310/lib/clang/18.1.2/include"
+-DOpenMP_C_LIB_NAMES:STRING=omp
+-DOpenMP_CXX_FLAGS:STRING="-fopenmp=libomp -I/Users/m/miniconda3_arm64/envs/cc3d_450_310/lib/clang/18.1.2/include"
+-DOpenMP_CXX_LIB_NAMES:STRING=omp
+-DOpenMP_omp_LIBRARY:PATH=/Users/m/miniconda3_arm64/envs/cc3d_450_310/lib/libomp.dylib
+-DBUILD_STANDALONE:BOOLEAN=OFF
+-DCMAKE_CXX_FLAGS:STRING="-mmacosx-version-min=10.6  -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int  -mmacosx-version-min=10.6  -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int"

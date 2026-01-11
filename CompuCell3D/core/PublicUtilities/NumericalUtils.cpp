@@ -32,20 +32,35 @@ std::vector<double> RandomUnitVector3D(const double& _random_number1, const doub
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float findMin(float _d, int _dim) {
+double findMin(double d, double dim)
+{
+    double minD = d;
 
-    float minD = _d;
+    double dp = d + dim;
+    if (std::fabs(dp) < std::fabs(minD))
+        minD = dp;
 
-    if (fabs(_d + _dim) < fabs(minD)) {
-        minD = _d + _dim;
-    }
-
-    if (fabs(_d - _dim) < fabs(minD)) {
-        minD = _d - _dim;
-    }
+    double dm = d - dim;
+    if (std::fabs(dm) < std::fabs(minD))
+        minD = dm;
 
     return minD;
 }
+
+// float findMin(float _d, int _dim) {
+//
+//     float minD = _d;
+//
+//     if (fabs(_d + _dim) < fabs(minD)) {
+//         minD = _d + _dim;
+//     }
+//
+//     if (fabs(_d - _dim) < fabs(minD)) {
+//         minD = _d - _dim;
+//     }
+//
+//     return minD;
+// }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double dist(double x0, double y0, double z0) {
@@ -69,8 +84,9 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
         //setting coefficients so that aVec[0]=1.0
 //        for (std::size_t i = aVec.size(); i-- > 0; ) {
         for (int i = static_cast<int>(aVec.size()) - 1; i >= 0; --i) {
-            aVec[i] /= aVec[0];
-            CC3D_Log(CompuCell3D::LOG_TRACE) << "coeff["<<i<<"]="<<aVec[i];
+            const auto idx = static_cast<size_t>(i);
+            aVec[idx] /= aVec[0];
+            CC3D_Log(CompuCell3D::LOG_TRACE) << "coeff["<<idx<<"]="<<aVec[idx];
         }
     }
     else {
@@ -180,16 +196,33 @@ namespace CompuCell3D {
         double xCM, yCM, zCM;
 
         //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-        shiftVec.x = (_cell->xCM / _cell->volume - ((int)fieldDimTrans.x) / 2);
-        shiftVec.y = (_cell->yCM / _cell->volume - ((int)fieldDimTrans.y) / 2);
-        shiftVec.z = (_cell->zCM / _cell->volume - ((int)fieldDimTrans.z) / 2);
+        // shiftVec.x = (_cell->xCM / _cell->volume - ((int)fieldDimTrans.x) / 2);
+        // shiftVec.y = (_cell->yCM / _cell->volume - ((int)fieldDimTrans.y) / 2);
+        // shiftVec.z = (_cell->zCM / _cell->volume - ((int)fieldDimTrans.z) / 2);
+        const double invVol = 1.0 / static_cast<double>(_cell->volume);
+        shiftVec.x =
+            static_cast<double>(_cell->xCM) * invVol -
+            std::floor(fieldDimTrans.x * 0.5);
+
+        shiftVec.y =
+            static_cast<double>(_cell->yCM) * invVol -
+            std::floor(fieldDimTrans.y * 0.5);
+
+        shiftVec.z =
+            static_cast<double>(_cell->zCM) * invVol -
+            std::floor(fieldDimTrans.z * 0.5);
+
         CC3D_Log(CompuCell3D::LOG_TRACE) << "fieldDimTrans="<<fieldDimTrans;
-        CC3D_Log(CompuCell3D::LOG_TRACE) << "_cell->xCM/_cell->volume="<<_cell->xCM/_cell->volume<<" ((int)fieldDimTrans.x)/2="<<((int)fieldDimTrans.x)/2;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "_cell->xCM/_cell->volume="<<_cell->xCM*invVol<<" ((int)fieldDimTrans.x)/2="<<((int)fieldDimTrans.x)/2;
 
         //shift CM to approximately center of lattice, new centroids are:
-        xCM = _cell->xCM - shiftVec.x*(_cell->volume);
-        yCM = _cell->yCM - shiftVec.y*(_cell->volume);
-        zCM = _cell->zCM - shiftVec.z*(_cell->volume);
+        // xCM = _cell->xCM - shiftVec.x*(_cell->volume);
+        // yCM = _cell->yCM - shiftVec.y*(_cell->volume);
+        // zCM = _cell->zCM - shiftVec.z*(_cell->volume);
+
+        xCM = static_cast<double>(_cell->xCM) - shiftVec.x * static_cast<double>(_cell->volume);
+        yCM = static_cast<double>(_cell->yCM) - shiftVec.y * static_cast<double>(_cell->volume);
+        zCM = static_cast<double>(_cell->zCM) - shiftVec.z * static_cast<double>(_cell->volume);
 
         //Now shift pt
         shiftedPt = ptTrans;
@@ -293,7 +326,7 @@ namespace CompuCell3D {
 
             Coordinates3D<double> field_dim_vec = boundaryStrategy->getLatticeSizeVector();
 
-            Coordinates3D<double> field_span_vec = boundaryStrategy->getLatticeSpanVector();
+            // Coordinates3D<double> field_span_vec = boundaryStrategy->getLatticeSpanVector();
             
             //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
             shiftVec.x = (_pt0.x - ((int)field_dim_vec.x) / 2)*boundaryConditionIndicator[0];
@@ -655,13 +688,27 @@ namespace CompuCell3D {
                 zcm = ptTrans.z;
             }
 
-            newCellInertiaTensor.iXX = newCell->iXX + (newCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (newCell->volume + 1L)*(ycm*ycm + zcm*zcm) + ptTrans.y*ptTrans.y + ptTrans.z*ptTrans.z;
-            newCellInertiaTensor.iYY = newCell->iYY + (newCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (newCell->volume + 1L)*(xcm*xcm + zcm*zcm) + ptTrans.x*ptTrans.x + ptTrans.z*ptTrans.z;
-            newCellInertiaTensor.iZZ = newCell->iZZ + (newCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (newCell->volume + 1L)*(xcm*xcm + ycm*ycm) + ptTrans.x*ptTrans.x + ptTrans.y*ptTrans.y;
+            const double Vold = static_cast<double>(newCell->volume);
+            const double Vnew = Vold + 1.0;
 
-            newCellInertiaTensor.iXY = newCell->iXY - (newCell->volume)*xcmOld*ycmOld + (newCell->volume + 1L)*xcm*ycm - ptTrans.x*ptTrans.y;
-            newCellInertiaTensor.iXZ = newCell->iXZ - (newCell->volume)*xcmOld*zcmOld + (newCell->volume + 1L)*xcm*zcm - ptTrans.x*ptTrans.z;
-            newCellInertiaTensor.iYZ = newCell->iYZ - (newCell->volume)*ycmOld*zcmOld + (newCell->volume + 1L)*ycm*zcm - ptTrans.y*ptTrans.z;
+            // newCellInertiaTensor.iXX = newCell->iXX + (newCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (newCell->volume + 1L)*(ycm*ycm + zcm*zcm) + ptTrans.y*ptTrans.y + ptTrans.z*ptTrans.z;
+            newCellInertiaTensor.iXX =
+                newCell->iXX
+              + Vold * (ycmOld*ycmOld + zcmOld*zcmOld)
+              - Vnew * (ycm*ycm + zcm*zcm)
+              + ptTrans.y*ptTrans.y
+              + ptTrans.z*ptTrans.z;
+
+
+            newCellInertiaTensor.iYY = newCell->iYY
+            + (Vold)*(xcmOld*xcmOld + zcmOld*zcmOld) - (Vnew)*(xcm*xcm + zcm*zcm) + ptTrans.x*ptTrans.x + ptTrans.z*ptTrans.z;
+
+            newCellInertiaTensor.iZZ = newCell->iZZ
+            + (Vold)*(xcmOld*xcmOld + ycmOld*ycmOld) - (Vnew)*(xcm*xcm + ycm*ycm) + ptTrans.x*ptTrans.x + ptTrans.y*ptTrans.y;
+
+            newCellInertiaTensor.iXY = newCell->iXY - (Vold)*xcmOld*ycmOld + (Vnew)*xcm*ycm - ptTrans.x*ptTrans.y;
+            newCellInertiaTensor.iXZ = newCell->iXZ - (Vold)*xcmOld*zcmOld + (Vnew)*xcm*zcm - ptTrans.x*ptTrans.z;
+            newCellInertiaTensor.iYZ = newCell->iYZ - (Vold)*ycmOld*zcmOld + (Vnew)*ycm*zcm - ptTrans.y*ptTrans.z;
 
         }
 
@@ -689,13 +736,16 @@ namespace CompuCell3D {
 
             }
 
-            oldCellInertiaTensor.iXX = oldCell->iXX + (oldCell->volume)*(ycmOld*ycmOld + zcmOld*zcmOld) - (oldCell->volume - 1L)*(ycm*ycm + zcm*zcm) - ptTrans.y*ptTrans.y - ptTrans.z*ptTrans.z;
-            oldCellInertiaTensor.iYY = oldCell->iYY + (oldCell->volume)*(xcmOld*xcmOld + zcmOld*zcmOld) - (oldCell->volume - 1L)*(xcm*xcm + zcm*zcm) - ptTrans.x*ptTrans.x - ptTrans.z*ptTrans.z;
-            oldCellInertiaTensor.iZZ = oldCell->iZZ + (oldCell->volume)*(xcmOld*xcmOld + ycmOld*ycmOld) - (oldCell->volume - 1L)*(xcm*xcm + ycm*ycm) - ptTrans.x*ptTrans.x - ptTrans.y*ptTrans.y;
+            const double Vold = static_cast<double>(oldCell->volume);
+            const double Vnew = Vold - 1.0;
 
-            oldCellInertiaTensor.iXY = oldCell->iXY - (oldCell->volume)*xcmOld*ycmOld + (oldCell->volume - 1L)*xcm*ycm + ptTrans.x*ptTrans.y;
-            oldCellInertiaTensor.iXZ = oldCell->iXZ - (oldCell->volume)*xcmOld*zcmOld + (oldCell->volume - 1L)*xcm*zcm + ptTrans.x*ptTrans.z;
-            oldCellInertiaTensor.iYZ = oldCell->iYZ - (oldCell->volume)*ycmOld*zcmOld + (oldCell->volume - 1L)*ycm*zcm + ptTrans.y*ptTrans.z;
+            oldCellInertiaTensor.iXX = oldCell->iXX + (Vold)*(ycmOld*ycmOld + zcmOld*zcmOld) - (Vnew)*(ycm*ycm + zcm*zcm) - ptTrans.y*ptTrans.y - ptTrans.z*ptTrans.z;
+            oldCellInertiaTensor.iYY = oldCell->iYY + (Vold)*(xcmOld*xcmOld + zcmOld*zcmOld) - (Vnew)*(xcm*xcm + zcm*zcm) - ptTrans.x*ptTrans.x - ptTrans.z*ptTrans.z;
+            oldCellInertiaTensor.iZZ = oldCell->iZZ + (Vold)*(xcmOld*xcmOld + ycmOld*ycmOld) - (Vnew)*(xcm*xcm + ycm*ycm) - ptTrans.x*ptTrans.x - ptTrans.y*ptTrans.y;
+
+            oldCellInertiaTensor.iXY = oldCell->iXY - (Vold)*xcmOld*ycmOld + (Vnew)*xcm*ycm + ptTrans.x*ptTrans.y;
+            oldCellInertiaTensor.iXZ = oldCell->iXZ - (Vold)*xcmOld*zcmOld + (Vnew)*xcm*zcm + ptTrans.x*ptTrans.z;
+            oldCellInertiaTensor.iYZ = oldCell->iYZ - (Vold)*ycmOld*zcmOld + (Vnew)*ycm*zcm + ptTrans.y*ptTrans.z;
 
 
         }

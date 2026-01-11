@@ -16,7 +16,10 @@ namespace CompuCell3D {
 
         virtual ~SteerableObject() {}
 
-        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false) {}
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false) {
+            (void)_xmlData;
+            (void)_fullInitFlag;
+        }
 
         virtual std::string steerableName() { return "SteerableObject"; }
     };

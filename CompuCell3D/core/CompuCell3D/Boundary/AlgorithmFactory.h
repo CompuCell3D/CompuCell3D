@@ -1,6 +1,4 @@
-#ifndef ALGROITHMFACTORY_H
-#define ALGORITHMFACTORY_H
-
+#pragma once
 #include <string>
 #include <iostream>
 #include "Algorithm.h"
@@ -46,4 +44,4 @@ namespace CompuCell3D {
     const std::string AlgorithmFactory::Default("Default");
 };
 
-#endif
+
