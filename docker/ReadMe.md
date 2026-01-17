@@ -46,13 +46,13 @@ Traditional simulations require `.cc3d`, `.xml`, and `.py` files. Follow these s
    - Use the appropriate command based on the simulation file:
 
      ```
-     docker run -it --rm -v "${PWD}:/sim" cc3d_cpu python -m cc3d.run_script -i /sim/CustomCellAttributesCpp.cc3d
+     docker run -it --rm -v "${PWD}:/sim" cc3d_cpu python -m cc3d.run_script -i /sim/CustomCellAttributesCpp.cc3d -o /tmp/cc3d_results
      ```
 
      or
 
      ```
-     docker run -it --rm -v "${PWD}:/sim" cc3d_cpu python -m cc3d.run_script -i /sim/GrowthSteppable.cc3d
+     docker run -it --rm -v "${PWD}:/sim" cc3d_cpu python -m cc3d.run_script -i /sim/GrowthSteppable.cc3d -o /tmp/results
      ```
 
 ## Running Pure Python CompuCell3D Simulations
@@ -86,13 +86,13 @@ Pure Python simulations require the necessary `.py` files. Follow these steps:
    - Use the appropriate command based on the simulation file:
 
      ```
-     docker run --rm -v "${PWD}:/sim" cc3d_cpu conda run -n cc3d_env python /sim/AdhesionDemo.py
+     docker run --rm -v "${PWD}:/sim" cc3d_cpu python /sim/AdhesionDemo.py --output-dir=/tmp/results
      ```
 
      or
 
      ```
-     docker run --rm -v "${PWD}:/sim" cc3d_cpu conda run -n cc3d_env python /sim/ContactInternalDemo.py
+     docker run --rm -v "${PWD}:/sim" cc3d_cpu python /sim/ContactInternalDemo.py --output-dir=/tmp/results
      ```
 
 ## Notes

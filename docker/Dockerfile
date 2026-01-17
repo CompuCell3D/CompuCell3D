@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 
 # Create the environment and install CompuCell3D
 RUN conda update -n base -c defaults conda -y && \
-    conda create -n cc3d_env python=3.10 -y && \
-    conda install -n cc3d_env -c compucell3d -c conda-forge compucell3d -y && \
+    conda create -n cc3d_env python=3.12 -y && \
+    conda install -n cc3d_env -c compucell3d -c conda-forge compucell3d=4.7.0 -y && \
     conda clean --all --yes
 
 # Add the environment to PATH
