@@ -21,6 +21,39 @@
 
 
 namespace CompuCell3D {
+
+	// OpenMP ↔ CC3D type bridge
+	inline unsigned int omp_get_num_threads_u()
+	{
+		const int n = omp_get_num_threads();
+		return n > 0 ? static_cast<unsigned int>(n) : 1u;
+	}
+
+	inline unsigned int omp_get_num_procs_u()
+	{
+		const int n = omp_get_num_procs();
+		return n > 0 ? static_cast<unsigned int>(n) : 1u;
+	}
+
+
+
+	inline unsigned int omp_get_thread_num_u()
+	{
+		const int id = omp_get_thread_num();
+		return id >= 0 ? static_cast<unsigned int>(id) : 0u;
+	}
+
+	inline unsigned int omp_get_max_threads_u()
+	{
+		const int n = omp_get_max_threads();
+		return n > 0 ? static_cast<unsigned int>(n) : 1u;
+	}
+
+	inline void omp_set_num_threads_u(unsigned int n)
+	{
+		omp_set_num_threads(static_cast<int>(n));
+	}
+
     class Dim3D;
 
     class ParallelUtilsOpenMP{
@@ -29,7 +62,7 @@ namespace CompuCell3D {
 			typedef omp_lock_t OpenMPLock_t;
 
 			ParallelUtilsOpenMP();
-			~ParallelUtilsOpenMP();
+			virtual ~ParallelUtilsOpenMP();
             void setDim(const Dim3D &_dim);
             Dim3D getDim();
 
@@ -45,7 +78,7 @@ namespace CompuCell3D {
 
 			void allowNestedParallelRegions(bool _flag=false);
             void setNumberOfWorkNodes(unsigned int _num);
-            void setNumberOfWorkNodesAuto(unsigned int _requested_num_work_nodes = -1);
+            void setNumberOfWorkNodesAuto(unsigned int _requested_num_work_nodes = 0);
 			void setVPUs(unsigned int _numberOfVPUs,unsigned int _threadsPerVPU=0);
             unsigned int getNumberOfProcessors();
             unsigned int getNumberOfWorkNodes();

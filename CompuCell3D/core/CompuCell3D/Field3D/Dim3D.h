@@ -38,7 +38,7 @@ namespace CompuCell3D {
         bool operator<(const Dim3D _rhs) const;
 
         /// Returns reference to coordinate by index (0->x, 1->y, else->z). No bounds checking.
-        cc3d_dim_t &operator[](int _idx);
+        cc3d_dim_t &operator[](size_t _idx);
 
         friend std::ostream &operator<<(std::ostream &stream, const Dim3D &pt);
     };
@@ -74,7 +74,7 @@ namespace CompuCell3D {
         return stream;
     }
 
-    inline cc3d_dim_t &Dim3D::operator[](int _idx) {
+    inline cc3d_dim_t &Dim3D::operator[](size_t _idx) {
         if (!_idx) {
             return x;
         } else if (_idx == 1) {

@@ -623,6 +623,9 @@ void FakeLogger::notice(const std::string &fmt, const char* func, const char *fi
 void FakeLogger::information(const std::string &fmt, const char* func, const char *file,
         const int line)
 {
+    (void) func;
+    (void) file;
+    (void) line;
 //    write_log("INFO", fmt, func, file, line);
     write_log("INFO", fmt, 0, 0, -1);
 }
