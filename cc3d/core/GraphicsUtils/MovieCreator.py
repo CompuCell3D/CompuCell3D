@@ -5,13 +5,16 @@ import tempfile
 from pathlib import Path
 from typing import Tuple
 from os import cpu_count
+from typing import Callable, Any
 import atexit
 
-
 _executor = ThreadPoolExecutor(max_workers=cpu_count() or 1)
+statusSubscribers = []
+
 
 @atexit.register
 def _shutdown_executor():
+    __publishMovieStatus("")
     if _executor:
         _executor.shutdown(wait=False)
 
@@ -41,7 +44,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
         # todo: make return type consistent with signature annotations
         return 0
 
-    print("Making movie inside `", simulationPath.absolute(), "`")
+    print("Making movie inside `", simulationPath.absolute(), "` (if screenshots exist).")
     movieCount = 0
     outputPath = None
 
@@ -88,6 +91,10 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
                 textOverlayFile.close()
 
                 if frameCount > 0:
+                    # Show both a console message (programmer-friendly) and a GUI message (user-friendly)
+                    print(f"Making movie #{movieCount+1} inside `{simulationPath.absolute()}` from the screenshots in `{inputPath}`")
+                    __publishMovieStatus(f"Making movie #{movieCount+1}...")
+                    
                     # Number the file name so that it does not overwrite another movie
                     fileNumber = 0
                     outputPath = Path(simulationPath).joinpath("movies")
@@ -122,5 +129,21 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
                 Path(textOverlayFile.name).unlink()
             Path(tempFile.name).unlink()
 
-    print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
+    print(f"Created {movieCount} movie{"" if movieCount == 1 else "s"} inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
+    __publishMovieStatus(f"Created {movieCount} simulation movie{"" if movieCount == 1 else "s"} successfully")
+
     return movieCount, outputPath
+
+
+
+def subscribeToMovieStatus(textHandler: Callable[[str], Any]) -> None:
+    statusSubscribers.append(textHandler)
+
+
+def __publishMovieStatus(statusMessage: str) -> None:
+    try:
+        for statusHandler in statusSubscribers:
+            statusHandler(statusMessage)
+    except:
+        # Showing the status message is nonessential. Don't throw.
+        pass
