@@ -4,13 +4,23 @@ import subprocess
 import tempfile
 from pathlib import Path
 from typing import Tuple
+from os import cpu_count
+import atexit
 
 
-def makeMovieAsync(simulationPath, frameRate, quality, enableDrawingMCS=True, callback=None) -> Tuple[int, Path]:
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        future = executor.submit(makeMovie, simulationPath, frameRate, quality, enableDrawingMCS)
-        if callback:
-            future.add_done_callback(callback)
+_executor = ThreadPoolExecutor(max_workers=cpu_count() or 1)
+
+@atexit.register
+def _shutdown_executor():
+    if _executor:
+        _executor.shutdown(wait=False)
+
+
+def makeMovieAsync(simulationPath, frameRate, quality, enableDrawingMCS=True, callback=None) -> None:
+    future = _executor.submit(makeMovie, simulationPath, frameRate, quality, enableDrawingMCS)
+    if callback:
+        future.add_done_callback(callback)
+
 
 def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tuple[int, Path]:
     """
