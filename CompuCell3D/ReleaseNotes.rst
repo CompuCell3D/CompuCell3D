@@ -206,7 +206,7 @@ New features:
     - Added link inventory management methods to SteppableBasePy
 - Added Callable CC3D renderer
 - Added DerivedProperty for read-only attributes in python calculated on-demand in C++
-- Added derived properties for cells: pressure, surface tension, 
+- Added derived properties for cells: pressureLocal, surface tension,
 - Added derived properties to regular and internal links: length, tension, linked cells
 - Added derived properties to anchor links: length, tension, linked cell
 

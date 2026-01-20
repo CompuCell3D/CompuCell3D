@@ -184,6 +184,10 @@ namespace CompuCell3D {
         unsigned int flips;
         std::unordered_map<unsigned char, float> cellTypeMotilityMap;
 
+        // those are uses for cell pressureLocal computations
+        std::unordered_map<unsigned char, float> cellType2TargetVolumeMap;
+        std::unordered_map<unsigned char, float> cellType2LambdaVolumeMap;
+
         double temperature;
         ParallelUtilsOpenMP *pUtils;
 
@@ -272,6 +276,16 @@ namespace CompuCell3D {
         void setCellTypeMotility(const unsigned char &_typeId, const float &_val);
 
         void setCellTypeMotility(const std::string &_typeName, const float &_val);
+
+        // helper functions to handle VolumeEnergy parameters
+
+        bool areVolumeParametersLocal() const {return cellType2TargetVolumeMap.size() > 0;}
+        void clearVolumeEnergyParameters();
+        double getTargetVolume(unsigned char cellType);
+        double getLambdaVolume(unsigned char cellType);
+        void setTargetVolume(unsigned char cellType, double val);
+        void setLambdaVolume(unsigned char cellType, double val);
+
 
         void setDebugOutputFrequency(unsigned int _freq) { debugOutputFrequency = _freq; }
 
