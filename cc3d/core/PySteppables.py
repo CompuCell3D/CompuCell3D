@@ -594,7 +594,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         """
         Requests on-demand movie. Requires screenshots to exist
         for the current simulation. One movie will be created
-        for every visualization.
+        synchronously for every visualization.
 
         :param simulationPath: a path to a directory with a .cc3d file and screenshot directories
         :param frameRate: an int >= 1

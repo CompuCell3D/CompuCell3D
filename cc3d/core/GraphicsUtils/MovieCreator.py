@@ -1,8 +1,28 @@
 # -*- coding: utf-8 -*-
+from concurrent.futures import ThreadPoolExecutor
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Tuple
+from os import cpu_count
+from typing import Callable, Any
+import atexit
+
+_executor = ThreadPoolExecutor(max_workers=cpu_count() or 1)
+statusSubscribers = []
+
+
+@atexit.register
+def _shutdown_executor():
+    __publishMovieStatus("")
+    if _executor:
+        _executor.shutdown(wait=False)
+
+
+def makeMovieAsync(simulationPath, frameRate, quality, enableDrawingMCS=True, callback=None) -> None:
+    future = _executor.submit(makeMovie, simulationPath, frameRate, quality, enableDrawingMCS)
+    if callback:
+        future.add_done_callback(callback)
 
 
 def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tuple[int, Path]:
@@ -18,92 +38,119 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
     # Credit to https://stackoverflow.com/q/49581846/16519580 user 'Makes' for the text overlay FFMPEG command.
     # Credit to https://superuser.com/a/939386 uer 'llogan' for the text positioning in the FFMPEG command.
 
-    simulationPath = Path(simulationPath)
-    if not simulationPath.exists():
-        print(f"Error: Could not make movie inside unknown directory `{simulationPath.absolute()}`")
-        # todo: make return type consistent with signature annotations
-        return 0
+    try:
+        simulationPath = Path(simulationPath)
+        if not simulationPath.exists():
+            print(f"Error: Could not make movie inside unknown directory `{simulationPath.absolute()}`")
+            # todo: make return type consistent with signature annotations
+            return 0
 
-    print("Making movie inside `", simulationPath.absolute(), "`")
-    movieCount = 0
-    outputPath = None
+        print("Making movie inside `", simulationPath.absolute(), "` (if screenshots exist).")
+        movieCount = 0
+        outputPath = None
 
-    for inputPath in sorted(simulationPath.glob('*')):
-        if not inputPath.is_dir():
-            continue
+        for inputPath in sorted(simulationPath.glob('*')):
+            if not inputPath.is_dir():
+                continue
 
-        # 'delete=True' removes the temporary file when it is closed.
-        # So, setting 'delete=True' ensures that the tempfile stays active long enough for FFMPEG to read it.
-        with tempfile.NamedTemporaryFile(delete=False, mode='+a', dir=inputPath) as tempFile:
-            with tempfile.NamedTemporaryFile(delete=False, mode='+a', dir=inputPath) as textOverlayFile:
-                """
-                Write the names of files to be used as video frames to tempFile 
-                and write the text to draw to textOverlayFile.
-                """
-                frameCount = 0
-                duration = 1 / max(frameRate, 1)
-                for p in sorted(inputPath.glob('*')):
-                    fileName, fileExtension = p.stem, p.suffix
-                    if fileExtension.lower() == ".png":
-                        tempFile.write(f"file '{p.name}'\n")
+            # 'delete=True' removes the temporary file when it is closed.
+            # So, setting 'delete=True' ensures that the tempfile stays active long enough for FFMPEG to read it.
+            with tempfile.NamedTemporaryFile(delete=False, mode='+a', dir=inputPath) as tempFile:
+                with tempfile.NamedTemporaryFile(delete=False, mode='+a', dir=inputPath) as textOverlayFile:
+                    """
+                    Write the names of files to be used as video frames to tempFile 
+                    and write the text to draw to textOverlayFile.
+                    """
+                    frameCount = 0
+                    duration = 1 / max(frameRate, 1)
+                    for p in sorted(inputPath.glob('*')):
+                        fileName, fileExtension = p.stem, p.suffix
+                        if fileExtension.lower() == ".png":
+                            tempFile.write(f"file '{p.name}'\n")
 
-                        # Note: frameRate has to be excluded in the FFMPEG command.
-                        # Instead, we use `duration` inside the input file.
-                        # This fixes a bug where the last frame appears at the beginning.
-                        tempFile.write(f"duration {duration}\n")
+                            # Note: frameRate has to be excluded in the FFMPEG command.
+                            # Instead, we use `duration` inside the input file.
+                            # This fixes a bug where the last frame appears at the beginning.
+                            tempFile.write(f"duration {duration}\n")
+
+                            if enableDrawingMCS:
+                                # Try to use the MCS listed in the screenshot name
+                                mcs = 0
+                                try:
+                                    parts = fileName.split("_")
+                                    if len(parts) >= 2:
+                                        mcs = int(parts[-1])
+                                except:
+                                    mcs = frameCount
+
+                                # Text will go in top right
+                                startTime = frameCount / frameRate
+                                textOverlayFile.write(f"{startTime} drawtext reinit 'text=MCS {mcs}':x=w-tw-10:y=10;\n")
+                            frameCount += 1
+
+                    tempFile.close()
+                    textOverlayFile.close()
+
+                    if frameCount > 0:
+                        # Show both a console message (programmer-friendly) and a GUI message (user-friendly)
+                        print(f"Making movie #{movieCount+1} inside `{simulationPath.absolute()}` from the screenshots in `{inputPath}`")
+                        __publishMovieStatus(f"Making movie #{movieCount+1}...")
+                        
+                        # Number the file name so that it does not overwrite another movie
+                        fileNumber = 0
+                        outputPath = Path(simulationPath).joinpath("movies")
+                        outputPath.mkdir(parents=True, exist_ok=True)
+
+                        visualizationName = inputPath.name
+                        while outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4").exists():
+                            fileNumber += 1
+                        outputPath = outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4")
+
+                        commandArgs = [
+                            "ffmpeg",
+                            "-n",  # never overwrite a file
+                            "-f", "concat",
+                            "-safe", "0",
+                            "-i", tempFile.name,
+                            "-crf", str(quality),  # set quality (constant rate factor, crf): 51=worst, 0=best
+                            "-c:v", "libx264",  # video codec: H.264
+                            "-pix_fmt", "yuv420p",
+                        ]
 
                         if enableDrawingMCS:
-                            # Try to use the MCS listed in the screenshot name
-                            mcs = 0
-                            try:
-                                parts = fileName.split("_")
-                                if len(parts) >= 2:
-                                    mcs = int(parts[-1])
-                            except:
-                                mcs = frameCount
+                            commandArgs.append("-filter_complex")
+                            commandArgs.append(f"[0:v]sendcmd=f={Path(textOverlayFile.name).name},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20")
 
-                            # Text will go in top right
-                            startTime = frameCount / frameRate
-                            textOverlayFile.write(f"{startTime} drawtext reinit 'text=MCS {mcs}':x=w-tw-10:y=10;\n")
-                        frameCount += 1
+                        commandArgs.append(str(outputPath.resolve()))
+                        subprocess.run(commandArgs, cwd=inputPath)
 
-                tempFile.close()
-                textOverlayFile.close()
+                        if outputPath.exists():
+                            movieCount += 1
 
-                if frameCount > 0:
-                    # Number the file name so that it does not overwrite another movie
-                    fileNumber = 0
-                    outputPath = Path(simulationPath).joinpath("movies")
-                    outputPath.mkdir(parents=True, exist_ok=True)
+                    Path(textOverlayFile.name).unlink()
+                Path(tempFile.name).unlink()
 
-                    visualizationName = inputPath.name
-                    while outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4").exists():
-                        fileNumber += 1
-                    outputPath = outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4")
+        plural = "" if movieCount == 1 else "s"
+        print(f"Created {movieCount} movie{plural} inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
+        __publishMovieStatus(f"Created {movieCount} simulation movie{plural} successfully")
+        # __publishMovieStatus(f"Created {movieCount} simulation movie{"" if movieCount == 1 else "s"} successfully")
 
-                    commandArgs = [
-                        "ffmpeg",
-                        "-n",  # never overwrite a file
-                        "-f", "concat",
-                        "-safe", "0",
-                        "-i", tempFile.name,
-                        "-crf", str(quality),  # set quality (constant rate factor, crf): 51=worst, 0=best
-                        "-c:v", "libx264",  # video codec: H.264
-                        "-pix_fmt", "yuv420p",
-                    ]
+        return movieCount, outputPath
+    except Exception as ex:
+        __publishMovieStatus("There was an error generating the movie(s)")
+        # Handled elsewhere
+        raise ex
 
-                    if enableDrawingMCS:
-                        commandArgs.append("-filter_complex")
-                        commandArgs.append(f"[0:v]sendcmd=f={Path(textOverlayFile.name).name},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20")
 
-                    commandArgs.append(str(outputPath.resolve()))
-                    subprocess.run(commandArgs, cwd=inputPath)
 
-                    if outputPath.exists():
-                        movieCount += 1
+def subscribeToMovieStatus(textHandler: Callable[[str], Any]) -> None:
+    statusSubscribers.append(textHandler)
 
-                Path(textOverlayFile.name).unlink()
-            Path(tempFile.name).unlink()
 
-    print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
-    return movieCount, outputPath
+def __publishMovieStatus(statusMessage: str) -> None:
+    try:
+        for statusHandler in statusSubscribers:
+            statusHandler(statusMessage)
+    except:
+        # Showing the status message is nonessential. Don't throw.
+        pass
