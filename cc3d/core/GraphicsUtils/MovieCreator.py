@@ -132,7 +132,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
 
         plural = "" if movieCount == 1 else "s"
         print(f"Created {movieCount} movie{plural} inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
-        _publishMovieStatus(f"Created {movieCount} simulation movie{plural} successfully")
+        __publishMovieStatus(f"Created {movieCount} simulation movie{plural} successfully")
         # __publishMovieStatus(f"Created {movieCount} simulation movie{"" if movieCount == 1 else "s"} successfully")
 
         return movieCount, outputPath
