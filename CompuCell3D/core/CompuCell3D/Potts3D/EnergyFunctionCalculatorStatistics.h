@@ -18,7 +18,7 @@ namespace CompuCell3D {
         virtual ~EnergyFunctionCalculatorStatistics();
 
         virtual double
-        changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt);
+        changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const size_t _flipAttempt);
 
         virtual void setLastFlipAccepted(bool _accept);
 
@@ -46,8 +46,8 @@ namespace CompuCell3D {
         int NTot;
         int NAcc;
         int NRej;
-        int lastFlipAttempt;
-        long current_mcs_pos; // holds index of the totEnergyDataList's first item for the current mcs
+        unsigned int lastFlipAttempt;
+        std::size_t current_mcs_pos; // holds index of the totEnergyDataList's first item for the current mcs
         std::vector<double> lastEnergyVec;
 
         std::list <Point3D> pixel_copy_attempt_points_list;

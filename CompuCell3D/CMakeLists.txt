@@ -11,21 +11,48 @@ if (${CMAKE_VERSION} VERSION_GREATER 3.1.0)
     cmake_policy(SET CMP0053 NEW)
 endif()
 
+# ------------------------------------------------------------
+# C++ standard selection (default = 17)
+# ------------------------------------------------------------
+set(CC3D_CXX_STANDARD 17 CACHE STRING "C++ standard to use for CompuCell3D (11, 14, 17, 20)")
+set(CMAKE_CXX_STANDARD ${CC3D_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# adding windows-specific compile switch to detect CPP standard during compilation
+if (MSVC)
+    add_compile_options(/Zc:__cplusplus)
+endif()
+
+
 ##APPLE CHECK
 if(APPLE)
     message(STATUS "Configuring macOS compile options")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+#    add_compile_options(
+##            -mmacosx-version-min=10.6
+##            -fpermissive
+#            -m64
+#            -Wno-implicit-function-declaration
+#            -Wno-implicit-int
+#    )
+endif()
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(
-            -mmacosx-version-min=10.6
-            -fpermissive
-            -m64
-            -Wno-implicit-function-declaration
-            -Wno-implicit-int
+            -Wall -Wextra -Wpedantic
+            -Wconversion -Wsign-conversion -Wsign-compare
+            -Wshorten-64-to-32
+            -Wimplicit-int-conversion
+            -Wimplicit-float-conversion
+            -Woverflow -Wshift-overflow -Wshift-sign-overflow
+            -Wnon-virtual-dtor
     )
 endif()
 
 
-set(CMAKE_CXX_STANDARD 11)
+
+
 
 # to get openmp detected via conda - start cmake from the conda environment that contains
 # openmp installation on OSX . on OSX install llvm-openmp to get openmp with clang
@@ -39,7 +66,8 @@ IF(OPENMP_FOUND)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     IF((APPLE) AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+#        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -stdlib=libc++")
     ENDIF()
 ENDIF()
 

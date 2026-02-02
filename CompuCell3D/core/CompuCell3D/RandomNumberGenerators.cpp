@@ -4,16 +4,32 @@
 using namespace CompuCell3D;
 using namespace std;
 
+
 bool RandomNumberGenerator::getBool() {
-    if (!bits) {
-        bitBuffer = getInteger(0, RAND_MAX);
-        bits = sizeof(int) * 8;
+    if (bits == 0) {
+        bitBuffer = static_cast<unsigned int>(
+                getInteger(0, std::numeric_limits<unsigned int>::max())
+        );
+        bits = sizeof(unsigned int) * 8;
     }
-    bool out = bool(bitBuffer & 1);
-    bits--;
-    bitBuffer = bitBuffer >> 1;
+
+    bool out = (bitBuffer & 1u);
+    bitBuffer >>= 1;
+    --bits;
     return out;
 }
+
+
+//bool RandomNumberGenerator::getBool() {
+//    if (!bits) {
+//        bitBuffer = getInteger(0, RAND_MAX);
+//        bits = sizeof(int) * 8;
+//    }
+//    bool out = bool(bitBuffer & 1);
+//    bits--;
+//    bitBuffer = bitBuffer >> 1;
+//    return out;
+//}
 
 RandomNumberGeneratorMersenneT::RandomNumberGeneratorMersenneT() {
     setSeed(1);

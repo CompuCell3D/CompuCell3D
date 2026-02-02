@@ -1,5 +1,7 @@
 
 #include <CompuCell3D/CC3D.h>
+
+using namespace std;
 using namespace CompuCell3D;
 #include "ConnectivityGlobalPlugin.h"
 #include <Logger/CC3DLogger.h>

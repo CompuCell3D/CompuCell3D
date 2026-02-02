@@ -1,4 +1,4 @@
-#include "DiffusionSolverFE_CPU_Implicit.h"
+#include "../DiffusionSolverFE_CPU_Implicit.h"
 
 #include <Eigen/IterativeLinearSolvers>
 

@@ -38,7 +38,7 @@ class EXPRESSIONEVALUATOR_EXPORT ExpressionEvaluator{
         double eval();
 		const mu::Parser & getMuParserObject(){return p;}
 		std::map<std::string,unsigned int> getVarNameToIndexMap(){return varNameToIndexMap;};
-		unsigned int getNumberOfVars(){return varVec.size();}
+		size_t getNumberOfVars(){return varVec.size();}
 
     private:
         // std::map<std::string,*double> varNameToAddrMap;
@@ -108,8 +108,8 @@ class EXPRESSIONEVALUATOR_EXPORT ExpressionEvaluatorDepot{
 		
 		void setAlias(std::string _name, std::string _alias);
         void setExpression(std::string _expression);
-		unsigned int size(){return eeVec.size();}
-		unsigned int getNumberOfVars(){return eeVec.size() ? eeVec[0].getNumberOfVars(): 0 ;}
+		size_t size(){return eeVec.size();}
+		size_t getNumberOfVars(){return eeVec.size() ? eeVec[0].getNumberOfVars(): 0 ;}
 		void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 
 		void getParseData(CC3DXMLElement *_xmlData);

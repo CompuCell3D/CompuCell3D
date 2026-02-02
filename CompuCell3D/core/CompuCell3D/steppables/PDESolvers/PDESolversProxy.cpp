@@ -18,7 +18,7 @@
 // #include "ScalableFlexibleDiffusionSolverFE.h"
 #include "DiffusionSolverFE.h"
 #include "DiffusionSolverFE_CPU.h"
-#include "DiffusionSolverFE_CPU_Implicit.h"
+// #include "DiffusionSolverFE_CPU_Implicit.h"
 
 #if OPENCL_ENABLED == 1
 #include "FlexibleDiffusionSolverFE_GPU.h"
@@ -129,11 +129,11 @@ auto diffusionSolverFEProxy = registerPlugin<Steppable, DiffusionSolverFE_CPU>(
         &Simulator::steppableManager
 );
 
-auto diffusionSolverFEImplicitProxy = registerPlugin<Steppable, DiffusionSolverFE_CPU_Implicit>(
-        "DiffusionSolverFE_Implicit",
-        "Solves diffusion equation on the lattice. Uses Implicit method - finite difference.",
-        &Simulator::steppableManager
-);
+// auto diffusionSolverFEImplicitProxy = registerPlugin<Steppable, DiffusionSolverFE_CPU_Implicit>(
+//         "DiffusionSolverFE_Implicit",
+//         "Solves diffusion equation on the lattice. Uses Implicit method - finite difference.",
+//         &Simulator::steppableManager
+// );
 
 #if OPENCL_ENABLED == 1
 auto diffusionSolverOpenCLProxy = registerPlugin<Steppable, DiffusionSolverFE_OpenCL>(

@@ -2,7 +2,7 @@
 
 #include <CompuCell3D/CC3D.h>        
 #include "CompuCell3D/Field3D/Field3DTypeBase.h"
-
+using namespace std;
 using namespace CompuCell3D;
 
 #include "VectorFieldPolarizationPlugin.h"

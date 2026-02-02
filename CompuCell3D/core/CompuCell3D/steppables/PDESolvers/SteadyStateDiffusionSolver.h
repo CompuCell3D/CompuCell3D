@@ -93,7 +93,7 @@ namespace CompuCell3D {
 
         DiffusionData diffData;
         SteadyStateSecretionData3D secrData;
-        vector <OxygenSecretionParameters> oxygenSecretionData;
+        std::vector <OxygenSecretionParameters> oxygenSecretionData;
 
         DiffusionData *getDiffusionData() { return &diffData; }
 
@@ -119,13 +119,13 @@ namespace CompuCell3D {
         //typedef Array3DLinearFortranField3DAdapter<precision_t> ConcentrationField_t;
 
         double *scratch;
-        vector<double> scratchVec;
-        vector<double> bdaVec;
-        vector<double> bdbVec;
-        vector<double> bdcVec;
-        vector<double> bddVec;
-        vector<double> bdeVec;
-        vector<double> bdfVec;
+        std::vector<double> scratchVec;
+        std::vector<double> bdaVec;
+        std::vector<double> bdbVec;
+        std::vector<double> bdcVec;
+        std::vector<double> bddVec;
+        std::vector<double> bdeVec;
+        std::vector<double> bdfVec;
 
 
 

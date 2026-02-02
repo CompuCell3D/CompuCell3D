@@ -47,8 +47,9 @@ requirements:
     - vtk={{ vtk_version }}
     - eigen
     - tbb-devel={{ tbb_devel_version }}
-    - boost>={{ boost_version }}
-    - libboost-python-devel>={{ boost_version }}
+# uncomment only for C++11
+#    - boost>={{ boost_version }}
+#    - libboost-python-devel>={{ boost_version }}
     - cmake={{ cmake_version }}
     - swig>={{ swig_version }}
     - psutil
@@ -74,8 +75,9 @@ requirements:
     - vtk={{ vtk_version }}
     - eigen
     - tbb-devel={{ tbb_devel_version }}
-    - boost={{ boost_version }}
-    - libboost-python-devel>={{ boost_version }}
+# uncomment only for C++11
+#    - boost>={{ boost_version }}
+#    - libboost-python-devel>={{ boost_version }}
     - swig>={{ swig_version }}
     - psutil
     - deprecated

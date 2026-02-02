@@ -51,11 +51,11 @@ namespace CompuCell3D {
     void FlexibleDiffusionSolverSerializer_GPU<GPU_Solver>::serialize() {
 
         for (size_t i = 0; i < solverPtr->diffSecrFieldTuppleVec.size(); ++i) {
-            ostringstream outName;
+            std::ostringstream outName;
 
             outName << solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName << "_" << currentStep << "."
                     << serializedFileExtension;
-            ofstream outStream(outName.str().c_str());
+            std::ofstream outStream(outName.str().c_str());
             solverPtr->outputField(outStream, solverPtr->concentrationFieldVector[i]);
         }
     }
@@ -65,7 +65,7 @@ namespace CompuCell3D {
     void FlexibleDiffusionSolverSerializer_GPU<GPU_Solver>::readFromFile() {
         try {
             for (size_t i = 0; i < solverPtr->diffSecrFieldTuppleVec.size(); ++i) {
-                ostringstream inName;
+                std::ostringstream inName;
                 inName << solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName << "." << serializedFileExtension;
 
                 solverPtr->readConcentrationField(inName.str().c_str(), solverPtr->concentrationFieldVector[i]);;
@@ -135,9 +135,9 @@ namespace CompuCell3D {
 
         numberOfFields = diffSecrFieldTuppleVec.size();
 
-	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	std::vector<std::string> concentrationFieldNameVectorTmp; //temporary vector for field names
 	///assign vector of field names
-	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),std::string(""));
 	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
@@ -148,7 +148,7 @@ namespace CompuCell3D {
         }
 
         //setting up couplingData - field-field interaction terms
-        vector<CouplingData>::iterator pos;
+        std::vector<CouplingData>::iterator pos;
 
         for (size_t i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
             pos = diffSecrFieldTuppleVec[i].diffData.couplingDataVec.begin();
@@ -215,7 +215,7 @@ namespace CompuCell3D {
         //    exit(0);
 
         periodicBoundaryCheckVector.assign(3, false);
-        string boundaryName;
+        std::string boundaryName;
         boundaryName = potts->getBoundaryXName();
         changeToLower(boundaryName);
         if (boundaryName == "periodic") {
@@ -1285,7 +1285,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
             for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
                 for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
                     tempValue = _concentrationField->get(pt);
-                    _out << pt.x << " " << pt.y << " " << pt.z << " " << tempValue << endl;
+                    _out << pt.x << " " << pt.y << " " << pt.z << " " << tempValue << std::endl;
                 }
     }
 
@@ -1300,9 +1300,9 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
             fn = basePath + "/" + fileName;
         }
 
-        ifstream in(fn.c_str());
+        std::ifstream in(fn.c_str());
 
-        ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
+        ASSERT_OR_THROW(std::string("Could not open chemical concentration file '") +
                         fn + "'!", in.is_open());
 
         Point3D pt;
@@ -1480,7 +1480,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
                 for (unsigned int ip = 0; ip < planeVec.size(); ++ip) {
                     ASSERT_OR_THROW("Boundary Condition specification Plane element is missing Axis attribute",
                                     planeVec[ip]->findAttribute("Axis"));
-                    string axisName = planeVec[ip]->getAttribute("Axis");
+                    std::string axisName = planeVec[ip]->getAttribute("Axis");
                     int index = 0;
                     if (axisName == "x" || axisName == "X") {
                         index = 0;
@@ -1501,7 +1501,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
                         CC3DXMLElementList cdVec = planeVec[ip]->getElements("ConstantDerivative");
 
                         for (unsigned int v = 0; v < cvVec.size(); ++v) {
-                            string planePos = cvVec[v]->getAttribute("PlanePosition");
+                            std::string planePos = cvVec[v]->getAttribute("PlanePosition");
                             double value = cvVec[v]->getAttributeAsDouble("Value");
                             changeToLower(planePos);
                             if (planePos == "min") {
@@ -1518,7 +1518,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
                         }
                         if (cvVec.size() <= 1) {
                             for (unsigned int d = 0; d < cdVec.size(); ++d) {
-                                string planePos = cdVec[d]->getAttribute("PlanePosition");
+                                std::string planePos = cdVec[d]->getAttribute("PlanePosition");
                                 double value = cdVec[d]->getAttributeAsDouble("Value");
                                 changeToLower(planePos);
                                 if (planePos == "min") {
@@ -1603,7 +1603,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
             diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.assign(
                     diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.size(), 0);
             unsigned int j = 0;
-            for (set<string>::iterator sitr = diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.begin();
+            for (std::set<std::string>::iterator sitr = diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.begin();
                  sitr != diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.end(); ++sitr) {
 
                 if ((*sitr) == "Secretion") {

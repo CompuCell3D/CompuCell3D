@@ -24,7 +24,8 @@ namespace CompuCell3D {
         explicit AdjacentNeighbor() :
                 periodicX(false),
                 periodicY(false),
-                periodicZ(false) {}
+                periodicZ(false),
+                depth(1) {}
 
         explicit AdjacentNeighbor(const Dim3D &_dim);
 
@@ -88,7 +89,7 @@ namespace CompuCell3D {
         bool periodicY;
         bool periodicZ;
         Field3DIndex field3DIndex;
-        int depth;
+        short depth;
         Dim3D fieldDim;
     };
 };

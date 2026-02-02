@@ -10,6 +10,8 @@
 #ifndef SRC_CC3DLOGGER_H_
 #define SRC_CC3DLOGGER_H_
 
+#include <core/CompuCell3D/windows/CC3DMSVCWarnings.h>
+
 #ifdef CC3D_ISWIN
 #   define CC3D_FUNCTION __func__
 #else
@@ -260,5 +262,7 @@ namespace CompuCell3D {
 #define CC3D_Log(level) \
     if (level > CompuCell3D::CC3DLogger::get()->getLevel()) { ; } \
     else CompuCell3D::LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__).stream()
+
+
 
 #endif /* SRC_CC3DLOGGER_H_ */

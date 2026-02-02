@@ -2,6 +2,7 @@
 
 #include <CompuCell3D/CC3D.h>
 
+using namespace std;
 using namespace CompuCell3D;
 
 

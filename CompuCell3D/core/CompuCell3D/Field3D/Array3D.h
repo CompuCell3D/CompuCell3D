@@ -133,8 +133,8 @@ namespace CompuCell3D {
             internalDim.z = theDim.z + 1;
 
             dim = theDim;
-
-            container.assign((internalDim.x) * (internalDim.y) * (internalDim.z), _initVal);
+            size_t len = static_cast<size_t>(internalDim.x) * static_cast<size_t>(internalDim.y) * static_cast<size_t>(internalDim.z);
+            container.assign(len, _initVal);
 
 
         }
@@ -144,8 +144,9 @@ namespace CompuCell3D {
         }
 
         virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
-            vector<double> tmpContainer = container;
-            tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+            std::vector<double> tmpContainer = container;
+            tmpContainer.swap(container);
 
             Dim3D oldInternalDim = internalDim;
 
@@ -153,35 +154,89 @@ namespace CompuCell3D {
             internalDim.y = newDim.y + 1;
             internalDim.z = newDim.z + 1;
 
+            const std::size_t nx = static_cast<std::size_t>(internalDim.x);
+            const std::size_t ny = static_cast<std::size_t>(internalDim.y);
+            const std::size_t nz = static_cast<std::size_t>(internalDim.z);
 
-            container.assign((internalDim.x) * (internalDim.y) * (internalDim.z),
-                             0.0); //resize container and initialize it
+            container.assign(nx * ny * nz, 0.0);
 
-            //copying old array to new one - we do not copy swap values or boundary conditions these are usually
-            // set externally by the solver
-            Point3D pt;
-            Point3D ptShift;
+            const std::size_t oldNx = static_cast<std::size_t>(oldInternalDim.x);
+            const std::size_t oldNy = static_cast<std::size_t>(oldInternalDim.y);
 
-            //when lattice is growing or shrinking
-            for (pt.x = 0; pt.x < newDim.x; ++pt.x)
-                for (pt.y = 0; pt.y < newDim.y; ++pt.y)
-                    for (pt.z = 0; pt.z < newDim.z; ++pt.z) {
+            const std::size_t newNx = static_cast<std::size_t>(newDim.x);
+            const std::size_t newNy = static_cast<std::size_t>(newDim.y);
+            const std::size_t newNz = static_cast<std::size_t>(newDim.z);
 
-                        ptShift = pt - shiftVec;
-                        if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y &&
-                            ptShift.z >= 0 && ptShift.z < dim.z) {
-                            container[pt.x + (pt.y + pt.z * internalDim.y) * internalDim.x] = tmpContainer[ptShift.x +
-                                                                                                           (ptShift.y +
-                                                                                                            ptShift.z *
-                                                                                                            oldInternalDim.y) *
-                                                                                                           oldInternalDim.x];
+            // when lattice is growing or shrinking
+            for (std::size_t x = 0; x < newNx; ++x)
+                for (std::size_t y = 0; y < newNy; ++y)
+                    for (std::size_t z = 0; z < newNz; ++z) {
+
+                        // shifted coordinates must be signed
+                        const int ox = static_cast<int>(x) - shiftVec.x;
+                        const int oy = static_cast<int>(y) - shiftVec.y;
+                        const int oz = static_cast<int>(z) - shiftVec.z;
+
+                        if (ox >= 0 && ox < dim.x &&
+                            oy >= 0 && oy < dim.y &&
+                            oz >= 0 && oz < dim.z) {
+
+                            container[
+                                x + (y + z * ny) * nx
+                            ] =
+                                tmpContainer[
+                                    static_cast<std::size_t>(ox) +
+                                        (static_cast<std::size_t>(oy) +
+                                            static_cast<std::size_t>(oz) * oldNy) *
+                                        oldNx
+                                ];
                         }
                     }
-            //setting dim to new dim
+
+            // setting dim to new dim
             dim = newDim;
-
-
         }
+
+
+        //virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
+        //    std::vector<double> tmpContainer = container;
+        //    tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+        //    Dim3D oldInternalDim = internalDim;
+
+        //    internalDim.x = newDim.x + 1;
+        //    internalDim.y = newDim.y + 1;
+        //    internalDim.z = newDim.z + 1;
+
+
+        //    container.assign((internalDim.x) * (internalDim.y) * (internalDim.z),
+        //                     0.0); //resize container and initialize it
+
+        //    //copying old array to new one - we do not copy swap values or boundary conditions these are usually
+        //    // set externally by the solver
+        //    Point3D pt;
+        //    Point3D ptShift;
+
+        //    //when lattice is growing or shrinking
+        //    for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+        //        for (pt.y = 0; pt.y < newDim.y; ++pt.y)
+        //            for (pt.z = 0; pt.z < newDim.z; ++pt.z) {
+
+        //                ptShift = pt - shiftVec;
+        //                if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y &&
+        //                    ptShift.z >= 0 && ptShift.z < dim.z) {
+        //                    container[pt.x + (pt.y + pt.z * internalDim.y) * internalDim.x] = tmpContainer[ptShift.x +
+        //                                                                                                   (ptShift.y +
+        //                                                                                                    ptShift.z *
+        //                                                                                                    oldInternalDim.y) *
+        //                                                                                                   oldInternalDim.x];
+        //                }
+        //            }
+        //    //setting dim to new dim
+        //    dim = newDim;
+
+
+        //}
 
 
         std::vector<double> &getContainerRef() { return container; }
@@ -211,7 +266,7 @@ namespace CompuCell3D {
         virtual float get(const Point3D &pt) const {
             //TODO: we'd better check why we cast from doubles to floats here
             //Either doubles are not used, either interface is incorrect
-            return container[index(pt.x, pt.y, pt.z)];
+            return static_cast<float>(container[index(pt.x, pt.y, pt.z)]);
 
         }
 
@@ -221,7 +276,7 @@ namespace CompuCell3D {
         }
 
         float getQuick(const Point3D &pt) const {
-            return container[index(pt.x, pt.y, pt.z)];
+            return static_cast<float>(container[index(pt.x, pt.y, pt.z)]);
 
         }
 
@@ -231,7 +286,7 @@ namespace CompuCell3D {
         }
 
         float getQuick(int _x, int _y, int _z) const {
-            return container[index(_x, _y, _z)];
+            return static_cast<float>(container[index(_x, _y, _z)]);
 
         }
 
@@ -283,7 +338,8 @@ namespace CompuCell3D {
             dim = theDim;
             dim.z = 1;
 
-            container.assign((internalDim.x) * (internalDim.y), _initVal);
+            size_t len = static_cast<size_t>(internalDim.x) * static_cast<size_t>(internalDim.y);
+            container.assign(len, _initVal);
 
         }
 
@@ -292,8 +348,9 @@ namespace CompuCell3D {
         }
 
         virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
-            vector<double> tmpContainer = container;
-            tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+            std::vector<double> tmpContainer = container;
+            tmpContainer.swap(container);
 
             Dim3D oldInternalDim = internalDim;
 
@@ -301,32 +358,78 @@ namespace CompuCell3D {
             internalDim.y = newDim.y + 1;
             internalDim.z = 1;
 
+            const std::size_t nx = static_cast<std::size_t>(internalDim.x);
+            const std::size_t ny = static_cast<std::size_t>(internalDim.y);
 
-            container.assign((internalDim.x) * (internalDim.y), 0.0); //resize container and initialize it
+            container.assign(nx * ny, 0.0);
 
-            //copying old array to new one - we do not copy swap values or boundary conditions
-            // these are usually set externally by the solver
-            Point3D pt;
-            Point3D ptShift;
+            const std::size_t oldNx = static_cast<std::size_t>(oldInternalDim.x);
 
-            //when lattice is growing or shrinking
-            for (pt.x = 0; pt.x < newDim.x; ++pt.x)
-                for (pt.y = 0; pt.y < newDim.y; ++pt.y) {
-                    ptShift = pt - shiftVec;
-                    if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y) {
+            const std::size_t newNx = static_cast<std::size_t>(newDim.x);
+            const std::size_t newNy = static_cast<std::size_t>(newDim.y);
 
+            // when lattice is growing or shrinking
+            for (std::size_t x = 0; x < newNx; ++x)
+                for (std::size_t y = 0; y < newNy; ++y) {
 
-                        container[pt.x + (pt.y) * internalDim.x] = tmpContainer[ptShift.x +
-                                                                                (ptShift.y) * oldInternalDim.x];
+                    const int ox = static_cast<int>(x) - shiftVec.x;
+                    const int oy = static_cast<int>(y) - shiftVec.y;
 
+                    if (ox >= 0 && ox < dim.x &&
+                        oy >= 0 && oy < dim.y) {
+
+                        container[
+                            x + y * nx
+                        ] =
+                            tmpContainer[
+                                static_cast<std::size_t>(ox) +
+                                    static_cast<std::size_t>(oy) * oldNx
+                            ];
                     }
                 }
-            //setting dim to new dim
+
+            // setting dim to new dim
             dim = newDim;
             dim.z = 1;
-
-
         }
+
+
+        //virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
+        //    std::vector<double> tmpContainer = container;
+        //    tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+        //    Dim3D oldInternalDim = internalDim;
+
+        //    internalDim.x = newDim.x + 1;
+        //    internalDim.y = newDim.y + 1;
+        //    internalDim.z = 1;
+
+        //    size_t len = static_cast<size_t>(internalDim.x) * static_cast<size_t>(internalDim.y);
+        //    container.assign(len, 0.0); //resize container and initialize it
+
+        //    //copying old array to new one - we do not copy swap values or boundary conditions
+        //    // these are usually set externally by the solver
+        //    Point3D pt;
+        //    Point3D ptShift;
+
+        //    //when lattice is growing or shrinking
+        //    for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+        //        for (pt.y = 0; pt.y < newDim.y; ++pt.y) {
+        //            ptShift = pt - shiftVec;
+        //            if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y) {
+
+
+        //                container[pt.x + (pt.y) * internalDim.x] = tmpContainer[ptShift.x +
+        //                                                                        (ptShift.y) * oldInternalDim.x];
+
+        //            }
+        //        }
+        //    //setting dim to new dim
+        //    dim = newDim;
+        //    dim.z = 1;
+
+
+        //}
 
         std::vector<double> &getContainerRef() { return container; }
 
@@ -353,7 +456,7 @@ namespace CompuCell3D {
 
         virtual float get(const Point3D &pt) const {
 
-            return container[Array2DLinearFortranField3DAdapter::index(pt.x, pt.y)];
+            return static_cast<float>(container[Array2DLinearFortranField3DAdapter::index(pt.x, pt.y)]);
 
         };
 
@@ -363,7 +466,7 @@ namespace CompuCell3D {
         }
 
         virtual float getQuick(const Point3D &pt) const {
-            return container[index(pt.x, pt.y)];
+            return static_cast<float>(container[index(pt.x, pt.y)]);
 
         }
 
@@ -373,7 +476,7 @@ namespace CompuCell3D {
         }
 
         virtual float getQuick(int _x, int _y) const {
-            return container[index(_x, _y)];
+            return static_cast<float>(container[index(_x, _y)]);
 
         };
 
@@ -1348,7 +1451,7 @@ void Array2DBorders<T>::allocateMemory(const Dim3D &_dim, T &val) {
         }
 
         void storeSecData(int x, int y, int z, T t) {
-            vector<float> fourVector(4);
+            std::vector<float> fourVector(4);
             fourVector[0] = x;
             fourVector[1] = y;
             fourVector[2] = z;

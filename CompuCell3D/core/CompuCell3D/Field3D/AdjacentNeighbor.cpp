@@ -20,21 +20,22 @@ AdjacentNeighbor::AdjacentNeighbor(const Dim3D &_dim) :
 void AdjacentNeighbor::initialize(const Dim3D &_dim) {
 
     depth = 1;
+    size_t  depth_wide = static_cast<size_t>(depth);
     fieldDim = _dim;
     field3DIndex = Field3DIndex(_dim);
 
-    adjNeighborOffsetsInner.assign((2 * depth + 1) * (2 * depth + 1) * (2 * depth + 1) - 1,
+    adjNeighborOffsetsInner.assign((2 * depth_wide + 1) * (2 * depth_wide + 1) * (2 * depth_wide + 1) - 1,
                                    Point3D(0, 0, 0));   //will not include 0 in the offset table -
     // that's why I subract 1 from vector dimension
 
     adjFace2FaceNeighborOffsetsInner.assign(6, Point3D(0, 0, 0));
 
     //remove it later - testing now
-    adjNeighborOffsets.assign((2 * depth + 1) * (2 * depth + 1) * (2 * depth + 1) - 1, 0);
+    adjNeighborOffsets.assign((2 * depth_wide + 1) * (2 * depth_wide + 1) * (2 * depth_wide + 1) - 1, 0);
     adjFace2FaceNeighborOffsets.assign(6, 0);
 
     long index;
-    long counter = 0;
+    size_t counter = 0;
     Point3D self(0, 0, 0);
     for (short x = -depth; x <= depth; ++x)
         for (short y = -depth; y <= depth; ++y)
@@ -85,11 +86,11 @@ void AdjacentNeighbor::setPeriodicX() {
         return;     ///do nothing if someone has already called this function
 
     periodicX = true;
-    short maxXPlus = fieldDim.x - 1;
-    short maxXMinus = -(fieldDim.x - 1);
+    cc3d_dim_t maxXPlus = fieldDim.x - 1;
+    cc3d_dim_t maxXMinus = -(fieldDim.x - 1);
     Point3D self(0, 0, 0);
-    for (short y = -1; y <= 1; ++y)
-        for (short z = -1; z <= 1; ++z) {
+    for (cc3d_dim_t y = -1; y <= 1; ++y)
+        for (cc3d_dim_t z = -1; z <= 1; ++z) {
             Point3D ptPlus(maxXPlus, y, z);
             Point3D ptMinus(maxXMinus, y, z);
             if (!(ptPlus == self)) {
@@ -116,11 +117,11 @@ void AdjacentNeighbor::setPeriodicY() {
         return;     ///do nothing if someone has already called this function
 
     periodicY = true;
-    short maxYPlus = fieldDim.y - 1;
-    short maxYMinus = -(fieldDim.y - 1);
+    cc3d_dim_t maxYPlus = fieldDim.y - 1;
+    cc3d_dim_t maxYMinus = -(fieldDim.y - 1);
     Point3D self(0, 0, 0);
-    for (short x = -1; x <= 1; ++x)
-        for (short z = -1; z <= 1; ++z) {
+    for (cc3d_dim_t x = -1; x <= 1; ++x)
+        for (cc3d_dim_t z = -1; z <= 1; ++z) {
             Point3D ptPlus(x, maxYPlus, z);
             Point3D ptMinus(x, maxYMinus, z);
             if (!(ptPlus == self)) {
@@ -146,11 +147,11 @@ void AdjacentNeighbor::setPeriodicZ() {
 
     periodicZ = true;
 
-    short maxZPlus = fieldDim.z - 1;
-    short maxZMinus = -(fieldDim.z - 1);
+    cc3d_dim_t maxZPlus = fieldDim.z - 1;
+    cc3d_dim_t maxZMinus = -(fieldDim.z - 1);
     Point3D self(0, 0, 0);
-    for (short x = -1; x <= 1; ++x)
-        for (short y = -1; y <= 1; ++y) {
+    for (cc3d_dim_t x = -1; x <= 1; ++x)
+        for (cc3d_dim_t y = -1; y <= 1; ++y) {
             Point3D ptPlus(x, y, maxZPlus);
             Point3D ptMinus(x, y, maxZMinus);
             if (!(ptPlus == self)) {

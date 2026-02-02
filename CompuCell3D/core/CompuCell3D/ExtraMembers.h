@@ -14,6 +14,7 @@ namespace CompuCell3D {
     template<class T>
     class ExtraMembersFactory {
     public:
+        virtual ~ExtraMembersFactory() = default;
         virtual T *create() = 0;
 
         virtual void destroy(T *em) = 0;
@@ -35,24 +36,57 @@ namespace CompuCell3D {
 
     // Extra members group; classes can be dynamically assigned per group and instantiated per group instance
     class ExtraMembersGroup {
-        std::vector<void *> members;
+        struct Entry {
+            void* ptr;
+            ExtraMembersFactory<void>* factory;
+        };
+
+        std::vector<Entry> members;
 
     public:
-        ExtraMembersGroup(const std::vector<ExtraMembersFactory<void> *> &factories) {
-            for (auto &itr: factories) members.push_back(itr->create());
+        ExtraMembersGroup(const std::vector<ExtraMembersFactory<void>*>& factories) {
+            members.reserve(factories.size());
+            for (auto* f : factories) {
+                members.push_back({ f->create(), f });
+            }
         }
 
         ~ExtraMembersGroup() { destroy(); }
 
-        void *getMember(const unsigned int &_memberIdx) { return members[_memberIdx]; }
+        void* getMember(const unsigned int& _memberIdx) {
+            return members[_memberIdx].ptr;
+        }
 
         void destroy() {
-            for (unsigned int i = 0; i < members.size(); i++) {
-                delete (members[i]);
-                members[i] = nullptr;
+            for (auto& e : members) {
+                if (e.ptr) {
+                    e.factory->destroy(e.ptr);   // correct dynamic type delete
+                    e.ptr = nullptr;
+                }
             }
         }
     };
+
+
+    // class ExtraMembersGroup {
+    //     std::vector<void *> members;
+    //
+    // public:
+    //     ExtraMembersGroup(const std::vector<ExtraMembersFactory<void> *> &factories) {
+    //         for (auto &itr: factories) members.push_back(itr->create());
+    //     }
+    //
+    //     ~ExtraMembersGroup() { destroy(); }
+    //
+    //     void *getMember(const unsigned int &_memberIdx) { return members[_memberIdx]; }
+    //
+    //     void destroy() {
+    //         for (unsigned int i = 0; i < members.size(); i++) {
+    //             delete (members[i]);
+    //             members[i] = nullptr;
+    //         }
+    //     }
+    // };
 
     // Group accessor; each accessor accesses a class instance of a group instance; for use in deployments
     class ExtraMembersGroupAccessorBase {
@@ -69,6 +103,7 @@ namespace CompuCell3D {
 
     public:
         ExtraMembersGroupAccessorBase() : memberIdx(UINT_MAX) {};
+        virtual ~ExtraMembersGroupAccessorBase() = default;
     };
 
     // Group accessor; each accessor accesses a class instance of a group instance; for use when specifying an extra member

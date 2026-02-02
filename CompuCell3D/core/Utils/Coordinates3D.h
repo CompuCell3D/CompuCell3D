@@ -41,12 +41,12 @@ class Coordinates3D{
          return *this;
       }
 
-      Coordinates3D<T> & operator=(const Coordinates3D<T> &a){
-         x=a.X();
-         y=a.Y();
-         z=a.Z();
-         return *this;
-      }
+      // Coordinates3D<T> & operator=(const Coordinates3D<T> &a){
+      //    x=a.X();
+      //    y=a.Y();
+      //    z=a.Z();
+      //    return *this;
+      // }
 
     bool operator==(const Coordinates3D<T> &a) const {
         return x == a.X() && y == a.Y() && z == a.Z();

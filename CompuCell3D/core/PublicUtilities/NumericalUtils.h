@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #endif
 
+#include <CompuCell3D/windows/CC3DMSVCWarnings.h>
 #include <Utils/Coordinates3D.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Point3D.h>
@@ -30,7 +31,8 @@ std::vector<double> RandomUnitVector3D(const double& _random_number1, const doub
 
 namespace CompuCell3D{
 
-
+	using Real_t = float;
+	
 
 	class CellG;
 	class Point3D;
@@ -85,7 +87,7 @@ namespace CompuCell3D{
 	std::pair<InertiaTensorComponents,InertiaTensorComponents> precalculateInertiaTensorComponentsAfterFlip(const Coordinates3D<double> & ptTrans,const CellG *newCell ,const CellG *oldCell);
 
 
-	CenterOfMassPair_t precalculateAfterFlipCM(const Point3D &pt, const CellG *newCell, const CellG *oldCell,const Point3D & fieldDim, const Point3D & boundaryConditionIndicator);
+	//CenterOfMassPair_t precalculateAfterFlipCM(const Point3D &pt, const CellG *newCell, const CellG *oldCell,const Point3D & fieldDim, const Point3D & boundaryConditionIndicator);
 
 	// Cell velocity at center of mass, in units lattice sites / step
 	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = nullptr);

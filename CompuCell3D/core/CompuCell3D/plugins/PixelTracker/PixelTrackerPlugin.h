@@ -27,7 +27,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 	  ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
 
 	  std::vector<std::set<PixelTrackerData> > mediumPixelSet;
-	  std::vector<std::vector<pair<Dim3D, Dim3D> > > sectionDimsVec;
+	  std::vector<std::vector<std::pair<Dim3D, Dim3D> > > sectionDimsVec;
 	  bool trackMedium;
 	  unsigned int getParitionNumber(const Point3D &_pt, unsigned int _workerNum=0);
 

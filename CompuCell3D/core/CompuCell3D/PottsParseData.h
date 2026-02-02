@@ -191,7 +191,7 @@ void KBoltzman(double _kBoltzman) { kBoltzman = _kBoltzman; }
 
 void Offset(double _offset) { offset = _offset; }
 
-void NeighborOrder(double _neighborOrder) { neighborOrder = _neighborOrder; }
+void NeighborOrder(double _neighborOrder) { neighborOrder = static_cast<unsigned int>(_neighborOrder); }
 
 void LatticeType(std::string _latticeType) { latticeType = _latticeType; }
 

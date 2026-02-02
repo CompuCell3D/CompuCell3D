@@ -87,11 +87,11 @@ namespace CompuCell3D {
         //typedef Array3DBorders<precision_t>::ContainerType Array3D_t;
         //typedef Array3DBordersField3DAdapter<precision_t> ConcentrationField_t;
         typedef Array3DContiguous <precision_t> ConcentrationField_t;
-        typedef vector <vector<vector < float>> >
+        typedef std::vector <std::vector<std::vector < float>> >
         Array3D;
 
         float *scratch;
-        vector <vector<vector < float>> >
+        std::vector <std::vector<std::vector < float>> >
         scratchVec;
 
 
@@ -105,15 +105,15 @@ namespace CompuCell3D {
 
         unsigned int currentStep;
         unsigned int maxDiffusionZ;
-        vector<int> kernel;
-        vector <vector<float>> NKer;
+        std::vector<int> kernel;
+        std::vector <std::vector<float>> NKer;
         int maxNeighborIndex;
-        vector<int> tempmaxNeighborIndex;
-        vector <Array3D> GreensFunc;
-        vector <Point3D> neighbors;
+        std::vector<int> tempmaxNeighborIndex;
+        std::vector <Array3D> GreensFunc;
+        std::vector <Point3D> neighbors;
 
-        map<int, int> neighborDistance;
-        map<int, int>::iterator neighborIter;
+        std::map<int, int> neighborDistance;
+        std::map<int, int>::iterator neighborIter;
 
         float diffConst;
         float decayConst;

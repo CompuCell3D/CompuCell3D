@@ -15,6 +15,7 @@ namespace CompuCell3D {
         CC3DEvent() {
             id = BASE;
         }
+        virtual ~CC3DEvent() = default;
 
         CC3DEvent_t id;
 
@@ -41,8 +42,8 @@ namespace CompuCell3D {
             newNumberOfNodes = 1;
         }
 
-        int oldNumberOfNodes;
-        int newNumberOfNodes;
+        unsigned int oldNumberOfNodes;
+        unsigned int newNumberOfNodes;
 
 
     };

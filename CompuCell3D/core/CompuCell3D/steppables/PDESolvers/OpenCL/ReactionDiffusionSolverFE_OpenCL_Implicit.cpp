@@ -100,10 +100,10 @@ Solver *ReactionDiffusionSolverFE_OpenCL_Implicit::makeSolver() const {
         for (unsigned int i = 0; i < fieldsCount(); ++i) {
             DiffusionData const &diffData = diffSecrFieldTuppleVec[i].diffData;
             std::string name = getConcentrationFieldName(i);
-            string addTerm = diffData.additionalTerm;
+            std::string addTerm = diffData.additionalTerm;
             if (addTerm.empty()) {
                 addTerm = "return 0;";
-            } else if (addTerm.find("return") == string::npos) {
+            } else if (addTerm.find("return") == std::string::npos) {
                 addTerm = "return " + addTerm + ";";
             }
             fnats[i] = make_pair(name, addTerm);

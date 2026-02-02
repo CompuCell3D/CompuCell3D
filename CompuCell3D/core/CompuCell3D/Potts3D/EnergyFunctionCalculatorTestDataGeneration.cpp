@@ -30,7 +30,7 @@ EnergyFunctionCalculatorTestDataGeneration::~EnergyFunctionCalculatorTestDataGen
  * @return
  */
 double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell,
-                                                                const unsigned int _flipAttempt) {
+    const size_t _flipAttempt) {
     double change = 0;
     for (unsigned int i = 0; i < energyFunctions.size(); i++) {
 

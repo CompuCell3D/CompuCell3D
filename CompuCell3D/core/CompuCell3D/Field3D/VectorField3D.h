@@ -115,7 +115,7 @@ namespace CompuCell3D {
          * @return The value of the element at _offset.
          */
         virtual void setByIndex(long _offset, const Coordinates3D<T> value) {}//will have to make it abstract
-        virtual void setByIndex(long _offset, const vector<T> value) {}//will have to make it abstract
+        virtual void setByIndex(long _offset, const std::vector<T> value) {}//will have to make it abstract
 
         /**
          * If pt is out of range a CC3DException will be thrown.

@@ -36,7 +36,7 @@ SET (HEADER_FILES
   # FiPySolver.h
   DiffusionSolverFE.h
   DiffusionSolverFE_CPU.h
-  DiffusionSolverFE_CPU_Implicit.h
+#  DiffusionSolverFE_CPU_Implicit.h
   FlexibleDiffusionSolverADE.h
   KernelDiffusionSolver.h
   GPUSolverParams.h
@@ -189,7 +189,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   FastDiffusionSolver2DFE.cpp
   DiffusionSolverFE.cpp
   DiffusionSolverFE_CPU.cpp
-  DiffusionSolverFE_CPU_Implicit.cpp
+#  DiffusionSolverFE_CPU_Implicit.cpp
   SteadyStateDiffusionSolver2D.cpp
   SteadyStateDiffusionSolver.cpp
   PDESolversProxy.cpp

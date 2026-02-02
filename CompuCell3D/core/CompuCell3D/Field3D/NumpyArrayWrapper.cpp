@@ -17,67 +17,118 @@ NumpyArrayWrapper::NumpyArrayWrapper(const std::vector<array_size_t> &dims) {
     strides = computeStrides(dimensions);
     std::copy(strides.begin(), strides.end(), std::ostream_iterator<int>(std::cerr, "\n"));
 
-    size_t array_size = std::accumulate(dimensions.begin(), dimensions.end(), 1, std::multiplies<array_size_t>());
+    size_t array_size = std::accumulate(dimensions.begin(), dimensions.end(),
+        static_cast<size_t>(1), std::multiplies<array_size_t>());
 
     array.assign(array_size, 0.0);
 //    cerr << "array array_size=" << array.size() << endl;
 };
 
 
-std::vector<array_size_t> NumpyArrayWrapper::computeStrides(const std::vector<array_size_t>& dims) {
-    array_size_t n = dims.size();
-    std::vector<array_size_t> strides_local(n, 1);  // Initialize strides_local with 1 for the last dimension
+std::vector<array_size_t>
+NumpyArrayWrapper::computeStrides(const std::vector<array_size_t>& dims)
+{
+    const std::size_t n = dims.size();
+    std::vector<array_size_t> strides_local(n, 1);
 
-    for (int i = n - 2; i >= 0; --i) {
+    if (n < 2) {
+        return strides_local;
+    }
+
+    for (std::size_t i = n - 1; i-- > 0; ) {
         strides_local[i] = strides_local[i + 1] * dims[i + 1];
     }
 
     return strides_local;
 }
 
+// std::vector<array_size_t> NumpyArrayWrapper::computeStrides(const std::vector<array_size_t>& dims) {
+//     array_size_t n = dims.size();
+//     std::vector<array_size_t> strides_local(n, 1);  // Initialize strides_local with 1 for the last dimension
+//
+//     for (int i = n - 2; i >= 0; --i) {
+//         strides_local[i] = strides_local[i + 1] * dims[i + 1];
+//     }
+//
+//     return strides_local;
+// }
+
 
 void NumpyArrayWrapper::printArrayValue(const std::vector<array_size_t> &indices)  {
 
-    for (int idx: indices) {
+    for (array_size_t idx: indices) {
         cout << idx << " ";  // Multiply each index by the member variable
     }
     cout<<array[index(indices)]<<" ";
     cout << endl;
 }
 
-
-void NumpyArrayWrapper::iterateOverAxes(const std::vector<array_size_t> &dims,
-                                        std::function<void(const std::vector<array_size_t> &)> functor) {
+void NumpyArrayWrapper::iterateOverAxes(
+    const std::vector<array_size_t> &dims,
+    std::function<void(const std::vector<array_size_t> &)> functor)
+{
     if (dims.empty()) {
-        return;  // No dimensions to iterate over
+        return;
     }
 
-    std::vector<array_size_t> indices(dims.size(), 0);  // Initialize indices for all axes to 0
+    std::vector<array_size_t> indices(dims.size(), 0);
 
     while (true) {
-        // Process the current combination of indices
-
         functor(indices);
 
-        // Increment the indices starting from the last axis (rightmost dimension)
-        int axis = dims.size() - 1;
+        // signed axis counter (can go negative)
+        std::ptrdiff_t axis =
+            static_cast<std::ptrdiff_t>(dims.size()) - 1;
+
         while (axis >= 0) {
-            if (++indices[axis] < dims[axis]) {
-                // If incrementing this axis doesn't overflow, break out of the loop
+            const std::size_t uaxis = static_cast<std::size_t>(axis);
+
+            if (++indices[uaxis] < dims[uaxis]) {
                 break;
             } else {
-                // Reset this axis and carry over to the next axis
-                indices[axis] = 0;
-                axis--;
+                indices[uaxis] = 0;
+                --axis;
             }
         }
 
-        // If all axes are done (i.e., axis < 0), we are finished
         if (axis < 0) {
             break;
         }
     }
 }
+
+// void NumpyArrayWrapper::iterateOverAxes(const std::vector<array_size_t> &dims,
+//                                         std::function<void(const std::vector<array_size_t> &)> functor) {
+//     if (dims.empty()) {
+//         return;  // No dimensions to iterate over
+//     }
+//
+//     std::vector<array_size_t> indices(dims.size(), 0);  // Initialize indices for all axes to 0
+//
+//     while (true) {
+//         // Process the current combination of indices
+//
+//         functor(indices);
+//
+//         // Increment the indices starting from the last axis (rightmost dimension)
+//         int axis = dims.size() - 1;
+//         while (axis >= 0) {
+//             if (++indices[axis] < dims[axis]) {
+//                 // If incrementing this axis doesn't overflow, break out of the loop
+//                 break;
+//             } else {
+//                 // Reset this axis and carry over to the next axis
+//                 indices[axis] = 0;
+//                 axis--;
+//             }
+//         }
+//
+//         // If all axes are done (i.e., axis < 0), we are finished
+//         if (axis < 0) {
+//             break;
+//         }
+//     }
+// }
 
 void NumpyArrayWrapper::printAllArrayValues(){
 

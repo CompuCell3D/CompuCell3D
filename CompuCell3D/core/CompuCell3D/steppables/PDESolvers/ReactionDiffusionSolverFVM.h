@@ -189,7 +189,7 @@ namespace CompuCell3D {
 
 		std::vector<FluxConditionInitializer> fluxConditionInitializerPtrs;
 
-		std::vector<std::vector<tuple<std::string, float> > > basicBCData;
+		std::vector<std::vector<std::tuple<std::string, float> > > basicBCData;
 		std::vector<bool> periodicBoundaryCheckVector;
 
 		unsigned int numCellTypes;
@@ -220,7 +220,7 @@ namespace CompuCell3D {
 
 		double physTime;
 		double incTime;
-		string unitsTime = "s";
+		std::string unitsTime = "s";
 		float unitTimeConv = 1.0;
 		float lengthX;
 		float lengthY;
@@ -1598,7 +1598,7 @@ namespace CompuCell3D {
 		 * @param _fv 
 		 * @param _surfaceIndex 
 		 */
-		void addNeighbor(ReactionDiffusionSolverFV *_fv, unsigned int _surfaceIndex) { neighborFVs.insert(make_pair(_surfaceIndex, _fv)); }
+		void addNeighbor(ReactionDiffusionSolverFV *_fv, unsigned int _surfaceIndex) { neighborFVs.insert(std::make_pair(_surfaceIndex, _fv)); }
 		
 		/**
 		 * @brief returns a map of neighbour finite volumes consisting of pairs of ReactionDiffusionSolver element and a surface index

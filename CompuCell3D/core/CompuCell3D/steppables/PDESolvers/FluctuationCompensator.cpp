@@ -248,7 +248,7 @@ std::vector <Point3D> FluctuationCompensator::getCellPixelVec(const CellG *_cell
             _cell->extraAttribPtr)->pixelSet;
     std::vector <Point3D> pixelVec = std::vector<Point3D>(pixelSet.size());
     unsigned int ptdIndex = 0;
-    for (set<PixelTrackerData>::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
+    for (std::set<PixelTrackerData>::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
         pixelVec[ptdIndex] = sitr->pixel;
         ++ptdIndex;
     }
@@ -259,7 +259,7 @@ std::vector <Point3D> FluctuationCompensator::getMediumPixelVec() {
     const std::set <PixelTrackerData> &pixelSet = pixelTrackerPlugin->getMediumPixelSet();
     std::vector <Point3D> pixelVec = std::vector<Point3D>(pixelSet.size());
     unsigned int ptdIndex = 0;
-    for (set<PixelTrackerData>::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
+    for (std::set<PixelTrackerData>::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
         pixelVec[ptdIndex] = sitr->pixel;
         ++ptdIndex;
     }
@@ -285,7 +285,7 @@ FluctuationCompensator::getFluctuationCompensatorCellData(CellG *_cell, bool _fu
         if (_cell) {
             cData = new FluctuationCompensatorCellData(numFields);
             if (_fullInit) cData->concentrationVecTotals = totalCellConcentration(_cell);
-            cellCompensatorData.insert(make_pair(_cell, cData));
+            cellCompensatorData.insert(std::make_pair(_cell, cData));
         }
     } else cData = cellCompensatorDataItr->second;
     return cData;

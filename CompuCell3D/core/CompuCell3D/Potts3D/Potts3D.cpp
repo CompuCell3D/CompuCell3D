@@ -16,6 +16,7 @@
 #include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include <CompuCell3D/Simulator.h>
 #include <PublicUtilities/StringUtils.h>
+#include <PublicUtilities/RandomUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <deque>
 #include <sstream>
@@ -149,16 +150,17 @@ void Potts3D::setDepth(double _depth) {
     float maxDistance = BoundaryStrategy::getInstance()->getMaxDistance();
     if (maxDistance < depth) {
         //in such situation user requests depth that is greater than default maxDistance 
-        BoundaryStrategy::getInstance()->prepareNeighborLists(depth);
+        BoundaryStrategy::getInstance()->prepareNeighborLists(static_cast<float>(depth));
     }
     Dim3D dim = cellFieldG->getDim();
     minCoordinates = Point3D(0, 0, 0);
     maxCoordinates = Point3D(dim.x, dim.y, dim.z);
 
-    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepthVoxelCopy(depth);
+    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepthVoxelCopy(static_cast<float>(depth));
 
     neighbors.clear();
-    neighbors.assign(maxNeighborIndex + 1, Point3D());
+    neighbors.assign(static_cast<std::size_t>(maxNeighborIndex) + 1,  Point3D());
+    
 
 }
 
@@ -529,8 +531,8 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
     if (!acceptanceFunction) throw CC3DException("Potts3D: You must supply an acceptance function!");
 
     //   numberOfAttempts=steps;
-    numberOfAttempts = (int) (maxCoordinates.x - minCoordinates.x) * (maxCoordinates.y - minCoordinates.y) *
-                       (maxCoordinates.z - minCoordinates.z) * sim->getFlip2DimRatio() * sim->getFlip2DimRatio();
+    numberOfAttempts = static_cast<size_t> ((maxCoordinates.x - minCoordinates.x) * (maxCoordinates.y - minCoordinates.y) *
+                       (maxCoordinates.z - minCoordinates.z) * sim->getFlip2DimRatio() );
 
     BoundaryStrategy *boundaryStrategy = BoundaryStrategy::getInstance();
     pUtils->prepareParallelRegionPotts();
@@ -551,9 +553,9 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
             Point3D pt;
             // Pick a random point
-            pt.x = rand->getInteger(minCoordinates.x, maxCoordinates.x - 1);
-            pt.y = rand->getInteger(minCoordinates.y, maxCoordinates.y - 1);
-            pt.z = rand->getInteger(minCoordinates.z, maxCoordinates.z - 1);
+            pt.x = static_cast<short>(rand->getInteger(minCoordinates.x, maxCoordinates.x - 1L));
+            pt.y = static_cast<short>(rand->getInteger(minCoordinates.y, maxCoordinates.y - 1L));
+            pt.z = static_cast<short>(rand->getInteger(minCoordinates.z, maxCoordinates.z - 1L));
 
             ///Cell *cell = cellField->get(pt);
             CellG *cell = cellFieldG->get(pt);
@@ -690,7 +692,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     for (int i = 0; i < subgridSectionOrderVec.size(); ++i) {
         subgridSectionOrderVec[i] = i;
     }
-    random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
+    randomize_container(subgridSectionOrderVec);
+
 
     unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();
     unsigned int numberOfThreads = pUtils->getNumberOfWorkNodesPotts();
@@ -715,7 +718,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
     //FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
     Dim3D fieldDim = cellFieldG->getDim();
-    numberOfAttempts = (int) fieldDim.x * fieldDim.y * fieldDim.z * sim->getFlip2DimRatio();
+    numberOfAttempts = static_cast<size_t>( fieldDim.x * fieldDim.y * fieldDim.z * sim->getFlip2DimRatio());
     unsigned int currentStep = sim->getStep();
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
         stringstream oss;
@@ -737,8 +740,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 #pragma omp parallel
     {
 
-        int currentAttemptLocal;
-        int numberOfAttemptsLocal;
+        
+        size_t numberOfAttemptsLocal;
         Point3D flipNeighborLocal;
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
@@ -747,15 +750,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
         BoundaryStrategy *boundaryStrategy = BoundaryStrategy::getInstance();
 
         //iterating over subgridSections
-        for (int s = 0; s < subgridSectionOrderVec.size(); ++s) {
+        for (unsigned int s = 0; s < subgridSectionOrderVec.size(); ++s) {
 
             pair <Dim3D, Dim3D> sectionDims = pUtils->getPottsSection(currentWorkNodeNumber, s);
             numberOfAttemptsLocal =
-                    (int) (sectionDims.second.x - sectionDims.first.x) * (sectionDims.second.y - sectionDims.first.y) *
-                    (sectionDims.second.z - sectionDims.first.z) * sim->getFlip2DimRatio();
+                    static_cast<size_t>( (sectionDims.second.x - sectionDims.first.x) * (sectionDims.second.y - sectionDims.first.y) *
+                    (sectionDims.second.z - sectionDims.first.z) * sim->getFlip2DimRatio());
             // #pragma omp critical
 
-            for (unsigned int i = 0; i < numberOfAttemptsLocal; ++i) {
+            for (size_t i = 0; i < numberOfAttemptsLocal; ++i) {
 
                 //run fixed steppers - they are executed regardless whether spin flip take place or not .
                 // Note, regular stepers are executed only after spin flip attepmts takes place
@@ -783,9 +786,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                 Point3D pt;
 
                 // Pick a random point
-                pt.x = rand->getInteger(sectionDims.first.x, sectionDims.second.x - 1);
-                pt.y = rand->getInteger(sectionDims.first.y, sectionDims.second.y - 1);
-                pt.z = rand->getInteger(sectionDims.first.z, sectionDims.second.z - 1);
+                pt.x = static_cast<short>(rand->getInteger(sectionDims.first.x, sectionDims.second.x - 1));
+                pt.y = static_cast<short>(rand->getInteger(sectionDims.first.y, sectionDims.second.y - 1));
+                pt.z = static_cast<short>(rand->getInteger(sectionDims.first.z, sectionDims.second.z - 1));
 
                 CellG *cell = cellFieldG->getQuick(pt);
 
@@ -796,7 +799,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                         continue;
                 }
 
-                unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
+                unsigned int directIdx = static_cast<unsigned int>(rand->getInteger(0, maxNeighborIndex));
 
 
                 Neighbor n = boundaryStrategy->getNeighborDirectVoxelCopy(pt, directIdx);
@@ -949,7 +952,7 @@ Point3D Potts3D::randomPickBoundaryPixel(RandomNumberGenerator *rand) {
     int counter = 0;
     while (true) {
         ++counter;
-        long boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
+        cc3d_long_t boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
         if (boundaryPointIndex < vec_size) {
             pt = boundaryPixelVector[boundaryPointIndex];
         } else {
@@ -1039,8 +1042,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     for (int i = 0; i < subgridSectionOrderVec.size(); ++i) {
         subgridSectionOrderVec[i] = i;
     }
-    random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
-
+        randomize_container(subgridSectionOrderVec);
 
     unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();
     unsigned int numberOfThreads = pUtils->getNumberOfWorkNodesPotts();
@@ -1065,7 +1067,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
     //FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
     Dim3D fieldDim = cellFieldG->getDim();
-    numberOfAttempts = (int) fieldDim.x * fieldDim.y * fieldDim.z * sim->getFlip2DimRatio();
+    numberOfAttempts = static_cast<size_t>( fieldDim.x * fieldDim.y * fieldDim.z * sim->getFlip2DimRatio());
     unsigned int currentStep = sim->getStep();
 
 
@@ -1075,7 +1077,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     //omp_set_nested(true);
     pUtils->allowNestedParallelRegions(true);
 
-    long boundaryPointIndex;
+    //long boundaryPointIndex;
     long counter = 0;
 
     std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr;
@@ -1097,8 +1099,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 #pragma omp parallel
     {
 
-        int currentAttemptLocal;
-        //int numberOfAttemptsLocal;
+        
         Point3D flipNeighborLocal;
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
@@ -1154,7 +1155,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
                         continue;
                 }
 
-                unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
+                unsigned int directIdx = static_cast<unsigned int>(rand->getInteger(0, maxNeighborIndex));
 
                 Neighbor n = boundaryStrategy->getNeighborDirectVoxelCopy(pt, directIdx);
 
@@ -1373,7 +1374,7 @@ bool Potts3D::checkIfFrozen(unsigned char _type) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::setFrozenTypeVector(std::vector<unsigned char> &_frozenTypeVec) {
     frozenTypeVec = _frozenTypeVec;
-    sizeFrozenTypeVec = frozenTypeVec.size();
+    sizeFrozenTypeVec = static_cast<unsigned int>(frozenTypeVec.size());
 }
 
 void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
@@ -1423,7 +1424,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     // BoundaryStrategy will reinitialize neighbor list only if the new neighbor order is greater than the previous one
     unsigned int neighborOrder = 1;
 
-    float depth = 0.0;
+    double depth = 0.0;
     if (_xmlData->getFirstElement("FlipNeighborMaxDistance")) {
 
         depth = _xmlData->getFirstElement("FlipNeighborMaxDistance")->getDouble();

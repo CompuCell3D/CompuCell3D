@@ -71,8 +71,7 @@ namespace CompuCell3D {
         virtual void testLatticeSanityFull();
 
         bool isBoundaryPixel(Point3D pt);
-
-        bool watchingAllowed;
+        
         AdjacentNeighbor adjNeighbor;
         long maxIndex; //maximum field index
         long changeCounter;

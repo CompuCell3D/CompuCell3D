@@ -329,8 +329,8 @@ namespace CompuCell3D {
     void DiffusionSolverFE<Cruncher>::CheckConcentrationField(ConcentrationField_t &concentrationField) const {
 
         double sum = 0.f;
-        float minVal = numeric_limits<float>::max();
-        float maxVal = -numeric_limits<float>::max();
+        float minVal = std::numeric_limits<float>::max();
+        float maxVal = -std::numeric_limits<float>::max();
         for (int z = 1; z <= fieldDim.z; ++z) {
             for (int y = 1; y <= fieldDim.y; ++y) {
                 for (int x = 1; x <= fieldDim.x; ++x) {

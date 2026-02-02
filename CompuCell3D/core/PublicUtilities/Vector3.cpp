@@ -133,8 +133,10 @@ void Vector3::RotateUz(const Vector3& NewUzVector) {
    precision_t u2 = NewUzVector.fY;
    precision_t u3 = NewUzVector.fZ;
    precision_t up = u1*u1 + u2*u2;
+   // threshold for floating-point zero
+   const precision_t eps = std::numeric_limits<precision_t>::epsilon();
 
-   if (up) {
+   if (up > eps) {
       up = sqrt(up);
       precision_t px = fX,  py = fY,  pz = fZ;
       fX = (u1*u3*px - u2*py + u1*up*pz)/up;

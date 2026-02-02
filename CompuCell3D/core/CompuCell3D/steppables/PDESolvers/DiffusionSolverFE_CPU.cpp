@@ -963,7 +963,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
                         //loop over nearest neighbors
                         const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                        for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
+                        for (int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
                             const Point3D &offset = offsetVecRef[i];
 
                             int offX = x + offset.x;
@@ -1000,7 +1000,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
                             //loop over nearest neighbors
                             const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                            for (register int i = 0; i <= maxNeighborIndex; ++i) {
+                            for (int i = 0; i <= maxNeighborIndex; ++i) {
                                 const Point3D &offset = offsetVecRef[i];
                                 varDiffSumTerm +=
                                         diffCoef[cellTypeArray.getDirect(x + offset.x, y + offset.y, z + offset.z)] *
@@ -1023,7 +1023,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
                         //loop over nearest neighbors
                         const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 						CC3D_Log(LOG_TRACE) << "VISITING PIXEL="<<pt+Point3D(1,1,1);
-                        for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
+                        for (int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
 
                             const Point3D &offset = offsetVecRef[i];
                             signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y, z + offset.z);
@@ -1092,7 +1092,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
 
                             const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
-                            for (register int i = 0; i <= maxNeighborIndex; ++i) {
+                            for (int i = 0; i <= maxNeighborIndex; ++i) {
                                 const Point3D &offset = offsetVecRef[i];
                                 signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y, z + offset.z);
                                 float c_offset = concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);

@@ -142,7 +142,7 @@ namespace CompuCell3D {
         //////std::vector<double> variableCellTypeMu;
 
         std::vector <std::vector<mu::Parser>> parserVec;
-        std::vector <vector<double>> variableConcentrationVecMu;
+        std::vector <std::vector<double>> variableConcentrationVecMu;
         std::vector<double> variableCellTypeMu;
 
         std::string cellTypeVariableName;

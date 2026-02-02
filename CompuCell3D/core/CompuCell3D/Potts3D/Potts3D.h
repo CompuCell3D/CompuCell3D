@@ -2,6 +2,7 @@
 #define POTTS3D_H
 
 #include <CompuCell3D/Field3D/CC3D_Field3D.h>
+#include <CompuCell3D/CC3DTypes.h>
 #include <CompuCell3D/Boundary/CC3D_Boundary.h>
 #include "DefaultAcceptanceFunction.h"
 #include "FirstOrderExpansionAcceptanceFunction.h"
@@ -62,27 +63,42 @@ namespace CompuCell3D {
     template<typename T>
     class Field3DImpl;
 
-    struct Point3DHasher {
-    public:
-        size_t operator()(const Point3D &pt) const {
+    //struct Point3DHasher {
+    //public:
+    //    size_t operator()(const Point3D &pt) const {
 
-            long long int hash_val = 1e12 * pt.x + 1e6 * pt.y + pt.z;
-            return std::hash<long long int>()(hash_val);
+    //        long long int hash_val = 1e12 * pt.x + 1e6 * pt.y + pt.z;
+    //        return std::hash<long long int>()(hash_val);
+    //    }
+    //};
+
+    struct Point3DHasher {
+        size_t operator()(const Point3D& pt) const noexcept {
+            const int64_t hash_val =
+                static_cast<int64_t>(pt.x) * 1000000000000LL +
+                static_cast<int64_t>(pt.y) * 1000000LL +
+                static_cast<int64_t>(pt.z);
+            return std::hash<int64_t>()(hash_val);
         }
     };
 
     // Custom comparator that compares the string objects by length
     struct Point3DComparator {
-    public:
-        bool operator()(const Point3D &pt1, const Point3D &pt2) const {
-            long long int hash_val_1 = 1e12 * pt1.x + 1e6 * pt1.y + pt1.z;
-            long long int hash_val_2 = 1e12 * pt2.x + 1e6 * pt2.y + pt2.z;
-            if (hash_val_1 == hash_val_2)
-                return true;
-            else
-                return false;
+        bool operator()(const Point3D& a, const Point3D& b) const noexcept {
+            return a.x == b.x && a.y == b.y && a.z == b.z;
         }
     };
+    //struct Point3DComparator {
+    //public:
+    //    bool operator()(const Point3D &pt1, const Point3D &pt2) const {
+    //        long long int hash_val_1 = 1e12 * pt1.x + 1e6 * pt1.y + pt1.z;
+    //        long long int hash_val_2 = 1e12 * pt2.x + 1e6 * pt2.y + pt2.z;
+    //        if (hash_val_1 == hash_val_2)
+    //            return true;
+    //        else
+    //            return false;
+    //    }
+    //};
 
 
     /**
@@ -168,20 +184,20 @@ namespace CompuCell3D {
         //int maxNeighborOrder;
         std::vector <Point3D> neighbors;
         std::vector<unsigned char> frozenTypeVec;///lists types which will remain frozen throughout the simulation
-        unsigned int sizeFrozenTypeVec;
+        unsigned int sizeFrozenTypeVec=0;
 
         long recentlyCreatedCellId;
         long recentlyCreatedClusterId;
 
-        unsigned int currentAttempt;
-        unsigned int numberOfAttempts;
-        unsigned int maxNeighborIndex;
+        size_t currentAttempt;
+        size_t numberOfAttempts;
+        unsigned int maxNeighborIndex=0;
         unsigned int debugOutputFrequency;
         Simulator *sim;
         Point3D minCoordinates;
         Point3D maxCoordinates;
-        unsigned int attemptedEC;
-        unsigned int flips;
+        unsigned int attemptedEC=0;
+        unsigned int flips=0;
         std::unordered_map<unsigned char, float> cellTypeMotilityMap;
 
         double temperature;
@@ -207,13 +223,13 @@ namespace CompuCell3D {
 
         double getTemperature() const { return temperature; }
 
-        unsigned int getCurrentAttempt() { return currentAttempt; }
+        size_t getCurrentAttempt() { return currentAttempt; }
 
-        unsigned int getNumberOfAttempts() { return numberOfAttempts; }
+        size_t  getNumberOfAttempts() { return numberOfAttempts; }
 
-        unsigned int getNumberOfAttemptedEnergyCalculations() { return attemptedEC; }
+        size_t  getNumberOfAttemptedEnergyCalculations() { return attemptedEC; }
 
-        unsigned int getNumberOfAcceptedSpinFlips() { return flips; }
+        size_t  getNumberOfAcceptedSpinFlips() { return flips; }
 
         void registerConnectivityConstraint(EnergyFunction *_connectivityConstraint);
 
@@ -405,7 +421,7 @@ namespace CompuCell3D {
         ExtraMembersGroupFactory *getCellFactoryGroupPtr() { return &cellFactoryGroup; };
 
         /// @return The current number of cells in the field.
-        virtual unsigned int getNumCells() { return cellInventory.getCellInventorySize(); }
+        virtual size_t getNumCells() { return cellInventory.getCellInventorySize(); }
 
 
         /// @return The current size in bytes of a cell.

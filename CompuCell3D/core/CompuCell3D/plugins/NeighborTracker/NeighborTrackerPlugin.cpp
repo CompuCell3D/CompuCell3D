@@ -15,7 +15,10 @@ NeighborTrackerPlugin::NeighborTrackerPlugin() :
         periodicX(false),
         periodicY(false),
         periodicZ(false),
-
+        cellInventoryPtr(nullptr),
+        lockPtr(nullptr),
+    maxIndex(0),
+    simulator(nullptr),
         maxNeighborIndex(0),
         boundaryStrategy(0) {
 
@@ -131,8 +134,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
 
     if (oldCell) {
 
-        /// Now will adjust common surface area with cell neighbors
-        long temp_index;
+        /// Now will adjust common surface area with cell neighbors        
         for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
             neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D &>(pt), nIdx);
             if (!neighbor.distance) {

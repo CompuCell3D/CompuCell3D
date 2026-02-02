@@ -1262,7 +1262,7 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
 
 
                     const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                    for (register unsigned int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
+                    for (unsigned int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
                         const Point3D &offset = offsetVecRef[i];
 
                         if (diffData.avoidTypeIdSet.size() ||

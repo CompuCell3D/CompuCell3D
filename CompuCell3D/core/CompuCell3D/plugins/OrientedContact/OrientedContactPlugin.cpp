@@ -3,7 +3,7 @@
 #include <CompuCell3D/CC3D.h>
 #include <cmath>
 #include <limits>
-
+using namespace std;
 using namespace CompuCell3D;
 
 #include "OrientedContactPlugin.h"

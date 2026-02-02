@@ -8,6 +8,8 @@
 #include <list>
 #include <vector>
 #include "XMLUtilsDLLSpecifier.h"
+
+
 class CC3DXMLElement;
 
 class XMLUTILS_EXPORT CC3DXMLElementPtrT
@@ -42,10 +44,10 @@ class XMLUTILS_EXPORT CC3DXMLElement{
 public:
 
     CC3DXMLElement(std::string  _name, std::map<std::string,std::string> _attributes, std::string _cdata="");
-    ~CC3DXMLElement();
+    virtual ~CC3DXMLElement();
 
-    void writeCC3DXMLElement(std::ostream &_out, int _indent=0);
-    void writeCC3DXMLElementInPython(std::ostream &_out, std::string _parentElement, int _indent=4,bool _commentElemFlag=false);
+    void writeCC3DXMLElement(std::ostream &_out, unsigned int _indent=0);
+    void writeCC3DXMLElementInPython(std::ostream &_out, std::string _parentElement, std::size_t _indent=4,bool _commentElemFlag=false);
 
     virtual std::string getCC3DXMLElementString();
 
@@ -90,7 +92,7 @@ public:
     virtual void updateElementAttributes(std::map<std::string,std::string> * _attributes=0);
     virtual void updateElementValue(std::string _cdata);
 
-    virtual unsigned int getNumberOfChildren();
+	virtual std::size_t getNumberOfChildren() const;
 
     //Convenience functions to facilitate conversions from text to numbers/other types
 
@@ -121,7 +123,7 @@ public:
 
 	
 private:
-	int defaultIndent;
+	unsigned int defaultIndent;
 	//std::map<std::string,int> elemNameCounterDict;
 	std::map<std::string,int> *elemNameCounterDictPtr;
 };
