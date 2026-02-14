@@ -84,9 +84,10 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 7)
+set(COMPUCELL3D_MINOR_VERSION 8)
 set(COMPUCELL3D_BUILD_VERSION 0)
-set(COMPUCELL3D_REV_NUMBER 20250621)
+set(COMPUCELL3D_REV_NUMBER 20260214)
+set(COMPUCELL3D_BUILD_NUMBER 1)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -105,6 +106,31 @@ message("COMPUCELL3D_C_BUILD_VERSION is " ${COMPUCELL3D_C_BUILD_VERSION})
 SET(COMPUCELL3D_VERSION "${COMPUCELL3D_MAJOR_VERSION}.${COMPUCELL3D_MINOR_VERSION}.${COMPUCELL3D_BUILD_VERSION}")
 
 message("GOT VERSION AS ${COMPUCELL3D_VERSION}")
+
+
+# ------------------------------------------------------------------
+# Generate Python version file with git hash
+# ------------------------------------------------------------------
+
+set(CC3D_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(CC3D_VERSION_SCRIPT ${CC3D_ROOT}/cc3d/scripts/generate_version.py)
+
+execute_process(
+    COMMAND ${Python3_EXECUTABLE}
+        ${CC3D_VERSION_SCRIPT}
+        --version ${COMPUCELL3D_VERSION}
+        --revision ${COMPUCELL3D_REV_NUMBER}
+        --build-number ${COMPUCELL3D_BUILD_NUMBER}
+    WORKING_DIRECTORY ${CC3D_ROOT}
+    RESULT_VARIABLE VERSION_SCRIPT_RESULT
+)
+
+if(NOT VERSION_SCRIPT_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate cc3d version file")
+endif()
+
+message(STATUS "Generated cc3d/_version.py with git hash ${COMPUCELL3D_VERSION}")
+
 
 # Set internal platform def
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
