@@ -87,7 +87,7 @@ set(COMPUCELL3D_MAJOR_VERSION 4)
 set(COMPUCELL3D_MINOR_VERSION 8)
 set(COMPUCELL3D_BUILD_VERSION 0)
 set(COMPUCELL3D_REV_NUMBER 20260214)
-set(COMPUCELL3D_BUILD_NUMBER 1)
+set(COMPUCELL3D_BUILD_NUMBER 0)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
