@@ -5,5 +5,5 @@ Do NOT edit manually.
 
 __version__ = "4.7.0"
 __revision__ = "20260214"
-__build_number__ = 1
-__githash__ = "0ad54ed1"
+__build_number__ = 0
+__githash__ = "a4dba3f5"
