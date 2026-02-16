@@ -6,4 +6,4 @@ Do NOT edit manually.
 __version__ = "4.7.0"
 __revision__ = "20260214"
 __build_number__ = 0
-__githash__ = "a4dba3f5"
+__githash__ = "4cdb2362"
