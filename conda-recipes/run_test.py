@@ -47,8 +47,7 @@ def main():
     print()
 
     # Create modified environment to bypass limitation imposed by maboss issues on windows
-    env = os.environ.copy()
-    env["CC3D_DISABLE_MABOSS"] = "1"
+    os.environ["CC3D_DISABLE_MABOSS"] = "1"
 
     # from cc3d.cpp import CompuCell
     # sys.exit(0)
