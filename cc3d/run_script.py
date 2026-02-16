@@ -6,9 +6,6 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.RollbackImporter import RollbackImporter
 
-"""
--i d:\CC3DProjects\bac_mac_restart_100\bacterium_macrophage_2D_steering.cc3d -f 10 -fr 100 --restart-multiple-snapshots
-"""
 
 def process_cml(known_args=None):
     """

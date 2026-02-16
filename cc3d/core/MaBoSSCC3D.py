@@ -20,15 +20,34 @@ from typing import Dict, Optional
 from cc3d.cpp import CompuCell
 from cc3d.core.CellInventoryWatcher import CellInventoryWatcher
 from cc3d import CompuCellSetup
-try:
-    from cc3dext import MaBoSSCC3DPy
-    maboss_engine_type = MaBoSSCC3DPy.CC3DMaBoSSEngine
-    maboss_engine_container_type = MaBoSSCC3DPy.CC3DMaBoSSEngineContainer
-    __has_extension__ = True
-except ModuleNotFoundError:
+
+# Environment variable to disable MaBoSS extension
+_DISABLE_MABOSS = os.environ.get("CC3D_DISABLE_MABOSS", "0") == "1"
+
+if not _DISABLE_MABOSS:
+    try:
+        from cc3dext import MaBoSSCC3DPy
+        maboss_engine_type = MaBoSSCC3DPy.CC3DMaBoSSEngine
+        maboss_engine_container_type = MaBoSSCC3DPy.CC3DMaBoSSEngineContainer
+        __has_extension__ = True
+    except ModuleNotFoundError:
+        __has_extension__ = False
+        maboss_engine_type = object
+        maboss_engine_container_type = object
+else:
     __has_extension__ = False
     maboss_engine_type = object
     maboss_engine_container_type = object
+
+# try:
+#     from cc3dext import MaBoSSCC3DPy
+#     maboss_engine_type = MaBoSSCC3DPy.CC3DMaBoSSEngine
+#     maboss_engine_container_type = MaBoSSCC3DPy.CC3DMaBoSSEngineContainer
+#     __has_extension__ = True
+# except ModuleNotFoundError:
+#     __has_extension__ = False
+#     maboss_engine_type = object
+#     maboss_engine_container_type = object
 
 
 class NoMaBoSSExtensionError(Exception):
