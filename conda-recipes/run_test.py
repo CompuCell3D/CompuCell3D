@@ -1,4 +1,5 @@
 import os
+import sys
 # Create modified environment to bypass limitation imposed by maboss issues on windows
 if  sys.platform.startswith("win"):
     os.environ["CC3D_DISABLE_MABOSS"] = "1"
