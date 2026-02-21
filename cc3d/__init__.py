@@ -30,7 +30,7 @@ def get_version_info():
     returns CC3D version string
     :return:
     """
-    return f"CompuCell3D Version: {__version__} Build NUmber: {__build_number__} Revision: {__revision__} \n Commit Label: {__githash__}"
+    return f"CompuCell3D Version: {__version__} Build Number: {__build_number__} Revision: {__revision__} \n Commit Label: {__githash__}"
 
 
 def get_formatted_version_info():

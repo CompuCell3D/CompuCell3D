@@ -82,6 +82,7 @@ def main():
             fout.write("{}\n".format(abspath(cc3d_project)))
 
     error_runs = []
+    ok_runs = []
 
     os.environ["CC3D_TEST_OUTPUT_DIR"] = rs.test_output_root
     os.environ["CC3D_TEST_OUTPUT_SUMMARY"] = join(rs.test_output_root, "test_summary.csv")
@@ -116,6 +117,11 @@ def main():
             )
 
             cc3d_simulation_tests_output_summary_df.to_csv(errors_summary_path, index=False)
+        else:
+            ok_runs.append(cc3d_project)
+
+    print(f"Number runs {len(simulations_to_run)}")
+    print(f"Number of OK runs {len(ok_runs)}")
 
     if not len(error_runs):
         print("\n-----------------ALL SIMULATIONS RUN SUCCESSFULLY----------------------\n")

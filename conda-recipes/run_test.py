@@ -1,7 +1,12 @@
+import os
+# Create modified environment to bypass limitation imposed by maboss issues on windows
+if  sys.platform.startswith("win"):
+    os.environ["CC3D_DISABLE_MABOSS"] = "1"
+
 from cc3d.tests import simulation_tester
 from cc3d.tests.plugin_test_suite import regression_tests_runner
 from cc3d import cc3d_scripts_path
-import os
+
 import subprocess
 import sys
 from pathlib import Path
@@ -45,9 +50,6 @@ def main():
     print('-----------------PERFORMING CC3D TESTS----------------------')
     print('Generating test results data in', test_dir)
     print()
-
-    # Create modified environment to bypass limitation imposed by maboss issues on windows
-    os.environ["CC3D_DISABLE_MABOSS"] = "1"
 
     # from cc3d.cpp import CompuCell
     # sys.exit(0)
