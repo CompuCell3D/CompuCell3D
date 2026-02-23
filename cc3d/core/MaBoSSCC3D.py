@@ -15,6 +15,8 @@ Defines helpers and steppable class features for using MaBoSS in CC3D Python
 
 """
 import os
+import sys
+import atexit
 import tempfile
 from typing import Dict, Optional
 from cc3d.cpp import CompuCell
@@ -318,6 +320,23 @@ class MaBoSSHelper:
             return maboss_container_stats(CompuCellSetup.persistent_globals.maboss_simulators, model_name, node_name)
         return {}
 
+def silent_exit():
+    """
+    Intercepts the exit process. If we are in a state where
+    MinGW might crash, we exit the process manually first.
+    For Maboss this nuclear option seems to be a good solution because the non-zero error code happens on exit only
+    and the actual simulation behaves properly
+    """
+    if __has_extension__:
+        # Flush buffers so we don't lose logs
+        sys.stdout.flush()
+        sys.stderr.flush()
+        # os._exit ignores all cleanup handlers (where the crash happens)
+        # and returns 0 to the OS.
+        os._exit(0)
+
+# Registering atexit handler
+atexit.register(silent_exit)
 
 if not __has_extension__:
     MaBoSSHelper = object

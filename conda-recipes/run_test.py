@@ -1,8 +1,8 @@
 import os
-import sys
-# Create modified environment to bypass limitation imposed by maboss issues on windows
-if  sys.platform.startswith("win"):
-    os.environ["CC3D_DISABLE_MABOSS"] = "1"
+# import sys
+# # Create modified environment to bypass limitation imposed by maboss issues on windows
+# if  sys.platform.startswith("win"):
+#     os.environ["CC3D_DISABLE_MABOSS"] = "1"
 
 from cc3d.tests import simulation_tester
 from cc3d.tests.plugin_test_suite import regression_tests_runner

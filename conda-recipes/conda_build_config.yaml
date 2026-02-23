@@ -8,12 +8,14 @@
 
 
 c_compiler: 
-  - vs2015 # [win]
+#  - vs2015 # [win]
+  - vs2019 # [win]
   - gcc # [linux]
   - clang # [osx]
 
-cxx_compiler: 
-  - vs2015 # [win]
+cxx_compiler:
+  - vs2019 # [win]
+#  - vs2015 # [win]
   - gxx # [linux]
   - clangxx # [osx]
 

@@ -328,7 +328,7 @@ class CMLResultReader:
 
         core_name, ext = os.path.splitext(os.path.basename(file_name))
 
-        mcs_extractor_regex = re.compile('([\D]*)([0-9]*)')
+        mcs_extractor_regex = re.compile(r'([\D]*)([0-9]*)')
         match = re.match(mcs_extractor_regex, core_name)
 
         if match:
