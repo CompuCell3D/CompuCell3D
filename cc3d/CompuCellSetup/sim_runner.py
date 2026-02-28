@@ -3,7 +3,7 @@ import sys
 from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
-from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
+from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError, extract_error_block
 from cc3d.cpp import CompuCell
 
 
@@ -34,11 +34,10 @@ def handle_error(exception_obj):
 
     # printing python stack trace for Python errors
     tb = traceback.format_exc()
+    error_description, error_block = extract_error_block(tb)
 
-    formatted_lines = tb.splitlines()
-    error_description_line = formatted_lines[-1]
-
-    traceback_text = "Error: " + error_description_line + "\n"
+    traceback_text = "Error: " + error_description + "\n"
+    traceback_text += error_block + "\n\n"
     traceback_text += tb
 
     if simthread is not None:
@@ -104,3 +103,4 @@ def run_cc3d_project(cc3d_sim_fname):
                     sys.exit(1)
         if CompuCellSetup.persistent_globals.simulator:
             CompuCellSetup.persistent_globals.simulator.cleanAfterSimulation()
+

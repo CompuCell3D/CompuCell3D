@@ -223,7 +223,10 @@ def validate_cc3d_schema(root_element):
     clean_messages = list(dict.fromkeys(clean_messages))
 
     raise RuntimeError(
-        "Invalid CC3D XML:\n\n" +
+        "Invalid CC3D XML:"
+        "Make sure that Metadata, Potts,Plugins and Steppable sections are declared in this order. "
+        "Avoid declaring Plugin in the steppable section or vice versa "
+        "\n\n" +
         "\n\n".join(clean_messages)
     )
 
