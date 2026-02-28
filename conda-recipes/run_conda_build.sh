@@ -57,7 +57,7 @@ if [ $exit_code -eq 1 ]; then
 else
   echo "boa is not available in PATH"
 #  conda render . -e "$config_yaml"
-  conda mambabuild -c conda-forge -c compucell3d . --python="$PYTHON_VERSION" -e "$config_yaml"
+  conda build -c conda-forge -c compucell3d . --python="$PYTHON_VERSION" -e "$config_yaml"
 
 fi
 

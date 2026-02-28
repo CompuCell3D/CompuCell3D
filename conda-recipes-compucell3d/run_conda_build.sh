@@ -25,7 +25,7 @@ if [ $exit_code -eq 1 ]; then
   conda mambabuild -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
 else
   echo "boa is not available in PATH"
-  conda mambabuild -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
+  conda build -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
 
 fi
 # conda render .
