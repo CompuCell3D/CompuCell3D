@@ -51,9 +51,7 @@ class SBMLSolverSteppable(SteppableBasePy):
         self.timestep_sbml()
 
         cell_20 = self.fetch_cell_by_id(20)
-        print('cell_20, dp=', cell_20.sbml.dp.values())
 
-        print('Free Floating Medium_dp2', self.sbml.Medium_dp2.values())
         if mcs == 3:
             Medium_dp2 = self.sbml.Medium_dp2
             Medium_dp2['S1'] = 10
