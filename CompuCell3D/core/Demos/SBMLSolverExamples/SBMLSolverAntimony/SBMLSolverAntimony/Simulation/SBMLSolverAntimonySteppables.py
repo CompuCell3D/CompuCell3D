@@ -53,8 +53,12 @@ class IdFieldVisualizationSteppable(SteppableBasePy):
         id_field_s1 = self.field.IdFieldS1
         id_field_s2 = self.field.IdFieldS2
         for cell in self.cell_list:
-            sbml_values = cell.sbml.dp.values()
-            id_field_s1[cell] = sbml_values[0]
-            id_field_s2[cell] = sbml_values[1]
+            # note , the "dp" is the name of the road runner model we used int he start function
+            road_runner_model = cell.sbml.dp
+            s1 = road_runner_model["S1"]
+            s2 = road_runner_model["S2"]
+
+            id_field_s1[cell] = s1
+            id_field_s2[cell] = s2
             if cell.id == 1:
-                print(sbml_values)
+                print(s1, s2)
