@@ -8,16 +8,17 @@ import os
 import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
+from ._version import __version__, __revision__, __githash__, __build_number__
 
-__version__ = "4.7.0"
-__revision__ = "5"
-__githash__ = "f401d6d"
+# __version__ = "4.8.0"
+# __revision__ = "1"
+# __githash__ = "0ad54ed1"
 
 
 from cc3d import config
 
 def get_version_revision_str():
-    return f"{__version__}.{__revision__}"
+    return f"{__version__}.{__build_number__}.{__revision__}"
 
 
 def get_version_str():
@@ -29,7 +30,7 @@ def get_version_info():
     returns CC3D version string
     :return:
     """
-    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {__githash__}"
+    return f"CompuCell3D Version: {__version__} Build Number: {__build_number__} Revision: {__revision__} \n Commit Label: {__githash__}"
 
 
 def get_formatted_version_info():

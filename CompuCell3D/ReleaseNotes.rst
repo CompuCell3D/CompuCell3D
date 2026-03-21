@@ -1,6 +1,29 @@
 Release Notes
 =============
 
+Version 4.8.0
+-------------
+**2026-02-14**
+
+New features:
+ - Improved XML schema validation with enhanced error detection and support for extended elements
+ - Added support for accessing chemical concentration fields as NumPy arrays
+ - Added utilities for retrieving model unit conversion factors
+ - Improved error handling framework with safe callback mechanism and enhanced error reporting
+
+Improvements:
+ - Introduced single source of truth for version, revision ,git hash and build number
+ - Refactored movie generation logic into reusable modules
+ - Improved cross-platform compatibility, including Windows and macOS build and runtime fixes
+ - Improved XML generation and validation behavior for solver and plugin specifications
+ - Improved handling and visualization of units in both 2D and 3D views
+
+Bug fixes:
+ - Fixed multiple issues related to movie generation, file handling, and folder access
+ - Fixed issues with XML schema validation and configuration handling
+ - Fixed platform-specific issues affecting builds and runtime behavior
+ - Multiple minor bug fixes and stability improvements
+
 
 Version 4.7.0
 -------------

@@ -59,6 +59,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
                 if cell.type == self.NONCONDENSING:
                     sbml_model = cell.sbml._rr_OSCIL
                     print('sbml_model=',sbml_model)
+                    print_model_float_values(sbml_model=sbml_model)
                     print('S1=',sbml_model['S1'])
                     break
 
@@ -71,3 +72,13 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
 
         self.pW.showAllPlots()
         self.timestep_sbml()
+
+def print_model_float_values(sbml_model):
+    for name in dir(sbml_model):
+        if not name.startswith("_"):
+            try:
+                value = getattr(sbml_model, name)
+                if isinstance(value, (int, float)):
+                    print(name, value)
+            except:
+                pass

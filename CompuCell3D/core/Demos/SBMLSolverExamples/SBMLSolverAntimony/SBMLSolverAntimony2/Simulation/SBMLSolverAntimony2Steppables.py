@@ -73,7 +73,7 @@ class SecretionSteppable(SecretionBasePy):
                 this_secrete_s2 = 0
 
             pixel_list = CellPixelList(self.pixelTrackerPlugin, cell)
-            sbml_values = cell.sbml.dpType1.values()
+
             s1_consumed = 0
             for pixel_data in pixel_list:
                 pt = pixel_data.pixel
