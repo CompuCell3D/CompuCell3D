@@ -277,12 +277,15 @@ class GraphicsFrame:
         metadata_dict = {'BorderColor': color_to_rgba(self.config.getSetting('BorderColor')),
                          'ClusterBorderColor': color_to_rgba(self.config.getSetting('ClusterBorderColor')),
                          'BoundingBoxColor': color_to_rgba(self.config.getSetting('BoundingBoxColor')),
+                         'BackgroundWindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
                          'AxesColor': color_to_rgba(self.config.getSetting('AxesColor')),
                          'ContourColor': color_to_rgba(self.config.getSetting('ContourColor')),
                          'WindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
                          'FPPLinksColor': color_to_rgba(self.config.getSetting('FPPLinksColor')),
                          'ShowHorizontalAxesLabels': self.config.getSetting('ShowHorizontalAxesLabels'),
-                         'ShowVerticalAxesLabels': self.config.getSetting('ShowVerticalAxesLabels')}
+                         'ShowVerticalAxesLabels': self.config.getSetting('ShowVerticalAxesLabels'),
+                         'DisplayUnits': self.config.getSetting('DisplayUnits')
+                         }
 
         # type-color map
         type_color_map_dict = OrderedDict()

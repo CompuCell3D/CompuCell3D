@@ -333,6 +333,8 @@ def get_core_simulation_objects():
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
     persistent_globals.xml_id_locator = XMLIdLocator(root_elem=persistent_globals.cc3d_xml_2_obj_converter.root)
     persistent_globals.xml_id_locator.locate_id_elements()
+    # initializing time and length conversion factors
+    persistent_globals.init_conversion_factors()
 
     init_modules(simulator, persistent_globals.cc3d_xml_2_obj_converter)
 

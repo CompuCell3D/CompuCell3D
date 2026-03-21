@@ -171,23 +171,27 @@ class XMLIdLocator:
         children = elem.children
         self.node_stack.append(elem)
 
-        if elem.name in ['Potts', 'Plugin', 'Steppable']:
+        if elem.name in ['Potts', 'Plugin', 'Steppable', 'Metadata']:
             self.super_parent_stack.append(elem)
 
         # direct iteration like for child_elem in  root_elem.children: does not work with SWIG
         for child_idx in range(children.size()):
             child = children[child_idx]
             attributes = child.getAttributes()
+
             if 'id' in attributes.keys():
-                elem_with_id = XMLElemAdapter(reference_elem=child, super_parent=self.super_parent_stack[-1])
-                id_attr = child.getAttribute('id')
-                self.id_elements_dict[id_attr] = elem_with_id
+
+                if len(self.super_parent_stack):
+                    # we are only keeping track of "id" elements inside steppables and plugins
+                    elem_with_id = XMLElemAdapter(reference_elem=child, super_parent=self.super_parent_stack[-1])
+                    id_attr = child.getAttribute('id')
+                    self.id_elements_dict[id_attr] = elem_with_id
 
             # print(attributes)
             self.walk_and_locate_id_elements(elem=child)
 
         popped_elem = self.node_stack.pop()
-        if popped_elem.name in ['Potts', 'Plugin', 'Steppable']:
+        if popped_elem.name in ['Potts', 'Plugin', 'Steppable', "Metadata"]:
             self.super_parent_stack.pop()
 
     def get_xml_element(self, tag: str) -> Union[XMLElemAdapter, None]:

@@ -59,11 +59,13 @@ class ExtraMultiPlotSteppable(SteppableBasePy):
         self.plot_win_sur = None
 
     def start(self):
-        config_options_1 = {'background': 'white111', 'legend': False}
+        config_options_1 = {'background': 'white', 'legend': False}
         config_options_2 = {'background': 'green', 'legend': True}
 
         self.plot_win_vol = self.add_new_plot_window(title='Average Volume', x_axis_title='MonteCarlo Step (MCS)',
-                                                     y_axis_title='Average Volume', config_options=config_options_1)
+                                                     y_axis_title='Average Volume', config_options=config_options_1,
+                                                     x_scale_type='log', y_scale_type='log'
+                                                     )
         self.plot_win_vol.add_plot(plot_name='MVol', style='Dots', color='red', size=5)
 
         self.plot_win_sur = self.add_new_plot_window(title='Average Surface', x_axis_title='MonteCarlo Step (MCS)',

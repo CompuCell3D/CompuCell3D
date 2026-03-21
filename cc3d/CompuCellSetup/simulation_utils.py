@@ -1,3 +1,5 @@
+import re
+
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
 from pathlib import Path
@@ -163,4 +165,33 @@ def str_to_int_container(s: str, container: str = 'list') -> Union[List[str], Di
 
     return container_int
 
+
+def extract_error_block(tb: str):
+    """
+    Extracts:
+      - error_description (without the 'RuntimeError:' prefix)
+      - full error block (header + following lines)
+
+    Returns:
+        (error_description: str, error_block: str)
+    """
+
+    lines = tb.splitlines()
+
+    error_pattern = re.compile(r'^\s*([\w\.]+Error):\s*(.*)')
+
+    for i, line in enumerate(lines):
+        match = error_pattern.match(line)
+        if match:
+            # Extract main description
+            error_description = match.group(2).strip()
+
+            # Capture this line + all lines after it
+            error_block_lines = lines[i:]
+            error_block = "\n".join(error_block_lines)
+
+            return error_description, error_block
+
+    # fallback
+    return "Unknown error", tb
 

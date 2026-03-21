@@ -1,13 +1,7 @@
-# add better version handling to meta.yaml
-# when building as standalone package uncomment line below and set version and build_number to proper values
-#{% set data = load_file_data('versions.yaml') %}
-# note you also need to create links to  libGLso and libGLX.so  in /usr/lib because cmake is unable to find them elsewhere
-
-
 {% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
 
 {% set version = versions.get('version') %}
-{% set build_number = versions.get('build_number',0) %}
+{% set build_number = versions.get('build_number', 0) %}
 {% set numpy_version = versions.get('numpy_version') %}
 {% set cc3d_network_solvers_version = versions.get('cc3d_network_solvers_version') %}
 {% set cmake_version = versions.get('cmake_version') %}
@@ -15,7 +9,6 @@
 {% set swig_version = versions.get('swig_version') %}
 {% set boost_version = versions.get('boost_version') %}
 {% set tbb_devel_version = versions.get('tbb_devel_version') %}
-
 
 package:
   name: cc3d
@@ -27,20 +20,24 @@ about:
   license_file: ../CompuCell3D/License.txt
   summary: Multiscale multicellular virtual tissue modeling and simulation environment
 
-extra:
-  maintainers: T.J. Sego, Maciek Swat
-
 source:
-  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
   path: ../
 
 build:
   number: {{ build_number }}
   ignore_run_exports:
-    # Mitigating hard dependency on tbb by tbb-devel
     - tbb
 
 requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }}  # [osx]
+    - cmake={{ cmake_version }}
+    - swig>={{ swig_version }}
+    - python {{ python }}
+    - pip>=23.0
+
   host:
     - python {{ python }}
     - numpy={{ numpy_version }}
@@ -49,46 +46,23 @@ requirements:
     - tbb-devel={{ tbb_devel_version }}
     - boost>={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
-    - cmake={{ cmake_version }}
-    - swig>={{ swig_version }}
     - psutil
     - deprecated
-#    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - {{ openmp }} # [osx]
-
-  build:
-    - pip>=23.0
-    - cmake={{ cmake_version }}
-    - swig>={{ swig_version }}
-    - numpy={{ numpy_version }}
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - {{ openmp }} # [osx]
 
   run:
-    - pip>=23.0
     - python {{ python }}
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
     - eigen
-    - tbb-devel={{ tbb_devel_version }}
     - boost={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
-    - swig>={{ swig_version }}
     - psutil
     - deprecated
     - scipy
     - pandas
     - jinja2
-    - deprecated
-    - psutil
-    - cmake={{ cmake_version }}
+    - lxml
     - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - {{ openmp }} # [osx]
     - simservice
     - notebook
     - ipywidgets
@@ -96,10 +70,111 @@ requirements:
     - sphinx
     - graphviz
 
-
   run_constrained:
     - tbb={{ tbb_devel_version }}
-
-# on windows we can run conda
-#  build . -c conda-forge -c compucell3d to force conda to use
-#  specified channels as sources of packages
+## add better version handling to meta.yaml
+## when building as standalone package uncomment line below and set version and build_number to proper values
+##{% set data = load_file_data('versions.yaml') %}
+## note you also need to create links to  libGLso and libGLX.so  in /usr/lib because cmake is unable to find them elsewhere
+#
+#
+#{% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
+#
+#{% set version = versions.get('version') %}
+#{% set build_number = versions.get('build_number',0) %}
+#{% set numpy_version = versions.get('numpy_version') %}
+#{% set cc3d_network_solvers_version = versions.get('cc3d_network_solvers_version') %}
+#{% set cmake_version = versions.get('cmake_version') %}
+#{% set vtk_version = versions.get('vtk_version') %}
+#{% set swig_version = versions.get('swig_version') %}
+#{% set boost_version = versions.get('boost_version') %}
+#{% set tbb_devel_version = versions.get('tbb_devel_version') %}
+#
+#
+#package:
+#  name: cc3d
+#  version: {{ version }}
+#
+#about:
+#  home: https://compucell3d.org
+#  license: MIT
+#  license_file: ../CompuCell3D/License.txt
+#  summary: Multiscale multicellular virtual tissue modeling and simulation environment
+#
+#extra:
+#  maintainers: T.J. Sego, Maciek Swat
+#
+#source:
+#  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
+#  path: ../
+#
+#build:
+#  number: {{ build_number }}
+#  ignore_run_exports:
+#    # Mitigating hard dependency on tbb by tbb-devel
+#    - tbb
+#
+#requirements:
+#  host:
+#    - python {{ python }}
+#    - numpy={{ numpy_version }}
+#    - vtk={{ vtk_version }}
+#    - eigen
+#    - tbb-devel={{ tbb_devel_version }}
+#    - boost>={{ boost_version }}
+#    - libboost-python-devel>={{ boost_version }}
+#    - cmake={{ cmake_version }}
+#    - swig>={{ swig_version }}
+#    - psutil
+#    - deprecated
+##    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
+#    - {{ compiler('c') }}
+#    - {{ compiler('cxx') }}
+#    - {{ openmp }} # [osx]
+#
+#  build:
+#    - pip>=23.0
+#    - cmake={{ cmake_version }}
+#    - swig>={{ swig_version }}
+#    - numpy={{ numpy_version }}
+#    - {{ compiler('c') }}
+#    - {{ compiler('cxx') }}
+#    - {{ openmp }} # [osx]
+#
+#  run:
+#    - pip>=23.0
+#    - python {{ python }}
+#    - numpy={{ numpy_version }}
+#    - vtk={{ vtk_version }}
+#    - eigen
+#    - tbb-devel={{ tbb_devel_version }}
+#    - boost={{ boost_version }}
+#    - libboost-python-devel>={{ boost_version }}
+#    - swig>={{ swig_version }}
+#    - psutil
+#    - deprecated
+#    - scipy
+#    - pandas
+#    - jinja2
+#    - lxml
+#    - deprecated
+#    - psutil
+#    - cmake={{ cmake_version }}
+#    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
+#    - {{ compiler('c') }}
+#    - {{ compiler('cxx') }}
+#    - {{ openmp }} # [osx]
+#    - simservice
+#    - notebook
+#    - ipywidgets
+#    - ipyvtklink
+#    - sphinx
+#    - graphviz
+#
+#
+#  run_constrained:
+#    - tbb={{ tbb_devel_version }}
+#
+## on windows we can run conda
+##  build . -c conda-forge -c compucell3d to force conda to use
+##  specified channels as sources of packages

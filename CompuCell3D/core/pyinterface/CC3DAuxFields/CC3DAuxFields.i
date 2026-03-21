@@ -61,6 +61,14 @@ using namespace CompuCell3D;
 //typedef std::vector<size_t>::size_type array_size_t;
 
 %include "stdint.i"
+
+%include "swig_includes/numpy.i"
+
+%init %{
+    import_array();
+%}
+
+
 //needed for mapping between size_t/array_size_t and Python long integers
 %typemap(out) size_t {
     $result = PyLong_FromSize_t($1);

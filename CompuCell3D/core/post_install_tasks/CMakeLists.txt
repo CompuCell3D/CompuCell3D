@@ -47,6 +47,7 @@ endif(BUILD_STANDALONE)
 if(BUILD_PYINTERFACE)
     INSTALL(FILES  ${cc3d_py_source_dir}/__init__.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
     INSTALL(FILES  ${cc3d_py_source_dir}/run_script.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
+    INSTALL(FILES  ${cc3d_py_source_dir}/_version.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
 
     INSTALL(DIRECTORY  ${cc3d_py_source_dir}/CompuCellSetup DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}
         PATTERN "*.svn" EXCLUDE
@@ -76,6 +77,15 @@ if(BUILD_PYINTERFACE)
         PATTERN "*.bak" EXCLUDE
         PATTERN "__pycache__" EXCLUDE
         PATTERN ${cc3d_py_source_dir}/doc/*)
+
+    INSTALL(DIRECTORY  ${cc3d_py_source_dir}/scripts DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/scripts/*)
 
     INSTALL(DIRECTORY  ${cc3d_py_source_dir}/tests DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}
         PATTERN "*.svn" EXCLUDE

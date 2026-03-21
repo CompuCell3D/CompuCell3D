@@ -315,7 +315,7 @@ class GenericDrawer:
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        actor_specs_final = view.prepare_axes_actors(actor_specs=actor_specs)
+        actor_specs_final = view.prepare_axes_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         camera = view.getCamera()
         if actor_specs_final.metadata is None:
             actor_specs_final.metadata = {'camera': camera}
@@ -403,7 +403,7 @@ class GenericDrawer:
 
         if draw_fcn is not None:
             # removing all current actors
-            view.clear_scene()
+            view.clear_scene(drawing_params=drawing_params)
 
             draw_fcn(drawing_params=drawing_params)
 
@@ -442,12 +442,15 @@ class GenericDrawer:
                     self.draw_axes(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
-
             # we allow resetting of camera properties only in the non-interactive mode
             # in the interactive mode camera is managed by the GUI
             if not self.interactive_camera_flag:
                 if screenshot_data.clippingRange is not None:
                     view.set_custom_camera(camera_settings=screenshot_data)
+
+
+                # print(f"{i}: {a2d.GetNextActor2D().GetClassName()}")
+
 
     def output_screenshot(self, screenshot_fname, file_format='png', screenshot_data=None):
         """

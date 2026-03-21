@@ -132,8 +132,8 @@ class RestartManager:
             return
 
         import re
-        dimRegex = re.compile('([\s\S]*.ElementCC3D\([\s]*"Dimensions")([\S\s]*)(\)[\s\S]*)')
-        commentRegex = re.compile('^([\s]*#)')
+        dimRegex = re.compile(r'([\s\S]*.ElementCC3D\([\s]*"Dimensions")([\S\s]*)(\)[\s\S]*)')
+        commentRegex = re.compile(r'^([\s]*#)')
 
         try:
             fXMLNew = open(_fileName + '.new', 'w')
@@ -176,7 +176,7 @@ class RestartManager:
             return
 
         import re
-        dimRegex = re.compile('([\s]*<Dimensions)([\S\s]*)(/>[\s]*)')
+        dimRegex = re.compile(r'([\s]*<Dimensions)([\S\s]*)(/>[\s]*)')
 
         try:
             fXMLNew = open(_fileName + '.new', 'w')

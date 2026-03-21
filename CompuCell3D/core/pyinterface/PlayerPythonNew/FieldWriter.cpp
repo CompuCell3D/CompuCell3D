@@ -12,6 +12,7 @@
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkCharArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkLongArray.h>
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
@@ -280,7 +281,7 @@ void FieldWriter::addCellFieldForOutput(){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
-	vtkCharArray *typeArray=vtkCharArray::New();
+	vtkUnsignedCharArray *typeArray=vtkUnsignedCharArray::New();
 	typeArray->SetName("CellType");
 	arrayNameVec.push_back("CellType");
 
