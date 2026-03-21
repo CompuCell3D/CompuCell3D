@@ -42,7 +42,7 @@ requirements:
     - python {{ python }}
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
-    - eigen
+    - eigen>=3.4,<3.5
     - tbb-devel={{ tbb_devel_version }}
     - boost>={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
@@ -53,7 +53,7 @@ requirements:
     - python {{ python }}
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
-    - eigen
+    - eigen>=3.4,<3.5
     - boost={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
     - psutil
