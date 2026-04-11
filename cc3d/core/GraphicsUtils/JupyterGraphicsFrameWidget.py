@@ -55,6 +55,7 @@ class CC3DJupyterGraphicsConfig:
         'ShowAxes',
         'ShowHorizontalAxesLabels',
         'ShowVerticalAxesLabels',
+        'DisplayUnits',
         ('TypeColorMap', 0),
         ('TypeColorMap', 1),
         ('TypeColorMap', 2),

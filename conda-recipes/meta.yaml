@@ -9,6 +9,11 @@
 {% set swig_version = versions.get('swig_version') %}
 {% set boost_version = versions.get('boost_version') %}
 {% set tbb_devel_version = versions.get('tbb_devel_version') %}
+{% set ipykernel_version = versions.get('ipykernel_version') %}
+{% set notebook_version = versions.get('notebook_version') %}
+{% set ipywidgets_version = versions.get('ipywidgets_version') %}
+{% set widgetsnbextension_version = versions.get('widgetsnbextension_version') %}
+{% set ipyvtklink_version = versions.get('ipyvtklink_version') %}
 
 package:
   name: cc3d
@@ -64,9 +69,11 @@ requirements:
     - lxml
     - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - simservice
-    - notebook
-    - ipywidgets
-    - ipyvtklink
+    - ipykernel{{ ipykernel_version }}
+    - notebook{{ notebook_version }}
+    - ipywidgets{{ ipywidgets_version }}
+    - widgetsnbextension{{ widgetsnbextension_version }}
+    - ipyvtklink{{ ipyvtklink_version }}
     - sphinx
     - graphviz
 

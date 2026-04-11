@@ -815,6 +815,7 @@ class CC3DPyGraphicsFrameClientBase:
         'ShowAxes',
         'ShowHorizontalAxesLabels',
         'ShowVerticalAxesLabels',
+        'DisplayUnits',
         ('TypeColorMap', 0),
         ('TypeColorMap', 1),
         ('TypeColorMap', 2),
