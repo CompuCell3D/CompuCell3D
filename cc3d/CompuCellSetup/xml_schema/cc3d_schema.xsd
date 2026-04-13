@@ -16,6 +16,28 @@
         <xs:attribute name="version" type="xs:string" use="optional"/>
     </xs:attributeGroup>
 
+    <xs:attributeGroup name="metadataAttrs">
+        <xs:attributeGroup ref="commonIdAttr"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="pottsAttrs">
+        <xs:attributeGroup ref="commonIdAttr"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="pluginAttrs">
+        <xs:attribute name="Name" type="xs:string" use="required"/>
+        <xs:attributeGroup ref="commonIdAttr"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="steppableAttrs">
+        <xs:attribute name="Type" type="xs:string" use="required"/>
+        <xs:attributeGroup ref="commonIdAttr"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:attributeGroup>
+
     <!-- ========================================================= -->
     <!-- Root element                                               -->
     <!-- ========================================================= -->
@@ -32,7 +54,7 @@
                             <xs:any processContents="lax"
                                     minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
-                        <xs:attributeGroup ref="commonIdAttr"/>
+                        <xs:attributeGroup ref="metadataAttrs"/>
                     </xs:complexType>
                 </xs:element>
 
@@ -42,7 +64,7 @@
                             <xs:any processContents="lax"
                                     minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
-                        <xs:attributeGroup ref="commonIdAttr"/>
+                        <xs:attributeGroup ref="pottsAttrs"/>
                     </xs:complexType>
                 </xs:element>
 
@@ -52,8 +74,7 @@
                             <xs:any processContents="lax"
                                     minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
-                        <xs:attribute name="Name" type="xs:string" use="required"/>
-                        <xs:attributeGroup ref="commonIdAttr"/>
+                        <xs:attributeGroup ref="pluginAttrs"/>
                     </xs:complexType>
                 </xs:element>
 
@@ -63,8 +84,7 @@
                             <xs:any processContents="lax"
                                     minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
-                        <xs:attribute name="Type" type="xs:string" use="required"/>
-                        <xs:attributeGroup ref="commonIdAttr"/>
+                        <xs:attributeGroup ref="steppableAttrs"/>
                     </xs:complexType>
                 </xs:element>
 
@@ -81,6 +101,7 @@
 
             <xs:attributeGroup ref="commonIdAttr"/>
             <xs:attributeGroup ref="compuCell3DAttrs"/>
+            <xs:anyAttribute processContents="lax"/>
 
         </xs:complexType>
 
