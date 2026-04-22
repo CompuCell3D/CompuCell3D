@@ -1,13 +1,67 @@
 import os
 import shutil
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Iterable, Optional
 from xml.etree import ElementTree
+import base64
 
 from cc3d.core.DefaultSettingsData import *
 from cc3d.core.logging import log_py
 from cc3d.cpp import CompuCell
 from .settingdict import SerializerUtil
+from cc3d.core.GraphicsOffScreen.primitives import Color, Point2D, Size2D
+
+try:
+    from PyQt5.QtGui import QColor
+    from PyQt5.QtCore import QPoint, QSize, QByteArray
+except ImportError:
+    QColor = None
+    QPoint = None
+    QSize = None
+    QByteArray = None
+
+
+SETTINGS_XML_ROOT_TAG = 'PlayerSettings'
+SETTINGS_XML_VERSION = '1.0'
+SIMULATION_SETTINGS_EXCLUDED = {
+    'ClosePlayerAfterSimulationDone',
+    'DebugOutputPlayer',
+    'DemosPath',
+    'DisplayConsole',
+    'DisplayLatticeData',
+    'DisplayMinMaxInfo',
+    'DisplayModelEditor',
+    'FieldIndex',
+    'FfmpegLocation',
+    'FloatingWindows',
+    'GraphicsWinHeight',
+    'GraphicsWinWidth',
+    'LastDemoEditTime',
+    'LastVersionCheckDate',
+    'LogLevel',
+    'LogToFile',
+    'MainWindowPosition',
+    'MainWindowPositionDefault',
+    'MainWindowPositionFloating',
+    'MainWindowSize',
+    'MainWindowSizeDefault',
+    'MainWindowSizeFloating',
+    'NumberOfRecentSimulations',
+    'OutputLocation',
+    'PlayerSizes',
+    'PlayerSizesDefault',
+    'PlayerSizesFloating',
+    'PlayerSizesFloatingDefault',
+    'ProjectLocation',
+    'RecentFile',
+    'RecentSimulations',
+    'RestartPlayerForNewSimulation',
+    'ScreenGeometry',
+    'TabIndex',
+    'ThemeName',
+    'UseInternalConsole',
+    'WindowsLayout'
+}
 
 
 def load_settings(setting_path):
@@ -232,6 +286,213 @@ def synchronize_global_and_default_settings(default_settings, global_settings, g
 
 def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
     return synchronize_global_and_default_settings(default_settings, global_settings, global_settings_path)
+
+
+def simulation_setting_names(settings_object) -> list:
+    """
+    Returns simulation-relevant settings names, excluding global/UI-only entries.
+    """
+    return sorted(
+        setting_name for setting_name in settings_object.names()
+        if setting_name not in SIMULATION_SETTINGS_EXCLUDED
+    )
+
+
+def _value_type_name(value: Any) -> str:
+    if value is None:
+        return 'none'
+    if QColor is not None and isinstance(value, QColor):
+        return 'color'
+    if QPoint is not None and isinstance(value, QPoint):
+        return 'point'
+    if QSize is not None and isinstance(value, QSize):
+        return 'size'
+    if QByteArray is not None and isinstance(value, QByteArray):
+        return 'bytearray'
+    value_type_name = value.__class__.__name__
+    if value_type_name == 'Color':
+        return 'color'
+    if value_type_name == 'Point2D':
+        return 'point'
+    if value_type_name == 'Size2D':
+        return 'size'
+    if value_type_name == 'bool':
+        return 'bool'
+    if value_type_name in {'str', 'int', 'float', 'complex', 'dict', 'list', 'tuple', 'bytearray'}:
+        return value_type_name
+    raise RuntimeError(f'Unsupported setting value type: {value_type_name}')
+
+
+def _scalar_to_xml_text(value: Any, value_type: str) -> str:
+    if value_type == 'none':
+        return ''
+    if value_type == 'bool':
+        return '1' if value else '0'
+    if value_type == 'color':
+        return value.name() if hasattr(value, 'name') else value.to_str_rgb()
+    if value_type == 'point':
+        if hasattr(value, 'x') and hasattr(value, 'y'):
+            return f'{value.x()},{value.y()}'
+        return str(value)
+    if value_type == 'size':
+        if hasattr(value, 'width') and hasattr(value, 'height'):
+            return f'{value.width()},{value.height()}'
+        return str(value)
+    if value_type == 'bytearray':
+        if QByteArray is not None and isinstance(value, QByteArray):
+            value = bytes(value)
+        return base64.b64encode(bytes(value)).decode('ascii')
+    return str(value)
+
+
+def _xml_text_to_scalar(text: Optional[str], value_type: str) -> Any:
+    text = '' if text is None else text
+    if value_type == 'none':
+        return None
+    if value_type == 'bool':
+        return bool(int(text))
+    if value_type == 'int':
+        return int(text)
+    if value_type == 'float':
+        return float(text)
+    if value_type == 'complex':
+        return complex(text)
+    if value_type == 'str':
+        return text
+    if value_type == 'color':
+        return Color.from_str_rgb(text)
+    if value_type == 'point':
+        x, y = [int(v) for v in text.split(',')]
+        return Point2D(x=x, y=y)
+    if value_type == 'size':
+        width, height = [int(v) for v in text.split(',')]
+        return Size2D(width=width, height=height)
+    if value_type == 'bytearray':
+        return bytearray(base64.b64decode(text.encode('ascii')))
+    raise RuntimeError(f'Unsupported setting XML scalar type: {value_type}')
+
+
+def _serialize_xml_value(parent_el, value: Any) -> None:
+    value_type = _value_type_name(value)
+    parent_el.set('Type', value_type)
+
+    if value_type == 'dict':
+        for key, item_value in value.items():
+            child_el = ElementTree.SubElement(parent_el, 'Item')
+            child_el.set('Key', _scalar_to_xml_text(key, _value_type_name(key)))
+            child_el.set('KeyType', _value_type_name(key))
+            _serialize_xml_value(child_el, item_value)
+        return
+
+    if value_type in {'list', 'tuple'}:
+        for item_value in value:
+            child_el = ElementTree.SubElement(parent_el, 'Item')
+            _serialize_xml_value(child_el, item_value)
+        return
+
+    parent_el.text = _scalar_to_xml_text(value, value_type)
+
+
+def _deserialize_xml_value(parent_el) -> Any:
+    value_type = parent_el.attrib['Type']
+
+    if value_type == 'dict':
+        result = {}
+        for child_el in parent_el.findall('Item'):
+            key = _xml_text_to_scalar(child_el.attrib.get('Key'), child_el.attrib['KeyType'])
+            result[key] = _deserialize_xml_value(child_el)
+        return result
+
+    if value_type == 'list':
+        return [_deserialize_xml_value(child_el) for child_el in parent_el.findall('Item')]
+
+    if value_type == 'tuple':
+        return tuple(_deserialize_xml_value(child_el) for child_el in parent_el.findall('Item'))
+
+    return _xml_text_to_scalar(parent_el.text, value_type)
+
+
+def settings_to_xml_element(settings_dict: Dict[str, Any]) -> ElementTree.Element:
+    """
+    Serializes settings dictionary to XML element.
+    """
+    root_el = ElementTree.Element(
+        SETTINGS_XML_ROOT_TAG,
+        {'Version': SETTINGS_XML_VERSION, 'Scope': 'Simulation'}
+    )
+
+    settings_el = ElementTree.SubElement(root_el, 'Settings')
+    for setting_name in sorted(settings_dict.keys()):
+        setting_el = ElementTree.SubElement(settings_el, 'Setting', {'Name': setting_name})
+        _serialize_xml_value(setting_el, settings_dict[setting_name])
+
+    return root_el
+
+
+def settings_to_xml_string(settings_dict: Dict[str, Any]) -> str:
+    return ElementTree.tostring(settings_to_xml_element(settings_dict), encoding='unicode')
+
+
+def serialize_settings_to_xml(settings_object, xml_file_path: str, setting_names: Optional[Iterable[str]] = None) -> Dict[str, Any]:
+    """
+    Serializes selected settings from SettingsSQL to XML file.
+    Returns the serialized dictionary.
+    """
+    if setting_names is None:
+        setting_names = simulation_setting_names(settings_object)
+
+    settings_dict = {
+        setting_name: settings_object.getSetting(setting_name)
+        for setting_name in setting_names
+    }
+    root_el = settings_to_xml_element(settings_dict)
+    ElementTree.ElementTree(root_el).write(xml_file_path, encoding='utf-8', xml_declaration=True)
+    return settings_dict
+
+
+def xml_element_to_settings_dict(root_el: ElementTree.Element) -> Dict[str, Any]:
+    """
+    Deserializes settings XML element generated by settings_to_xml_element.
+    """
+    settings_el = root_el.find('Settings')
+    if settings_el is None:
+        raise RuntimeError('Malformed settings XML: missing Settings element')
+    setting_els = settings_el.findall('Setting')
+    if not setting_els:
+        raise RuntimeError('Malformed settings XML: missing serialized Setting elements')
+
+    settings_dict = {}
+    for setting_el in setting_els:
+        settings_dict[setting_el.attrib['Name']] = _deserialize_xml_value(setting_el)
+    return settings_dict
+
+
+def deserialize_settings_xml(xml_file_path: str) -> Dict[str, Any]:
+    """
+    Deserializes settings XML file generated by serialize_settings_to_xml.
+    """
+    root_el = ElementTree.parse(xml_file_path).getroot()
+    if root_el.tag != SETTINGS_XML_ROOT_TAG:
+        raise RuntimeError(f'Unexpected settings XML root tag: {root_el.tag}')
+    return xml_element_to_settings_dict(root_el)
+
+
+def apply_settings_dict_to_sql(settings_dict: Dict[str, Any], settings_object) -> None:
+    """
+    Applies settings dictionary to SettingsSQL instance.
+    """
+    for setting_name, setting_value in settings_dict.items():
+        settings_object.setSetting(setting_name, setting_value)
+
+
+def deserialize_settings_xml_to_sql(xml_file_path: str, settings_object) -> Dict[str, Any]:
+    """
+    Deserializes XML file and writes the resulting settings into SettingsSQL.
+    Returns the deserialized dictionary.
+    """
+    settings_dict = deserialize_settings_xml(xml_file_path)
+    apply_settings_dict_to_sql(settings_dict=settings_dict, settings_object=settings_object)
+    return settings_dict
 
 
 def _handle_settings_value_xml(_val: str):
