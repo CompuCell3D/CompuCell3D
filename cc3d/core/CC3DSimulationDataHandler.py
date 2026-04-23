@@ -151,6 +151,13 @@ class CC3DSimulationData:
         return os.path.join(self.basePath, 'Simulation', settings_data.SETTINGS_FILE_NAME)
 
     @property
+    def custom_settings_path_xml(self):
+        path = os.path.join(self.basePath, 'Simulation', '_custom_settings.xml')
+        if os.path.isfile(path):
+            return path
+        return ''
+
+    @property
     def pythonScript(self):
         return self.pythonScriptResource.path
 

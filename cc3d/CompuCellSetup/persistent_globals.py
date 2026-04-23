@@ -248,6 +248,24 @@ class PersistentGlobals:
         else:
             return None
 
+    def get_custom_settings_path_xml(self) -> Union[Path, None]:
+        simulation_fname = Path(self.simulation_file_name)
+        ext = simulation_fname.suffix
+        if ext.lower() == ".dml":
+            proposed_custom_settings_path_xml = Path(self.simulation_file_name).parent.parent.joinpath(
+                "Simulation/_custom_settings.xml")
+            if simulation_fname.exists() and proposed_custom_settings_path_xml.exists():
+                return proposed_custom_settings_path_xml
+            return None
+        elif ext.lower() == ".cc3d":
+            proposed_custom_settings_path_xml = Path(self.simulation_file_name).parent.joinpath(
+                "Simulation/_custom_settings.xml")
+            if simulation_fname.exists() and proposed_custom_settings_path_xml.exists():
+                return proposed_custom_settings_path_xml
+            return None
+        else:
+            return None
+
     def copy_custom_settings_to_output_folder(self):
         """
         Copy custom settings (file or directory) into <output>/Simulation/.
