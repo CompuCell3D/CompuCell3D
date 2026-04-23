@@ -413,9 +413,11 @@ using namespace CompuCell3D;
     %}
 %enddef
 
+
 %extend CompuCell3D::CellG{
 
         CELLG_ATTRIB(volume)
+        CELLG_ATTRIB(pressure)
         CELLG_ATTRIB(surface)
         CELLG_ATTRIB(xCM)
         CELLG_ATTRIB(yCM)
