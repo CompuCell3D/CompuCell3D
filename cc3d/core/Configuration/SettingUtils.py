@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import warnings
 from typing import Any, Dict, Iterable, Optional
 from xml.etree import ElementTree
 import base64
@@ -345,6 +346,35 @@ def _scalar_to_xml_text(value: Any, value_type: str) -> str:
     return str(value)
 
 
+def _xml_text_to_color(text: Optional[str]) -> Color:
+    text = '' if text is None else text.strip()
+
+    if not text:
+        warning_msg = 'Color setting cannot be empty. Using grey instead.'
+        log_py(CompuCell.LOG_WARNING, warning_msg)
+        warnings.warn(warning_msg)
+        return Color.from_str_rgb('#808080')
+
+    if text.startswith('#'):
+        try:
+            return Color.from_str_rgb(text)
+        except ValueError:
+            warning_msg = f'Unsupported color value: {text}. Using grey instead.'
+            log_py(CompuCell.LOG_WARNING, warning_msg)
+            warnings.warn(warning_msg)
+            return Color.from_str_rgb('#808080')
+
+    if QColor is not None:
+        qcolor = QColor(text)
+        if qcolor.isValid():
+            return Color.from_str_rgb(qcolor.name())
+
+    warning_msg = f'Unsupported color value: {text}. Using grey instead.'
+    log_py(CompuCell.LOG_WARNING, warning_msg)
+    warnings.warn(warning_msg)
+    return Color.from_str_rgb('#808080')
+
+
 def _xml_text_to_scalar(text: Optional[str], value_type: str) -> Any:
     text = '' if text is None else text
     if value_type == 'none':
@@ -360,7 +390,7 @@ def _xml_text_to_scalar(text: Optional[str], value_type: str) -> Any:
     if value_type == 'str':
         return text
     if value_type == 'color':
-        return Color.from_str_rgb(text)
+        return _xml_text_to_color(text)
     if value_type == 'point':
         x, y = [int(v) for v in text.split(',')]
         return Point2D(x=x, y=y)
@@ -429,8 +459,14 @@ def settings_to_xml_element(settings_dict: Dict[str, Any]) -> ElementTree.Elemen
     return root_el
 
 
+def _indent_xml_element(root_el: ElementTree.Element) -> ElementTree.Element:
+    ElementTree.indent(root_el, space=' ' * 4)
+    return root_el
+
+
 def settings_to_xml_string(settings_dict: Dict[str, Any]) -> str:
-    return ElementTree.tostring(settings_to_xml_element(settings_dict), encoding='unicode')
+    root_el = _indent_xml_element(settings_to_xml_element(settings_dict))
+    return ElementTree.tostring(root_el, encoding='unicode')
 
 
 def serialize_settings_to_xml(settings_object, xml_file_path: str, setting_names: Optional[Iterable[str]] = None) -> Dict[str, Any]:
@@ -445,7 +481,7 @@ def serialize_settings_to_xml(settings_object, xml_file_path: str, setting_names
         setting_name: settings_object.getSetting(setting_name)
         for setting_name in setting_names
     }
-    root_el = settings_to_xml_element(settings_dict)
+    root_el = _indent_xml_element(settings_to_xml_element(settings_dict))
     ElementTree.ElementTree(root_el).write(xml_file_path, encoding='utf-8', xml_declaration=True)
     return settings_dict
 
