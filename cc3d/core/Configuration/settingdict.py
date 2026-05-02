@@ -351,14 +351,20 @@ class SettingsSQL(object):
 
     def __init__(self, filename=".shared.db", **kwargs):
         self.filename = filename
-        self.conn = sqlite3.connect(self.filename)
+        self.conn = sqlite3.connect(self.filename, timeout=10.0)
+        # self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA journal_mode=DELETE")
+        self.conn.execute("PRAGMA synchronous=NORMAL")
+        self.conn.execute("PRAGMA busy_timeout=10000")
         self._create_table()
+
+        self.su = self._SerializerUtil()
+        self._settings_cache = {}
+        self._load_cache()
 
         if len(kwargs) > 0:
             for key, value in list(kwargs.items()):
-                self[key] = value
-
-        self.su = self._SerializerUtil()
+                self.setSetting(key, value)
 
     def __enter__(self):
         return self
@@ -374,37 +380,49 @@ class SettingsSQL(object):
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS ix_name ON settings (name)")
 
+    def _load_cache(self):
+        with self.conn:
+            cur = self.conn.execute("SELECT name, type, value FROM settings")
+            self._settings_cache = {
+                name: (stored_type, stored_value)
+                for name, stored_type, stored_value in cur.fetchall()
+            }
+
+    def _sync_cache_to_db(self):
+        with self.conn:
+            self.conn.execute("DELETE FROM settings")
+            if self._settings_cache:
+                self.conn.executemany(
+                    "INSERT INTO settings VALUES (?,?,?)",
+                    [
+                        (name, stored_type, stored_value)
+                        for name, (stored_type, stored_value) in self._settings_cache.items()
+                    ]
+                )
+
     def names(self):
         """
         returns a list of all setting names stored in the object
 
         :return: {list} list of strings
         """
-        with self.conn:
-            cur = self.conn.execute("SELECT name FROM settings")
-            return [key[0] for key in cur.fetchall()]
+        return list(self._settings_cache.keys())
 
     def setSetting(self, key, val):
 
-        with self.conn:
-            val_type, val_repr = self.su.val_2_sql(val)
+        val_type, val_repr = self.su.val_2_sql(val)
 
-            if val_type is not None and val_type is not None:
-                self.conn.execute(
-                    "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-                    (key, val_type, val_repr))
-            else:
-                print(('NOT STORING SETTING: "{}". LIKELY DUE TO MISSING TYPE CONVERTER'.format(key)))
+        if val_type is not None and val_repr is not None:
+            self._settings_cache[key] = (val_type, val_repr)
+        else:
+            print(('NOT STORING SETTING: "{}". LIKELY DUE TO MISSING TYPE CONVERTER'.format(key)))
 
     def setting(self, key):
-        with self.conn:
-            cur = self.conn.execute(
-                "SELECT type, value FROM settings WHERE name = (?)", (key,))
-            obj = cur.fetchone()
-            if obj is None:
-                raise KeyError("No such key: " + key)
+        obj = self._settings_cache.get(key)
+        if obj is None:
+            raise KeyError("No such key: " + key)
 
-            return self.su.sql_2_val(obj)
+        return self.su.sql_2_val(obj)
 
     def getSetting(self, key):
         """
@@ -416,5 +434,16 @@ class SettingsSQL(object):
         # print 'getting key = ', key
         return self.setting(key)
 
+    def on_close(self):
+        if self.conn is None:
+            return
+
+        self._sync_cache_to_db()
+
     def close(self):
+        if self.conn is None:
+            return
+
+        self.on_close()
         self.conn.close()
+        self.conn = None
