@@ -60,8 +60,7 @@ SIMULATION_SETTINGS_EXCLUDED = {
     'ScreenGeometry',
     'TabIndex',
     'ThemeName',
-    'UseInternalConsole',
-    'WindowsLayout'
+    'UseInternalConsole'
 }
 
 
