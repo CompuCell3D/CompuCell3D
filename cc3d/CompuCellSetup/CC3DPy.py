@@ -1,8 +1,34 @@
 import os
+import sys
 import time
+from pathlib import Path
+from typing import Optional
+
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient
-from typing import Optional
+
+
+def _running_python_script_path() -> Optional[str]:
+    """Return the top-level Python script path for Python-only simulations."""
+    main_module = sys.modules.get('__main__')
+    main_file = getattr(main_module, '__file__', None)
+    script_path = main_file or (sys.argv[0] if sys.argv else None)
+    if not script_path:
+        return None
+
+    script_path = Path(script_path).expanduser()
+    if script_path.suffix.lower() != '.py':
+        return None
+
+    try:
+        script_path = script_path.resolve()
+    except OSError:
+        script_path = script_path.absolute()
+
+    if not script_path.is_file():
+        return None
+
+    return str(script_path)
 
 
 class CC3DPy:
@@ -25,6 +51,7 @@ class CC3DPy:
 
         # Populate persistent_globals with basic simulation info
         persistent_globals.simulation_file_name = cc3d_sim_fname
+        persistent_globals.python_script_file_name = _running_python_script_path()
         persistent_globals.output_frequency = output_frequency
         persistent_globals.screenshot_output_frequency = screenshot_output_frequency
         persistent_globals.set_output_dir(output_dir)
@@ -32,6 +59,14 @@ class CC3DPy:
         persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
         persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
         persistent_globals.input_object = sim_input
+
+        custom_settings_path = persistent_globals.get_custom_settings_path()
+        custom_settings_path_xml = persistent_globals.get_custom_settings_path_xml()
+        if custom_settings_path_xml or (custom_settings_path and custom_settings_path.exists()):
+            persistent_globals.configuration.write_settings_for_single_simulation(
+                path=str(custom_settings_path),
+                path_xml=str(custom_settings_path_xml) if custom_settings_path_xml else ''
+            )
 
     @staticmethod
     def run(cc3d_sim_fname):

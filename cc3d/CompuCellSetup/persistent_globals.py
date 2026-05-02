@@ -52,6 +52,7 @@ class PersistentGlobals:
 
         self.simulation_initialized = False
         self.simulation_file_name = None
+        self.python_script_file_name = None
         self.user_stop_simulation_flag = False
 
         self.__output_dir = None
@@ -232,16 +233,25 @@ class PersistentGlobals:
 
 
     def get_custom_settings_path(self) -> Union[Path, None]:
-        simulation_fname = Path(self.simulation_file_name)
+        custom_settings_source = self.simulation_file_name or self.python_script_file_name
+        if not custom_settings_source:
+            return None
+
+        simulation_fname = Path(custom_settings_source)
         ext = simulation_fname.suffix
         if ext.lower() == ".dml":
-            proposed_custom_settings_path = Path(self.simulation_file_name).parent.parent.joinpath("Simulation/_settings.sqlite")
+            proposed_custom_settings_path = Path(custom_settings_source).parent.parent.joinpath("Simulation/_settings.sqlite")
             if simulation_fname.exists():
                 return proposed_custom_settings_path
             return None
         elif ext.lower() == ".cc3d":
-            proposed_custom_settings_path = Path(self.simulation_file_name).parent.joinpath(
+            proposed_custom_settings_path = Path(custom_settings_source).parent.joinpath(
                 "Simulation/_settings.sqlite")
+            if simulation_fname.exists():
+                return proposed_custom_settings_path
+            return None
+        elif ext.lower() == ".py":
+            proposed_custom_settings_path = Path(custom_settings_source).parent.joinpath("_settings.sqlite")
             if simulation_fname.exists():
                 return proposed_custom_settings_path
             return None
@@ -249,17 +259,26 @@ class PersistentGlobals:
             return None
 
     def get_custom_settings_path_xml(self) -> Union[Path, None]:
-        simulation_fname = Path(self.simulation_file_name)
+        custom_settings_source = self.simulation_file_name or self.python_script_file_name
+        if not custom_settings_source:
+            return None
+
+        simulation_fname = Path(custom_settings_source)
         ext = simulation_fname.suffix
         if ext.lower() == ".dml":
-            proposed_custom_settings_path_xml = Path(self.simulation_file_name).parent.parent.joinpath(
+            proposed_custom_settings_path_xml = Path(custom_settings_source).parent.parent.joinpath(
                 "Simulation/_custom_settings.xml")
             if simulation_fname.exists() and proposed_custom_settings_path_xml.exists():
                 return proposed_custom_settings_path_xml
             return None
         elif ext.lower() == ".cc3d":
-            proposed_custom_settings_path_xml = Path(self.simulation_file_name).parent.joinpath(
+            proposed_custom_settings_path_xml = Path(custom_settings_source).parent.joinpath(
                 "Simulation/_custom_settings.xml")
+            if simulation_fname.exists() and proposed_custom_settings_path_xml.exists():
+                return proposed_custom_settings_path_xml
+            return None
+        elif ext.lower() == ".py":
+            proposed_custom_settings_path_xml = Path(custom_settings_source).parent.joinpath("_custom_settings.xml")
             if simulation_fname.exists() and proposed_custom_settings_path_xml.exists():
                 return proposed_custom_settings_path_xml
             return None
@@ -361,6 +380,7 @@ class PersistentGlobals:
                 from cc3d.core.Configuration import Configuration
                 self._configuration_getter = Configuration
                 self._configuration = self._configuration_getter()
+        print(self._configuration)
         return self._configuration
 
     def add_steering_panel(self, panel_data: dict):
