@@ -60,7 +60,7 @@ class CC3DPyGraphicsFrameConfigSnapshot:
         try:
             entry = self.config_data[key]
         except KeyError:
-            entry = CONFIG_DEFAULT_SETTINGS[key]
+            entry = CONFIG_DEFAULT_SETTINGS.get(key, {})
             self.config_data[key] = deepcopy(entry)
 
         if field_name is None:
@@ -72,7 +72,7 @@ class CC3DPyGraphicsFrameConfigSnapshot:
             except KeyError:
                 pass
 
-        default_entry = CONFIG_DEFAULT_SETTINGS[key]
+        default_entry = CONFIG_DEFAULT_SETTINGS.get(key, {})
         if isinstance(default_entry, dict):
             return default_entry[field_name]
         return default_entry
@@ -351,6 +351,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         self.metadata_data_dict: Optional[dict] = None
         self.style = None
         self._field_label_actor: Optional[vtkTextActor] = None
+        self.window_name = window_name
 
         CC3DPyGraphicsFrameInterface.__init__(self, conn=interface_conn)
         GraphicsFrame.__init__(self,
@@ -382,6 +383,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         self.draw()
         self.reset_camera()
         self.init_field_types()
+        self.apply_windows_layout_for_current_field(require_window_name_match=True)
         self.Render()
 
         renwin_name = str(self.WINDOWNAME_PREFIX)
@@ -401,6 +403,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
 
         self.draw()
         self.reset_camera()
+        self.apply_windows_layout_for_current_field(require_window_name_match=True)
 
         self.vtkWidget.Start()
 
@@ -532,6 +535,89 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         ss_data.extractCameraInfo(self.get_active_camera())
         return ss_data
 
+    @staticmethod
+    def _value_or_call(obj, attr_name: str):
+        attr = getattr(obj, attr_name)
+        return attr() if callable(attr) else attr
+
+    @classmethod
+    def _point_xy(cls, point):
+        if point is None:
+            return None
+        if hasattr(point, 'x') and hasattr(point, 'y'):
+            return int(cls._value_or_call(point, 'x')), int(cls._value_or_call(point, 'y'))
+        if isinstance(point, (list, tuple)) and len(point) >= 2:
+            return int(point[0]), int(point[1])
+        return None
+
+    @classmethod
+    def _size_wh(cls, size):
+        if size is None:
+            return None
+        if hasattr(size, 'width') and hasattr(size, 'height'):
+            return int(cls._value_or_call(size, 'width')), int(cls._value_or_call(size, 'height'))
+        if isinstance(size, (list, tuple)) and len(size) >= 2:
+            return int(size[0]), int(size[1])
+        return None
+
+    @staticmethod
+    def _layout_camera_tuple(layout_data: dict, key: str):
+        val = layout_data.get(key)
+        if isinstance(val, (list, tuple)) and len(val) > 0:
+            return tuple(val)
+        return None
+
+    def get_windows_layout_for_field(self, field_name: str):
+        try:
+            windows_layout = self.config.getSetting('WindowsLayout')
+        except (KeyError, RuntimeError):
+            return None
+
+        if not isinstance(windows_layout, dict):
+            return None
+
+        for layout_data in windows_layout.values():
+            if isinstance(layout_data, dict) and layout_data.get('sceneName') == field_name:
+                return layout_data
+        return None
+
+    def apply_windows_layout_data(self, layout_data: dict):
+        win_size = self._size_wh(layout_data.get('winSize'))
+        if win_size is not None:
+            self.renWin.SetSize(*win_size)
+
+        win_position = self._point_xy(layout_data.get('winPosition'))
+        if win_position is not None and hasattr(self.renWin, 'SetPosition'):
+            self.renWin.SetPosition(*win_position)
+
+        camera = self.get_active_camera()
+        camera_clipping_range = self._layout_camera_tuple(layout_data, 'cameraClippingRange')
+        camera_focal_point = self._layout_camera_tuple(layout_data, 'cameraFocalPoint')
+        camera_position = self._layout_camera_tuple(layout_data, 'cameraPosition')
+        camera_view_up = self._layout_camera_tuple(layout_data, 'cameraViewUp')
+
+        if camera_clipping_range:
+            camera.SetClippingRange(camera_clipping_range)
+        if camera_focal_point:
+            camera.SetFocalPoint(camera_focal_point)
+        if camera_position:
+            camera.SetPosition(camera_position)
+        if camera_view_up:
+            camera.SetViewUp(camera_view_up)
+
+        self.gd.get_renderer().ResetCameraClippingRange()
+        return True
+
+    def apply_windows_layout_for_current_field(self, require_window_name_match: bool = False):
+        if require_window_name_match and self.window_name is not None and self.window_name != self.field_name:
+            return False
+
+        layout_data = self.get_windows_layout_for_field(self.field_name)
+        if not layout_data:
+            return False
+
+        return self.apply_windows_layout_data(layout_data)
+
     def get_concentration_field_names(self) -> List[str]:
         """Get concentration field names from remote source"""
         return MsgGetConcFieldNames.request(self.conn, True)
@@ -558,6 +644,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         self.field_label_actor.SetInput(self.field_name)
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
+        self.apply_windows_layout_for_current_field()
 
     def set_drawing_style(self, _style):
         """
@@ -880,6 +967,7 @@ class CC3DPyGraphicsFrameClientBase:
         ('TypeColorMap', 9),
         ('TypeColorMap', 10),
         'Types3DInvisible',
+        'WindowsLayout',
         'WindowColor'
     ]
 

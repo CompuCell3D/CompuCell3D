@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Optional
@@ -29,6 +30,11 @@ def _running_python_script_path() -> Optional[str]:
         return None
 
     return str(script_path)
+
+
+def _python_only_settings_path(script_path: str) -> str:
+    settings_dir = tempfile.mkdtemp(prefix='cc3d_py_settings_')
+    return str(Path(settings_dir).joinpath(f'{Path(script_path).stem}_settings.sqlite'))
 
 
 class CC3DPy:
@@ -63,6 +69,9 @@ class CC3DPy:
         custom_settings_path = persistent_globals.get_custom_settings_path()
         custom_settings_path_xml = persistent_globals.get_custom_settings_path_xml()
         if custom_settings_path_xml or (custom_settings_path and custom_settings_path.exists()):
+            if (cc3d_sim_fname is None and custom_settings_path_xml and custom_settings_path
+                    and not custom_settings_path.exists()):
+                custom_settings_path = _python_only_settings_path(persistent_globals.python_script_file_name)
             persistent_globals.configuration.write_settings_for_single_simulation(
                 path=str(custom_settings_path),
                 path_xml=str(custom_settings_path_xml) if custom_settings_path_xml else ''
