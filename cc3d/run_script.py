@@ -8,15 +8,15 @@ from cc3d.core.DefaultSettingsData import SETTINGS_FOLDER
 from cc3d.core.RollbackImporter import RollbackImporter
 
 
-def set_global_settings_dir(global_settings_dir):
+def set_global_settings_dir_name(global_settings_dir_name):
     """
     Overrides the global settings directory name before settings are loaded.
     """
     import cc3d.core.DefaultSettingsData as default_settings_data
     import cc3d.core.Configuration.SettingUtils as setting_utils
 
-    default_settings_data.SETTINGS_FOLDER = global_settings_dir
-    setting_utils.SETTINGS_FOLDER = global_settings_dir
+    default_settings_data.SETTINGS_FOLDER = global_settings_dir_name
+    setting_utils.SETTINGS_FOLDER = global_settings_dir_name
     CompuCellSetup.persistent_globals._configuration = None
 
 
@@ -72,9 +72,9 @@ def process_cml(known_args=None):
     cml_parser.add_argument('--log-to-file', required=False, action='store_true', default=False,
                             help='optional argument that specifies if log should be saved to a file')
 
-    cml_parser.add_argument('--global-settings-dir', required=False, action='store',
+    cml_parser.add_argument('--global-settings-dir-name', required=False, action='store',
                             default=SETTINGS_FOLDER,
-                            help='directory under the user home directory for global settings files')
+                            help='directory name under the user home directory for global settings files')
 
     return cml_parser.parse_args(args=known_args)
 
@@ -103,7 +103,7 @@ def main(args:argparse.Namespace=None):
     if not args:
         args = process_cml()
 
-    set_global_settings_dir(getattr(args, 'global_settings_dir', SETTINGS_FOLDER))
+    set_global_settings_dir_name(getattr(args, 'global_settings_dir_name', SETTINGS_FOLDER))
 
     print(cc3d.get_formatted_version_info())
 
