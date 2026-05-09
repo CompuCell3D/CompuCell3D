@@ -380,7 +380,6 @@ class PersistentGlobals:
                 from cc3d.core.Configuration import Configuration
                 self._configuration_getter = Configuration
                 self._configuration = self._configuration_getter()
-        print(self._configuration)
         return self._configuration
 
     def add_steering_panel(self, panel_data: dict):
