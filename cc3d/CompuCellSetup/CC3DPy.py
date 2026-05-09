@@ -3,7 +3,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient
@@ -18,6 +18,9 @@ def _running_python_script_path() -> Optional[str]:
         return None
 
     script_path = Path(script_path).expanduser()
+    if script_path.name == 'ipykernel_launcher.py':
+        return None
+
     if script_path.suffix.lower() != '.py':
         return None
 
@@ -35,6 +38,17 @@ def _running_python_script_path() -> Optional[str]:
 def _python_only_settings_path(script_path: str) -> str:
     settings_dir = tempfile.mkdtemp(prefix='cc3d_py_settings_')
     return str(Path(settings_dir).joinpath(f'{Path(script_path).stem}_settings.sqlite'))
+
+
+def _notebook_settings_paths() -> Tuple[Optional[Path], Optional[Path]]:
+    """Return temporary sqlite and XML settings paths for notebook-based simulations."""
+    custom_settings_path_xml = Path.cwd().joinpath('_custom_settings.xml')
+    if not custom_settings_path_xml.exists():
+        return None, None
+
+    settings_dir = tempfile.mkdtemp(prefix='cc3d_notebook_settings_')
+    custom_settings_path = Path(settings_dir).joinpath('_settings.sqlite')
+    return custom_settings_path, custom_settings_path_xml
 
 
 class CC3DPy:
@@ -68,9 +82,12 @@ class CC3DPy:
 
         custom_settings_path = persistent_globals.get_custom_settings_path()
         custom_settings_path_xml = persistent_globals.get_custom_settings_path_xml()
+        if custom_settings_path_xml is None and custom_settings_path is None:
+            custom_settings_path, custom_settings_path_xml = _notebook_settings_paths()
+
         if custom_settings_path_xml or (custom_settings_path and custom_settings_path.exists()):
             if (cc3d_sim_fname is None and custom_settings_path_xml and custom_settings_path
-                    and not custom_settings_path.exists()):
+                    and not custom_settings_path.exists() and persistent_globals.python_script_file_name):
                 custom_settings_path = _python_only_settings_path(persistent_globals.python_script_file_name)
             persistent_globals.configuration.write_settings_for_single_simulation(
                 path=str(custom_settings_path),
