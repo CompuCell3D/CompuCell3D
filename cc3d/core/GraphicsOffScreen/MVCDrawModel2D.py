@@ -1116,7 +1116,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         glyphs.SetInputArrayToProcess(0, 0, 0, 0, "volume_scaling_factors")  # 0 - scalars for scaling
         glyphs.SetInputArrayToProcess(3, 0, 0, 0, "cell_types")  # 3 - color
 
-        cell_type_lut = self.get_type_lookup_table()
+        scene_metadata = drawing_params.screenshot_data.metadata
+        cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
         mapper.SetInputConnection(glyphs.GetOutputPort())
         mapper.SetLookupTable(cell_type_lut)
         mapper.ScalarVisibilityOn()
@@ -1336,7 +1337,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.hex_cells_mapper.SetInput(hex_cells_poly_data)
 
-        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
         cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
         self.hex_cells_mapper.ScalarVisibilityOn()
@@ -1447,7 +1448,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
         self.cellsMapper.ScalarVisibilityOn()
 
-        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
         cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
         self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class

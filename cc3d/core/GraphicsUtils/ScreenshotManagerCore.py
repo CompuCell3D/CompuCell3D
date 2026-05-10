@@ -358,6 +358,10 @@ class ScreenshotManagerCore(object):
                     )
                     continue
 
+                if screenshot_data.metadata is None:
+                    screenshot_data.metadata = {}
+                screenshot_data.metadata["actual_screenshot"] = True
+
                 if not screenshot_name:
                     screenshot_name = 'screenshot_' + str(i)
 
