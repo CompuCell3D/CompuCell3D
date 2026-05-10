@@ -339,6 +339,7 @@ class ScreenshotManagerCore(object):
                     'GenericDrawer or basic simulation data not available. Could not output screenshots.'
                 )
                 return
+            bsd.current_step = mcs
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
