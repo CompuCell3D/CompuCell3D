@@ -1,6 +1,7 @@
 import os
 from .SettingUtils import copy_settings, load_settings, _global_setting_path
 from .SettingUtils import load_global_settings, load_default_settings, synchronize_global_and_default_settings
+from .SettingUtils import simulation_setting_names, serialize_settings_to_xml, deserialize_settings_xml, deserialize_settings_xml_to_sql
 
 
 class Configuration:
@@ -19,12 +20,24 @@ class Configuration:
         # stores simulation-specific settings for  i.e. ones which are associated with individual cc3d project
         self.myCustomSettings = None
         self.myCustomSettingsPath = ''
+        self.myCustomSettingsPathXML = ''
         self.customOnlySettings = []
 
         self.activeFieldNamesList = []
 
         # dictionary of FieldParams Settings
         self.simFieldsParams = None
+
+    def _apply_custom_settings_xml_overrides(self):
+        """Applies custom XML overrides on top of loaded custom sqlite settings."""
+        if self.myCustomSettings is None or not self.myCustomSettingsPathXML:
+            return None
+        if not os.path.isfile(self.myCustomSettingsPathXML):
+            return None
+        return deserialize_settings_xml_to_sql(
+            xml_file_path=self.myCustomSettingsPathXML,
+            settings_object=self.myCustomSettings
+        )
 
     def replace_custom_settings_with_defaults(self):
         """
@@ -38,6 +51,7 @@ class Configuration:
                       dst_setting_dir=os.path.dirname(self.myCustomSettingsPath))
 
         self.myCustomSettings, self.myCustomSettingsPath = load_settings(self.myCustomSettingsPath)
+        self._apply_custom_settings_xml_overrides()
 
     def restore_default_global_settings(self):
         """
@@ -101,13 +115,15 @@ class Configuration:
         """
         pass
 
-    def write_settings_for_single_simulation(self, path):
+    def write_settings_for_single_simulation(self, path, path_xml=''):
         """
         Here we are creating settings for a single simulation or loading them if they already exist
 
         :param path: {src} abs path to local settings
         :return: None
         """
+        self.myCustomSettingsPathXML = str(path_xml) if path_xml and os.path.isfile(path_xml) else ''
+
         if not os.path.isfile(path):
             copy_settings(src_setting_path=_global_setting_path(), dst_setting_dir=os.path.dirname(path))
             self.myCustomSettings, self.myCustomSettingsPath = load_settings(path)
@@ -115,20 +131,88 @@ class Configuration:
         else:
             self.myCustomSettings, self.myCustomSettingsPath = load_settings(path)
 
-    def writeSettingsForSingleSimulation(self, path):
-        return self.write_settings_for_single_simulation(path)
+        self._apply_custom_settings_xml_overrides()
 
-    def initialize_custom_settings(self, filename):
+    def writeSettingsForSingleSimulation(self, path, path_xml=''):
+        return self.write_settings_for_single_simulation(path, path_xml)
+
+    def initialize_custom_settings(self, filename, filename_xml=''):
         """
         Loads simulation-specific settings
 
         :param filename: {str} absolute path to the simulation-specific setting file
         :return: None
         """
+        self.myCustomSettingsPathXML = str(filename_xml) if filename_xml and os.path.isfile(filename_xml) else ''
         self.myCustomSettings, self.myCustomSettingsPath = load_settings(filename)
+        self._apply_custom_settings_xml_overrides()
 
-    def initializeCustomSettings(self, filename):
-        return self.initialize_custom_settings(filename)
+    def initializeCustomSettings(self, filename, filename_xml=''):
+        return self.initialize_custom_settings(filename, filename_xml)
+
+    def get_settings_storage(self, scope: str = 'active'):
+        """
+        Returns settings storage for a given scope.
+
+        :param scope: {'active', 'custom', 'global'}
+        :return: {SettingsSQL}
+        """
+        if scope == 'custom':
+            if self.myCustomSettings is None:
+                raise RuntimeError('Custom settings are not initialized')
+            return self.myCustomSettings
+
+        if scope == 'global':
+            return self.myGlobalSettings
+
+        if self.myCustomSettings is not None:
+            return self.myCustomSettings
+        return self.myGlobalSettings
+
+    def getSettingsStorage(self, scope='active'):
+        return self.get_settings_storage(scope=scope)
+
+    def export_settings_to_xml(self, xml_file_path: str, scope: str = 'active', setting_names=None):
+        """
+        Serializes selected settings to XML.
+
+        :param xml_file_path: {str} output XML path
+        :param scope: {'active', 'custom', 'global'}
+        :param setting_names: {iterable of str|None} names to serialize; defaults to simulation-relevant settings
+        :return: {dict} serialized settings dictionary
+        """
+        settings_storage = self.get_settings_storage(scope=scope)
+        if setting_names is None:
+            setting_names = simulation_setting_names(settings_storage)
+        return serialize_settings_to_xml(
+            settings_object=settings_storage,
+            xml_file_path=xml_file_path,
+            setting_names=setting_names
+        )
+
+    def exportSettingsToXML(self, xml_file_path, scope='active', setting_names=None):
+        return self.export_settings_to_xml(
+            xml_file_path=xml_file_path,
+            scope=scope,
+            setting_names=setting_names
+        )
+
+    def import_settings_from_xml(self, xml_file_path: str, scope: str = 'active'):
+        """
+        Deserializes settings from XML and stores them in the selected settings storage.
+
+        :param xml_file_path: {str} input XML path
+        :param scope: {'active', 'custom', 'global'}
+        :return: {dict} deserialized settings dictionary
+        """
+        settings_storage = self.get_settings_storage(scope=scope)
+        settings_dict = deserialize_settings_xml(xml_file_path)
+        for setting_name, setting_value in settings_dict.items():
+            settings_storage.setSetting(setting_name, setting_value)
+        return settings_dict
+
+    def importSettingsFromXML(self, xml_file_path, scope='active'):
+        return self.import_settings_from_xml(xml_file_path=xml_file_path, scope=scope)
 
     def get_default_field_params(self):
         """

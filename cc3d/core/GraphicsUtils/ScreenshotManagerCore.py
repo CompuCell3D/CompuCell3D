@@ -339,6 +339,7 @@ class ScreenshotManagerCore(object):
                     'GenericDrawer or basic simulation data not available. Could not output screenshots.'
                 )
                 return
+            bsd.current_step = mcs
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
@@ -356,6 +357,10 @@ class ScreenshotManagerCore(object):
                         f'Could not find screenshot description for the following label: {screenshot_name}'
                     )
                     continue
+
+                if screenshot_data.metadata is None:
+                    screenshot_data.metadata = {}
+                screenshot_data.metadata["actual_screenshot"] = True
 
                 if not screenshot_name:
                     screenshot_name = 'screenshot_' + str(i)
