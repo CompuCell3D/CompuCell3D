@@ -171,6 +171,29 @@ void ParallelUtilsOpenMP::unsetLock(OpenMPLock_t * _lock){
 	omp_unset_lock(_lock);
 }
 
+void ParallelUtilsOpenMP::initLockV1(OpenMPLockV1_t * _lock){
+	if (!_lock->nativeLock) {
+		_lock->nativeLock = new omp_lock_t;
+	}
+
+	omp_init_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
+}
+void ParallelUtilsOpenMP::destroyLockV1(OpenMPLockV1_t * _lock){
+	if (!_lock || !_lock->nativeLock) {
+		return;
+	}
+
+	omp_destroy_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
+	delete static_cast<omp_lock_t *>(_lock->nativeLock);
+	_lock->nativeLock = 0;
+}
+void ParallelUtilsOpenMP::setLockV1(OpenMPLockV1_t * _lock){
+	omp_set_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
+}
+void ParallelUtilsOpenMP::unsetLockV1(OpenMPLockV1_t * _lock){
+	omp_unset_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
+}
+
 void ParallelUtilsOpenMP::setPyWrapperLock(){
 	setLock(&pyWrapperGlobalLock);
 }

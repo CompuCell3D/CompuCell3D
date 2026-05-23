@@ -25,8 +25,13 @@ namespace CompuCell3D {
 
     class ParallelUtilsOpenMP{
 		
-        public:
+		public:
 			typedef omp_lock_t OpenMPLock_t;
+			struct OpenMPLockV1_t {
+				void *nativeLock;
+
+				OpenMPLockV1_t() : nativeLock(0) {}
+			};
 
 			ParallelUtilsOpenMP();
 			~ParallelUtilsOpenMP();
@@ -39,6 +44,10 @@ namespace CompuCell3D {
 			void destroyLock(OpenMPLock_t * _lock);
 			void setLock(OpenMPLock_t * _lock);
 			void unsetLock(OpenMPLock_t * _lock);
+			void initLockV1(OpenMPLockV1_t * _lock);
+			void destroyLockV1(OpenMPLockV1_t * _lock);
+			void setLockV1(OpenMPLockV1_t * _lock);
+			void unsetLockV1(OpenMPLockV1_t * _lock);
 			//global PyWrapperLock
 			void setPyWrapperLock();
 			void unsetPyWrapperLock();
