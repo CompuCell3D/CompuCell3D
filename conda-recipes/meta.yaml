@@ -48,6 +48,9 @@ requirements:
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
     - eigen>=3.4,<3.5
+    - opencl-headers
+    - khronos-opencl-icd-loader  # [win or osx]
+    - ocl-icd  # [linux]
     - tbb-devel={{ tbb_devel_version }}
     - boost>={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
@@ -59,6 +62,8 @@ requirements:
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
     - eigen>=3.4,<3.5
+    - khronos-opencl-icd-loader  # [win or osx]
+    - ocl-icd  # [linux]
     - boost={{ boost_version }}
     - libboost-python-devel>={{ boost_version }}
     - psutil
