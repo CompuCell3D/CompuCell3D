@@ -16,6 +16,45 @@ from cc3d.core.utils import find_current_conda_env, find_conda
 import tempfile
 
 
+DEFAULT_WINDOWS_CMAKE_GENERATOR = 'Visual Studio 16 2019'
+
+WINDOWS_CMAKE_GENERATORS = (
+    {
+        'label': 'Visual Studio 2019 x64 (default)',
+        'generator': 'Visual Studio 16 2019',
+        'platform': 'x64',
+    },
+    {
+        'label': 'NMake Makefiles',
+        'generator': 'NMake Makefiles',
+        'platform': None,
+    },
+    {
+        'label': 'Visual Studio 2015 x64',
+        'generator': 'Visual Studio 14 2015',
+        'platform': 'x64',
+    },
+    {
+        'label': 'Visual Studio 2026 x64',
+        'generator': 'Visual Studio 18 2026',
+        'platform': 'x64',
+    },
+)
+
+
+def get_windows_cmake_generator_options():
+    return WINDOWS_CMAKE_GENERATORS
+
+
+def get_windows_cmake_generator(generator_name: str = None):
+    generator_name = generator_name or DEFAULT_WINDOWS_CMAKE_GENERATOR
+    for generator_specs in WINDOWS_CMAKE_GENERATORS:
+        if generator_specs['generator'] == generator_name:
+            return generator_specs
+
+    raise ValueError(f'Unsupported Windows CMake generator: {generator_name}')
+
+
 def get_conda_specs():
     conda_specs = {}
     conda_exec = find_conda()
@@ -29,7 +68,9 @@ def get_conda_specs():
     return conda_specs
 
 
-def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
+def configure_developer_zone(
+        cc3d_git_dir: Path, build_dir: Path, win_cmake_generator: str = None, conda_specs: dict = None
+):
     """
     Configures CC3D developer zone for compilation. Assumes that detected conda environment
     has compilers, cmake (>3.13) , swig installed. This function will work only
@@ -37,10 +78,13 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
 
     :param cc3d_git_dir:
     :param build_dir:
+    :param win_cmake_generator: optional Windows CMake generator name
+    :param conda_specs: optional conda configuration specs
     :return:
     """
 
-    conda_specs = get_conda_specs()
+    if conda_specs is None:
+        conda_specs = get_conda_specs()
 
     build_dir.mkdir(exist_ok=True, parents=True)
     build_dir_content = os.listdir(build_dir)
@@ -51,7 +95,10 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
     if sys.platform.startswith('darwin'):
         output = configure_developer_zone_mac(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
     elif sys.platform.startswith('win'):
-        output = configure_developer_zone_win(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
+        output = configure_developer_zone_win(
+            cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs,
+            cmake_generator_name=win_cmake_generator
+        )
     elif sys.platform.startswith('linux'):
         output = configure_developer_zone_linux(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
     else:
@@ -60,12 +107,15 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
     return output
 
 
-def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_specs: dict):
+def configure_developer_zone_win(
+        cc3d_git_dir: Path, build_dir: Path, conda_specs: dict, cmake_generator_name: str = None
+):
     """
 
     @param cc3d_git_dir:
     @param build_dir:
     @param conda_specs:
+    @param cmake_generator_name:
     @return:
     """
 
@@ -91,7 +141,8 @@ def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_spec
 
     cmake_exec = bin_dir.joinpath('cmake.exe')
 
-    cmake_generator_name = 'NMake Makefiles'
+    cmake_generator = get_windows_cmake_generator(cmake_generator_name)
+    cmake_generator_name = cmake_generator['generator']
 
     cmd_cmake_generate = [
         str(cmake_exec),
@@ -110,6 +161,8 @@ def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_spec
         '-S', str(developer_zone_source),
         '-B', str(build_dir)
     ]
+    if cmake_generator['platform']:
+        cmd_cmake_generate[3:3] = ['-A', cmake_generator['platform']]
 
     result = subprocess.run(cmd_cmake_generate, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out_str = result.stdout.decode('utf-8')
