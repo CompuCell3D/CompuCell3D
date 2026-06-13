@@ -113,8 +113,11 @@ SET(COMPUCELL3D_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/lib)
 SET(COMPUCELL3D_LINK_LIBRARY_PATH )
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # ${COMPUCELL3D_INSTALL_PATH} points to <conda_env>/Lib/site_packages
-    # and link librariers .lib are in <conda_env>/Library/lib
-    SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib)
+    # and link libraries .lib may be in <conda_env>/Library/lib or
+    # <conda_env>/Library/bin depending on how the conda package was built.
+    SET(COMPUCELL3D_LINK_LIBRARY_PATH
+        ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib
+        ${COMPUCELL3D_INSTALL_PATH}/../../Library/bin)
 elseif (UNIX)
     SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../)
 endif()
@@ -150,25 +153,34 @@ SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
 
 
 LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR} ${COMPUCELL3D_LINK_LIBRARY_PATH})
-SET(CC3DLibraries
-    CC3DLogger
-    CC3DCompuCellLib
-    CC3DAutomaton
-    CC3DBoundary
-    CC3DField3D
-    CC3DPublicUtilities
-    CC3DXMLUtils
-    CC3DPotts3D
-    CC3DmuParser
-    CC3DExpressionEvaluator
-
-    )
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    SET(CC3DLibraries
+        CC3DLogger
+        CC3DCompuCellLib
+        CC3DBoundary
+        CC3DXMLUtils
+        CC3DExpressionEvaluator
+        )
+else()
+    SET(CC3DLibraries
+        CC3DLogger
+        CC3DCompuCellLib
+        CC3DAutomaton
+        CC3DBoundary
+        CC3DField3D
+        CC3DPublicUtilities
+        CC3DXMLUtils
+        CC3DPotts3D
+        CC3DmuParser
+        CC3DExpressionEvaluator
+        )
+endif()
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})
 
 MESSAGE("CC3DLibraries=${CC3DLibraries}")
 
-MESSAGE("THIS IS COMPUCELL3D_INCLUDE_PATH=$ {COMPUCELL3D_INCLUDE_PATH}")
+MESSAGE("THIS IS COMPUCELL3D_INCLUDE_PATH=${COMPUCELL3D_INCLUDE_PATH}")
 # Always include the top level source for compiles
 SET_DIRECTORY_PROPERTIES(PROPERTIES
   INCLUDE_DIRECTORIES ${COMPUCELL3D_INCLUDE_PATH})

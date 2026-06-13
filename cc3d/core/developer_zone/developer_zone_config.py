@@ -72,8 +72,6 @@ def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_spec
     developer_zone_source = cc3d_git_dir.joinpath('CompuCell3D', 'DeveloperZone')
 
     paths_dict = sysconfig.get_paths()
-    activate_script = conda_specs['conda_exec'].parent.joinpath('activate.bat')
-    conda_env_name = conda_specs['conda_env_name']
     py_version_nodot = sysconfig.get_config_var('py_version_nodot')
 
     stdlib = Path(paths_dict['stdlib'])
@@ -85,22 +83,35 @@ def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_spec
     install_dir = site_packages_dir
 
     python_include_dir = paths_dict['include']
+    python_exec = sys.executable
+    python_root_dir = stdlib.parent
+    numpy_include_dir = subprocess.check_output(
+        [python_exec, '-c', 'import numpy; print(numpy.get_include())']
+    ).decode('utf-8').strip()
 
     cmake_exec = bin_dir.joinpath('cmake.exe')
 
     cmake_generator_name = 'NMake Makefiles'
 
-    cmd_cmake_generate = f'{cmake_exec} -G "{cmake_generator_name}" -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ' \
-                         f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
-                         f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir} ' \
-                         f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir} ' \
-                         f'-DPYTHON_INCLUDE_DIR:PATH={python_include_dir} ' \
-                         f'-DPYTHON_LIBRARY:PATH={ld_library} ' \
-                         f'-S {developer_zone_source} ' \
-                         f'-B {build_dir} ' \
+    cmd_cmake_generate = [
+        str(cmake_exec),
+        '-G', cmake_generator_name,
+        '-DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo',
+        f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir}',
+        f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir}',
+        f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir}',
+        f'-DPYTHON_INCLUDE_DIR:PATH={python_include_dir}',
+        f'-DPYTHON_LIBRARY:PATH={ld_library}',
+        f'-DPython3_ROOT_DIR:PATH={python_root_dir}',
+        f'-DPython3_EXECUTABLE:FILEPATH={python_exec}',
+        f'-DPython3_INCLUDE_DIR:PATH={python_include_dir}',
+        f'-DPython3_LIBRARY:FILEPATH={ld_library}',
+        f'-DPython3_NumPy_INCLUDE_DIR:PATH={numpy_include_dir}',
+        '-S', str(developer_zone_source),
+        '-B', str(build_dir)
+    ]
 
-    result = subprocess.run(
-        f'{activate_script} & conda activate {conda_env_name} & {cmd_cmake_generate}', stdout=subprocess.PIPE)
+    result = subprocess.run(cmd_cmake_generate, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out_str = result.stdout.decode('utf-8')
     print(out_str)
 
