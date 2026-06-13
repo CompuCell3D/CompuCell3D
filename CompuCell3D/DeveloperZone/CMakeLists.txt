@@ -119,6 +119,26 @@ elseif (UNIX)
     SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../)
 endif()
 
+# DeveloperZone can be built as a standalone CMake project, so it does not
+# inherit the core CompuCell3D rpath settings.  Keep installed SWIG modules
+# able to find sibling plugin and steppable libraries without LD_LIBRARY_PATH.
+if(UNIX)
+    set(CMAKE_MACOSX_RPATH TRUE)
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+    if(APPLE)
+        set(RPATH_BASE @loader_path)
+    else()
+        set(RPATH_BASE $ORIGIN)
+    endif()
+
+    set(CMAKE_INSTALL_RPATH
+        ${RPATH_BASE}
+        ${RPATH_BASE}/CompuCell3DPlugins
+        ${RPATH_BASE}/CompuCell3DSteppables
+        ${RPATH_BASE}/lib
+    )
+endif()
 
 # assuming cmake_install_prexif points to site packages dir we do the following:
 SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " cc3d/cpp/CompuCell3DPlugins")
