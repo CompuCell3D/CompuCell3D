@@ -241,6 +241,7 @@ def configure_developer_zone_mac(cc3d_git_dir: Path, build_dir: Path, conda_spec
     cmake_generator_name = 'Unix Makefiles'
     cmake_c_compiler = bin_dir.joinpath('clang')
     cmake_cxx_compiler = bin_dir.joinpath('clang++')
+    conda_root_bin_dir = Path(conda_specs['conda_exec']).parent
 
     cmd_cmake_generate = f'{cmake_exec} -G "{cmake_generator_name}" -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ' \
                          f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
@@ -255,7 +256,9 @@ def configure_developer_zone_mac(cc3d_git_dir: Path, build_dir: Path, conda_spec
         dev_zone_config_shell_script = Path(tmpdirname).joinpath('run_dev_config_script.sh')
         with dev_zone_config_shell_script.open('w') as out:
             out.write(f'#!/bin/sh\nsource {conda_specs["conda_shell_script"]} ; '
-                      f'conda activate {conda_specs["conda_env_name"]} ; {cmd_cmake_generate}')
+                      f'conda activate {conda_specs["conda_env_name"]} ; '
+                      f'export PATH="{conda_root_bin_dir}:$PATH" ; '
+                      f'{cmd_cmake_generate}')
         dev_zone_config_shell_script.chmod(dev_zone_config_shell_script.stat().st_mode | stat.S_IEXEC)
 
         result = subprocess.run(f'{dev_zone_config_shell_script}', stdout=subprocess.PIPE)

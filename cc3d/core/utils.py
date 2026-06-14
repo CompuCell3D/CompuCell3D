@@ -48,7 +48,7 @@ def find_current_conda_env(conda_exec):
     if conda_exec is None:
         return None
 
-    envs = subprocess.check_output(f'{conda_exec} env list', shell=True).splitlines()
+    envs = subprocess.check_output([str(conda_exec), '--no-plugins', 'env', 'list']).splitlines()
     active_envs = []
     sys_prefix = Path(sys.prefix).resolve()
     for env_line in envs:
@@ -97,7 +97,6 @@ def find_conda():
                 break
 
         print('conda_exec=', conda_exec)
-        os.system(str(conda_exec))
     elif sys.platform.startswith('win'):
 
         conda_exec_candidates = [
