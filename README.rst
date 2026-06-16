@@ -12,7 +12,7 @@ Website
 CompuCell3D Community
 ----------------------------
 
-For bug reports, feature, requests and COmpuCel3D discussions we encourage you to visit `CompuCell3D Community Guide <https://github.com/CompuCell3D/CompuCell3D/blob/master/README_CompuCell3D_Community.md>`_ 
+For bug reports, feature, requests and CompuCel3D discussions we encourage you to visit `CompuCell3D Community Guide <https://github.com/CompuCell3D/CompuCell3D/blob/master/README_CompuCell3D_Community.md>`_
 
 Installation
 ------------
@@ -41,7 +41,7 @@ To run Model editor (Twedit++)  you would type:
     python -m cc3d.twedit5
 
 
-Finalyy, if you want to run simulation in a GUI-less mode you run:
+Finally, if you want to run simulation in a GUI-less mode you run:
 
 .. code-block:: console
 

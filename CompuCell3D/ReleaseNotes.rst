@@ -1,6 +1,37 @@
 Release Notes
 =============
 
+Version 4.9.0
+-------------
+**2026-05-16**
+
+New features:
+ - Added support for importing and exporting Player settings in XML format
+ - Added support for simulation-specific custom XML settings in ``Simulation/_custom_settings.xml``
+ - Added support for XML-based and SQLite-based custom settings in Python-only simulations using ``CC3DPy.py``
+ - Added support for custom XML settings in notebook-based workflows
+ - Added ``WindowsLayout`` to XML-serializable settings
+ - Added command line option ``--global-settings-dir-name`` to select an alternate global settings directory name under the user home directory
+ - Added in-memory settings cache to make settings access faster and defer disk writes while simulations are running
+
+Improvements:
+ - Improved settings propagation from the main process to child processes so headless and multiprocess workflows preserve custom visualization settings
+ - Improved exported settings XML formatting
+ - Allowed HTML color names, such as ``orange``, ``magenta`` and ``darkblue``, in settings color specifications
+ - Improved XML schema validation by allowing extended attributes for ``Plugin``, ``Steppable``, ``CompuCell3D`` and ``Metadata`` elements
+ - Updated version metadata to 4.9.0
+ - Improved CMake install normalization
+
+Bug fixes:
+ - Fixed non-updating screenshots in headless ``run_script.py`` workflows
+ - Fixed 2D screenshot coloring in ``run_script.py`` so subsequent screenshots use the correct custom colors
+ - Fixed crash when creating a second FocalPointPlasticity anchor
+ - Fixed macOS x86-only version metadata
+ - Multiple minor cleanup and stability fixes
+ - Fixed Parameter Scan
+ - Fixed and improved Developer Zone
+
+
 Version 4.8.0
 -------------
 **2026-02-14**
@@ -569,7 +600,6 @@ Version 3.5.0
 - Fixed significant bug in parallel Potts section - had to allow nested omp regions as PDE solver caller calls
   PDE solver from within parallel section . PDESolver though instantiates its own parallel section to solve PDE
   so there are nested parallel regions
-
 
 
 

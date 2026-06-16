@@ -1292,8 +1292,8 @@ class RestartManager:
         # outputting ConnectivityLocalFlexPlugin
         self.output_connectivity_local_flex_plugin(restart_output_path, rst_xml_elem)
 
-        # outputting FocalPointPlacticityPlugin
-        self.output_focal_point_placticity_plugin(restart_output_path, rst_xml_elem)
+        # outputting FocalPointPlasticityPlugin
+        self.output_focal_point_plasticity_plugin(restart_output_path, rst_xml_elem)
 
         # outputting ContactLocalProductPlugin
         self.output_contact_local_product_plugin(restart_output_path, rst_xml_elem)
@@ -1971,10 +1971,10 @@ class RestartManager:
         pf.close()
         self.append_xml_stub(rst_xml_elem, sd)
 
-    def output_focal_point_placticity_plugin(self, restart_output_path, rst_xml_elem):
+    def output_focal_point_plasticity_plugin(self, restart_output_path, rst_xml_elem):
 
         """
-        serializes FocalPointPlacticity Plugin
+        serializes FocalPointPlasticity Plugin
         :param restart_output_path: {str}
         :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
