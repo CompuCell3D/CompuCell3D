@@ -28,6 +28,8 @@ Bug fixes:
  - Fixed crash when creating a second FocalPointPlasticity anchor
  - Fixed macOS x86-only version metadata
  - Multiple minor cleanup and stability fixes
+ - Fixed Parameter Scan
+ - Fixed and improved Developer Zone
 
 
 Version 4.8.0
