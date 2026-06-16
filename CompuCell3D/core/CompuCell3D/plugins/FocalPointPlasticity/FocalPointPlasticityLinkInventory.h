@@ -118,7 +118,15 @@ namespace CompuCell3D {
         int getNextAnchorId(CellG *_cell) {
             FPPLinkList ll = getCellLinkList(_cell);
             if (ll.size() == 0) return int(0);
-            else return (*ll.end())->getAnchorId() + 1;
+
+            int maxAnchorId = 0;
+            for (auto &link: ll) {
+                if (link && link->getAnchorId() > maxAnchorId) {
+                    maxAnchorId = link->getAnchorId();
+                }
+            }
+
+            return maxAnchorId + 1;
         }
 
     };

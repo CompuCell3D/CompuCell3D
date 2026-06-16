@@ -7,7 +7,7 @@ When compiling and if you are in the conda environment make sure to
 deactivate base environment
 
 ```commandline
-cond deactivate
+conda deactivate
 ```
 
 and then you can issue `make`, make install command

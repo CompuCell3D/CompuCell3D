@@ -16,6 +16,29 @@ IF (APPLE)
         #x86 Intel machines
         SET(CMAKE_OSX_SYSROOT /opt/MacOSX10.10.sdk)
     endif()
+    GET_FILENAME_COMPONENT(CC3D_COMPILER_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    GET_FILENAME_COMPONENT(CC3D_CONDA_ENV_DIR "${CC3D_COMPILER_BIN_DIR}" DIRECTORY)
+    GET_FILENAME_COMPONENT(CC3D_CONDA_ENVS_DIR "${CC3D_CONDA_ENV_DIR}" DIRECTORY)
+    GET_FILENAME_COMPONENT(CC3D_CONDA_ROOT_DIR "${CC3D_CONDA_ENVS_DIR}" DIRECTORY)
+    FIND_PROGRAM(CC3D_DARWIN_LD_EXECUTABLE
+        NAMES ld
+        HINTS "${CC3D_CONDA_ROOT_DIR}/bin"
+        NO_DEFAULT_PATH
+    )
+    IF(CC3D_DARWIN_LD_EXECUTABLE)
+        SET(CC3D_DARWIN_LD_FLAG "-fuse-ld=${CC3D_DARWIN_LD_EXECUTABLE}")
+        FOREACH(CC3D_LINKER_FLAGS_VAR
+                CMAKE_EXE_LINKER_FLAGS
+                CMAKE_SHARED_LINKER_FLAGS
+                CMAKE_MODULE_LINKER_FLAGS)
+            STRING(FIND "${${CC3D_LINKER_FLAGS_VAR}}" "${CC3D_DARWIN_LD_FLAG}" CC3D_DARWIN_LD_FLAG_INDEX)
+            IF(CC3D_DARWIN_LD_FLAG_INDEX LESS 0)
+                SET(${CC3D_LINKER_FLAGS_VAR} "${${CC3D_LINKER_FLAGS_VAR}} ${CC3D_DARWIN_LD_FLAG}"
+                    CACHE STRING "Linker flags" FORCE)
+            ENDIF()
+        ENDFOREACH()
+        MESSAGE("Using Darwin linker: ${CC3D_DARWIN_LD_EXECUTABLE}")
+    ENDIF()
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
@@ -113,12 +136,35 @@ SET(COMPUCELL3D_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/lib)
 SET(COMPUCELL3D_LINK_LIBRARY_PATH )
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # ${COMPUCELL3D_INSTALL_PATH} points to <conda_env>/Lib/site_packages
-    # and link librariers .lib are in <conda_env>/Library/lib
-    SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib)
+    # and link libraries .lib may be in <conda_env>/Library/lib or
+    # <conda_env>/Library/bin depending on how the conda package was built.
+    SET(COMPUCELL3D_LINK_LIBRARY_PATH
+        ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib
+        ${COMPUCELL3D_INSTALL_PATH}/../../Library/bin)
 elseif (UNIX)
     SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../)
 endif()
 
+# DeveloperZone can be built as a standalone CMake project, so it does not
+# inherit the core CompuCell3D rpath settings.  Keep installed SWIG modules
+# able to find sibling plugin and steppable libraries without LD_LIBRARY_PATH.
+if(UNIX)
+    set(CMAKE_MACOSX_RPATH TRUE)
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+    if(APPLE)
+        set(RPATH_BASE @loader_path)
+    else()
+        set(RPATH_BASE $ORIGIN)
+    endif()
+
+    set(CMAKE_INSTALL_RPATH
+        ${RPATH_BASE}
+        ${RPATH_BASE}/CompuCell3DPlugins
+        ${RPATH_BASE}/CompuCell3DSteppables
+        ${RPATH_BASE}/lib
+    )
+endif()
 
 # assuming cmake_install_prexif points to site packages dir we do the following:
 SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " cc3d/cpp/CompuCell3DPlugins")
@@ -130,25 +176,34 @@ SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
 
 
 LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR} ${COMPUCELL3D_LINK_LIBRARY_PATH})
-SET(CC3DLibraries
-    CC3DLogger
-    CC3DCompuCellLib
-    CC3DAutomaton
-    CC3DBoundary
-    CC3DField3D
-    CC3DPublicUtilities
-    CC3DXMLUtils
-    CC3DPotts3D
-    CC3DmuParser
-    CC3DExpressionEvaluator
-
-    )
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    SET(CC3DLibraries
+        CC3DLogger
+        CC3DCompuCellLib
+        CC3DBoundary
+        CC3DXMLUtils
+        CC3DExpressionEvaluator
+        )
+else()
+    SET(CC3DLibraries
+        CC3DLogger
+        CC3DCompuCellLib
+        CC3DAutomaton
+        CC3DBoundary
+        CC3DField3D
+        CC3DPublicUtilities
+        CC3DXMLUtils
+        CC3DPotts3D
+        CC3DmuParser
+        CC3DExpressionEvaluator
+        )
+endif()
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})
 
 MESSAGE("CC3DLibraries=${CC3DLibraries}")
 
-MESSAGE("THIS IS COMPUCELL3D_INCLUDE_PATH=$ {COMPUCELL3D_INCLUDE_PATH}")
+MESSAGE("THIS IS COMPUCELL3D_INCLUDE_PATH=${COMPUCELL3D_INCLUDE_PATH}")
 # Always include the top level source for compiles
 SET_DIRECTORY_PROPERTIES(PROPERTIES
   INCLUDE_DIRECTORIES ${COMPUCELL3D_INCLUDE_PATH})

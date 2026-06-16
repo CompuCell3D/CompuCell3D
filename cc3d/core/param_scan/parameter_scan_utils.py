@@ -349,9 +349,10 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
 
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
+    simulation_output_dir = scan_iteration_output_dir.joinpath("output")
     arg_list_local += [
         f'--input={cc3d_proj_template}',
-        f'--output-dir={cc3d_proj_template.parent}',
+        f'--output-dir={simulation_output_dir}',
         f'--parameter-scan-iteration={current_scan_parameters["current_iteration"]}'
     ]
 
@@ -363,7 +364,8 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
     popen_args = exe_script_list + arg_list_local
-    print('command=', popen_args)
+    print('command', ' '.join(popen_args))
+
 
     cc3d_process = Popen(popen_args)
     out, err = cc3d_process.communicate()
