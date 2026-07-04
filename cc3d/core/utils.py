@@ -37,12 +37,40 @@ def find_file_in_dir(dirname, fname_pattern):
 
 
 def find_current_conda_env(conda_exec):
+    env_name = os.environ.get('CONDA_DEFAULT_ENV')
+    if env_name:
+        return env_name
+
+    conda_prefix = os.environ.get('CONDA_PREFIX')
+    if conda_prefix:
+        return Path(conda_prefix).name
+
     if conda_exec is None:
         return None
 
-    envs = subprocess.check_output(f'{conda_exec} env list', shell=True).splitlines()
-    active_env = list(filter(lambda s: '*' in str(s), envs))[0]
-    env_name = active_env.decode("utf-8").split()[0]
+    envs = subprocess.check_output([str(conda_exec), '--no-plugins', 'env', 'list']).splitlines()
+    active_envs = []
+    sys_prefix = Path(sys.prefix).resolve()
+    for env_line in envs:
+        decoded_env_line = env_line.decode("utf-8").strip()
+        if not decoded_env_line or decoded_env_line.startswith('#'):
+            continue
+        if '*' in decoded_env_line:
+            active_envs.append(decoded_env_line)
+            continue
+
+        env_line_parts = decoded_env_line.split()
+        env_path = Path(env_line_parts[-1])
+        try:
+            if env_path.resolve() == sys_prefix:
+                return env_line_parts[0]
+        except OSError:
+            pass
+
+    if not active_envs:
+        return None
+
+    env_name = active_envs[0].split()[0]
     return env_name
 
 
@@ -69,7 +97,6 @@ def find_conda():
                 break
 
         print('conda_exec=', conda_exec)
-        os.system(str(conda_exec))
     elif sys.platform.startswith('win'):
 
         conda_exec_candidates = [
