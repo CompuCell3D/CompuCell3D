@@ -1,5 +1,6 @@
 #include  "ParallelUtilsOpenMP.h"
 #include <algorithm>
+#include <cassert>
 #include <Logger/CC3DLogger.h>
 using namespace std;
 using namespace CompuCell3D;
@@ -172,9 +173,12 @@ void ParallelUtilsOpenMP::unsetLock(OpenMPLock_t * _lock){
 }
 
 void ParallelUtilsOpenMP::initLockV1(OpenMPLockV1_t * _lock){
-	if (!_lock->nativeLock) {
-		_lock->nativeLock = new omp_lock_t;
+	assert(_lock);
+	if (_lock->nativeLock) {
+		return;
 	}
+
+	_lock->nativeLock = new omp_lock_t;
 
 	omp_init_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
 }
@@ -188,9 +192,13 @@ void ParallelUtilsOpenMP::destroyLockV1(OpenMPLockV1_t * _lock){
 	_lock->nativeLock = 0;
 }
 void ParallelUtilsOpenMP::setLockV1(OpenMPLockV1_t * _lock){
+	assert(_lock);
+	assert(_lock->nativeLock);
 	omp_set_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
 }
 void ParallelUtilsOpenMP::unsetLockV1(OpenMPLockV1_t * _lock){
+	assert(_lock);
+	assert(_lock->nativeLock);
 	omp_unset_lock(static_cast<omp_lock_t *>(_lock->nativeLock));
 }
 

@@ -40,14 +40,16 @@ namespace CompuCell3D {
 
             virtual void handleEvent(CC3DEvent & _ev);
             //locks			
-			void initLock(OpenMPLock_t * _lock);
-			void destroyLock(OpenMPLock_t * _lock);
-			void setLock(OpenMPLock_t * _lock);
-			void unsetLock(OpenMPLock_t * _lock);
-			void initLockV1(OpenMPLockV1_t * _lock);
-			void destroyLockV1(OpenMPLockV1_t * _lock);
-			void setLockV1(OpenMPLockV1_t * _lock);
-			void unsetLockV1(OpenMPLockV1_t * _lock);
+				void initLock(OpenMPLock_t * _lock);
+				void destroyLock(OpenMPLock_t * _lock);
+				void setLock(OpenMPLock_t * _lock);
+				void unsetLock(OpenMPLock_t * _lock);
+				// OpenMPLockV1_t follows a single init/use/destroy lifetime.
+				// Repeated init calls on the same wrapper are ignored.
+				void initLockV1(OpenMPLockV1_t * _lock);
+				void destroyLockV1(OpenMPLockV1_t * _lock);
+				void setLockV1(OpenMPLockV1_t * _lock);
+				void unsetLockV1(OpenMPLockV1_t * _lock);
 			//global PyWrapperLock
 			void setPyWrapperLock();
 			void unsetPyWrapperLock();
