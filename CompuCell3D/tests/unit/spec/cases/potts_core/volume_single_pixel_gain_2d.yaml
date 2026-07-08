@@ -1,0 +1,44 @@
+version: 1
+name: volume-single-pixel-gain-2d
+domain: potts_local
+lattice:
+  dim: [6, 4, 1]
+  boundary:
+    x: fixed
+    y: fixed
+    z: fixed
+  neighborhood:
+    kind: moore
+    order: 1
+cells:
+  - id: 1
+    type: A
+    target_volume: 4
+    lambda_volume: 2.0
+    pixels:
+      - [1, 1, 0]
+      - [1, 2, 0]
+      - [2, 1, 0]
+  - id: 2
+    type: B
+    target_volume: 3
+    lambda_volume: 2.0
+    pixels:
+      - [3, 1, 0]
+      - [3, 2, 0]
+medium:
+  type: Medium
+parameters:
+  volume:
+    kind: quadratic
+queries:
+  - id: q1
+    kind: volume_energy_delta
+    source: [2, 1, 0]
+    target: [3, 1, 0]
+    expected:
+      value: -2.0
+      tolerance: 1.0e-12
+notes:
+  - Draft pilot case for a single copy attempt affecting only the volume term.
+  - Expected value is a placeholder until reference behavior is encoded.

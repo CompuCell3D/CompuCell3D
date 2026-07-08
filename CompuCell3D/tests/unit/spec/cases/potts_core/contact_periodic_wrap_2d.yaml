@@ -1,0 +1,39 @@
+version: 1
+name: contact-periodic-wrap-2d
+domain: potts_local
+lattice:
+  dim: [6, 4, 1]
+  boundary:
+    x: periodic
+    y: fixed
+    z: fixed
+  neighborhood:
+    kind: moore
+    order: 1
+cells:
+  - id: 1
+    type: A
+    pixels:
+      - [0, 1, 0]
+  - id: 2
+    type: B
+    pixels:
+      - [5, 1, 0]
+medium:
+  type: Medium
+parameters:
+  contact:
+    A: {A: 10, B: 14, Medium: 16}
+    B: {A: 14, B: 12, Medium: 18}
+    Medium: {A: 16, B: 18, Medium: 0}
+queries:
+  - id: q1
+    kind: contact_energy_delta
+    source: [0, 1, 0]
+    target: [5, 1, 0]
+    expected:
+      value: 4.0
+      tolerance: 1.0e-12
+notes:
+  - Validates periodic neighborhood wrapping in the x direction.
+  - Expected value is a placeholder until reference behavior is encoded.

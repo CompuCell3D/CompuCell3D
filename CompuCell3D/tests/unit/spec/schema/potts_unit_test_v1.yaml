@@ -1,0 +1,49 @@
+version: 1
+title: potts_unit_test_v1
+description: >
+  Draft schema description for deterministic local Cellular Potts Model
+  conformance tests shared across implementations.
+required:
+  - version
+  - name
+  - domain
+  - lattice
+  - cells
+  - parameters
+  - queries
+field_notes:
+  version:
+    type: integer
+    allowed: [1]
+  name:
+    type: string
+  domain:
+    type: string
+    allowed:
+      - potts_local
+  lattice:
+    required:
+      - dim
+      - boundary
+      - neighborhood
+  cells:
+    type: sequence
+    item_required:
+      - id
+      - type
+      - pixels
+  medium:
+    type: mapping
+    optional: true
+  parameters:
+    type: mapping
+  queries:
+    type: sequence
+    item_required:
+      - id
+      - kind
+      - expected
+query_kinds:
+  - contact_energy_delta
+  - volume_energy_delta
+  - surface_energy_delta
