@@ -222,11 +222,10 @@ double VolumePlugin::changeEnergyByCellId(const Point3D &pt, const CellG *newCel
 
     /// E = lambda * (volume - targetVolume) ^ 2
 
-    double energy = 0;
-
-    if (oldCell == newCell) return 0;
-
     if (!energyExpressionDefined) {
+        double energy = 0;
+
+        if (oldCell == newCell) return 0;
 
         if (newCell) {
 
@@ -243,6 +242,9 @@ double VolumePlugin::changeEnergyByCellId(const Point3D &pt, const CellG *newCel
 
 
     } else {
+        double energy = 0;
+
+        if (oldCell == newCell) return 0;
 
         if (newCell) {
             energy += customExpressionFunction(newCell->lambdaVolume, newCell->targetVolume, newCell->volume,

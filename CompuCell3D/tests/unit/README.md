@@ -55,6 +55,68 @@ tests/
 3. Regression tests
    These remain in the existing `tests/` area and execute full CC3D runs.
 
+## Running Native Tests
+
+Prerequisites:
+
+- a working C++ compiler toolchain for your platform
+- `cmake`
+- `ctest`
+- `gtest` installed in the active build environment
+- a `gtest` build compatible with C++17; the native unit-test targets are compiled as C++17 even though the main CC3D code still builds with its existing default
+
+Recommended approach:
+
+- use the same environment that you normally use to compile CC3D
+- for native unit tests only, configure with `-DBUILD_PYINTERFACE=OFF`
+
+### macOS and Linux
+
+From the repo root:
+
+```bash
+cmake -S . -B build-unit \
+  -DCOMPUCELL3D_TEST=ON \
+  -DBUILD_PYINTERFACE=OFF \
+  -DBUILD_CPP_ONLY_EXECUTABLE=OFF \
+  -DGTest_ROOT="$CONDA_PREFIX" \
+  -DEIGEN3_INCLUDE_DIR="$PWD/core/Eigen"
+
+cmake --build build-unit --target cc3d_unit_volume -j4
+
+ctest --test-dir build-unit -R cc3d_unit_volume --output-on-failure
+```
+
+If `cmake` and `ctest` are installed only inside a conda environment, activate that environment first.
+If `gtest` is also coming from conda, keep `GTest_ROOT` pointed at the active environment to avoid mixing headers from one environment with libraries from another.
+
+### Windows
+
+Run from a developer shell with your compiler environment enabled and the CC3D build environment activated:
+
+```bat
+cmake -S . -B build-unit ^
+  -DCOMPUCELL3D_TEST=ON ^
+  -DBUILD_PYINTERFACE=OFF ^
+  -DBUILD_CPP_ONLY_EXECUTABLE=OFF ^
+  -DGTest_ROOT=%CONDA_PREFIX% ^
+  -DEIGEN3_INCLUDE_DIR=%CD%/core/Eigen
+
+cmake --build build-unit --target cc3d_unit_volume --config Release
+
+ctest --test-dir build-unit -R cc3d_unit_volume --output-on-failure -C Release
+```
+
+### Notes
+
+- `EIGEN3_INCLUDE_DIR` is pointed at the vendored Eigen tree in this repo to avoid picking up an incompatible external Eigen configuration.
+- The current native test target links the `CellType`, `VolumeTracker`, and `Volume` plugins directly. That means plugin registration happens through normal plugin proxy initialization and does not require setting `COMPUCELL3D_PLUGIN_PATH`.
+- The first implemented native test is `cc3d_unit_volume`, which exercises `VolumePlugin::changeEnergy(...)` using a real `Simulator`, `Potts3D`, and cell field.
+
+### Running Under Codex
+
+If you are running the build through the Codex sandbox used in this session, CMake also writes `../cc3d/_version.py` during configure. That path is outside the writable workspace root for this repo checkout, so configure may require an approval for unsandboxed execution. In a normal local shell this is not a special issue.
+
 ## CMake Target Structure
 
 Recommended tools:

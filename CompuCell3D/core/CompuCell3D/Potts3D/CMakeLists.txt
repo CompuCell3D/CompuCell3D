@@ -15,12 +15,12 @@ SET(SRCS
 
 SET(GOMP_LIB )
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows OR MINGW)
+if(MINGW)
 
   # during compilation wth MINGW gomp - OPenMP dynamic library has to be linked explicitely
   SET(GOMP_LIB gomp)
 
-endif(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows OR MINGW)
+endif(MINGW)
 
 SET(LIBS
   ${GOMP_LIB}

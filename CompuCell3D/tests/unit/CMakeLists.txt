@@ -8,4 +8,4 @@
 #   cpp/     native C++ unit and component tests
 #   python/  pytest-based orchestration and spec runners
 
-# add_subdirectory(cpp)
+add_subdirectory(cpp)

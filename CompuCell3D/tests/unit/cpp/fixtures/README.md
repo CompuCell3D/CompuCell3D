@@ -1,10 +1,11 @@
 # Fixture Layer Draft
 
-The native fixture layer should construct minimal deterministic CPM states without launching a full CC3D simulation.
+The native fixture layer constructs a real `Simulator`/`Potts3D` test harness using in-memory `CC3DXMLElement`
+configuration, without parsing external XML files.
 
-Planned responsibilities:
+Current responsibilities:
 
-- lattice and boundary setup
-- cell creation and painting
-- plugin parameter injection
-- local deterministic energy queries
+- minimal `<Potts>` XML construction
+- minimal `<Plugin>` XML construction
+- simulator initialization through `initializeCC3D()` and `extraInit()`
+- cell creation and field painting using the real cell field

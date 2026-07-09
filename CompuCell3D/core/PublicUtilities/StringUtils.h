@@ -20,7 +20,7 @@ void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::
  */
 std::vector<std::string> splitString(const std::string& str, const std::string& token);
 
-class isWhiteSpaceFunctor: public std::unary_function<char,bool>{
+class isWhiteSpaceFunctor{
    private:
    std::locale loc;
    

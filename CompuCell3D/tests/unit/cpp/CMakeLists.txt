@@ -7,5 +7,11 @@
 #   cc3d_unit_surface
 #
 # Example future structure:
-#   add_subdirectory(fixtures)
-#   add_subdirectory(plugins)
+add_library(cc3d_unit_test_defaults INTERFACE)
+target_compile_features(cc3d_unit_test_defaults INTERFACE cxx_std_17)
+set_target_properties(cc3d_unit_test_defaults PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+
+add_subdirectory(fixtures)
+add_subdirectory(plugins)
