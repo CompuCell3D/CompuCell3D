@@ -202,6 +202,28 @@ TEST(SurfaceTrackerPluginShapeTest, TracksTwoPixelSurfaceIn2D) {
     );
 }
 
+TEST(SurfaceTrackerPluginShapeTest, TracksTwoPixelSurfaceIn2DNeighborOrder2) {
+    // With neighbor order 2, the same two-pixel shape includes diagonal interfaces and the
+    // tracked surface increases to 14.
+    runIsolatedSurfaceShapeScenario(
+            Dim3D(20, 20, 1),
+            2,
+            {Point3D(10, 10, 0), Point3D(11, 10, 0)},
+            14.0
+    );
+}
+
+TEST(SurfaceTrackerPluginShapeTest, TracksTwoPixelSurfaceIn2DNeighborOrder3) {
+    // With neighbor order 3, the same two-pixel shape includes the distance-2 cardinal shell
+    // and the tracked surface increases to 22.
+    runIsolatedSurfaceShapeScenario(
+            Dim3D(20, 20, 1),
+            3,
+            {Point3D(10, 10, 0), Point3D(11, 10, 0)},
+            22.0
+    );
+}
+
 TEST(SurfaceTrackerPluginShapeTest, TracksSingleVoxelSurfaceIn3D) {
     // With neighbor order 1 in 3D, an isolated single voxel has six medium faces.
     runIsolatedSurfaceShapeScenario(
