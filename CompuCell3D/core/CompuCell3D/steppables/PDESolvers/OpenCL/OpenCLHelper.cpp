@@ -126,22 +126,25 @@ void OpenCLHelper::BuildExecutable(cl_program program) const {
     cl_int buildErr = clBuildProgram(program, 1, &devices[deviceUsed], NULL, NULL, NULL);
     CC3D_Log(LOG_DEBUG) << "clBuildProgram: " << ErrorString(buildErr);
     CC3D_Log(LOG_DEBUG) << deviceUsed<<" "<<numDevices;
-    //if(err != CL_SUCCESS){
+
     cl_build_status build_status;
     cl_int err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status),
                                        &build_status, NULL);
-    char *build_log;
+    CC3D_Log(LOG_DEBUG) << "CL_PROGRAM_BUILD_STATUS: " << build_status;
+
     size_t ret_val_size;
     err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+    if (err == CL_SUCCESS && ret_val_size > 1) {
+        std::vector<char> build_log(ret_val_size + 1, '\0');
+        err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_LOG, ret_val_size, &build_log[0],
+                                    NULL);
 
-    build_log = new char[ret_val_size + 1];
-    err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+        if (err == CL_SUCCESS)
+            CC3D_Log(LOG_DEBUG) << "BUILD LOG: " << std::endl << &build_log[0];
+        else
+            CC3D_Log(LOG_DEBUG) << "clGetProgramBuildInfo(CL_PROGRAM_BUILD_LOG): " << ErrorString(err);
+    }
 
-    build_log[ret_val_size] = '\0';
-    CC3D_Log(LOG_DEBUG) << "BUILD LOG: " << std::endl << build_log;
-    delete build_log;
-
-    //}
     //if(buildErr != CL_SUCCESS)
     //	throw(std::runtime_error("error"));
     ASSERT_OR_THROW("Can not build the GPU program", buildErr == CL_SUCCESS);

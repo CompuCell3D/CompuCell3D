@@ -47,9 +47,9 @@ ReactionDiffusionSolverFVM::ReactionDiffusionSolverFVM()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ReactionDiffusionSolverFVM::~ReactionDiffusionSolverFVM()
 {
-	pUtils->destroyLock(lockPtr);
-	delete lockPtr;
-	lockPtr = 0;
+	pUtils->destroyLockV1(lockPtrV1);
+	delete lockPtrV1;
+	lockPtrV1 = 0;
 
 	if(fvMaxStableTimeSteps) {
 		delete fvMaxStableTimeSteps;
@@ -75,8 +75,8 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	xmlData = _xmlData;
 
 	pUtils = sim->getParallelUtils();
-	lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
-	pUtils->initLock(lockPtr);
+	lockPtrV1 = new ParallelUtilsOpenMP::OpenMPLockV1_t;
+	pUtils->initLockV1(lockPtrV1);
 
 	// Get useful plugins
 	CC3D_Log(LOG_DEBUG) << "Getting helpful plugins...";
@@ -664,7 +664,7 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 
 	//if (_event.id == LATTICE_RESIZE) {
 
-		pUtils->setLock(lockPtr);
+		pUtils->setLockV1(lockPtrV1);
 
 		std::vector<ReactionDiffusionSolverFV *> fvs = std::vector<ReactionDiffusionSolverFV *>((int)(fieldDim.x*fieldDim.y*fieldDim.z));
 
@@ -690,8 +690,8 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 			fluctuationCompensator->resetCorrections();
 		}
 
-		pUtils->unsetLock(lockPtr);
-		
+		pUtils->unsetLockV1(lockPtrV1);
+
 		update(xmlData, false);
 	//}
 
@@ -701,7 +701,7 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 
 void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
-	pUtils->setLock(lockPtr);
+	pUtils->setLockV1(lockPtrV1);
 
 	// Load cell data just in time if necessary
 	if (!cellDataLoaded) { loadCellData(); }
@@ -779,7 +779,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
 	CC3D_Log(LOG_DEBUG) << "RDFVM Step complete.";
 
-	pUtils->unsetLock(lockPtr);
+	pUtils->unsetLockV1(lockPtrV1);
 
 }
 

@@ -98,7 +98,6 @@ typedef struct UniSolverParams {//TODO: some of them are field params, not a sol
 
 inline
 unsigned int fieldLength(UniSolverParams_t const *sps) {
-    assert(sps);
     return sps->xDim * sps->yDim * sps->zDim;
 }
 
