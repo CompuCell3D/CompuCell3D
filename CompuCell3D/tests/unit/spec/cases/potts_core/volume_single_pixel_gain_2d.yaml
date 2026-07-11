@@ -2,7 +2,7 @@ version: 1
 name: volume-single-pixel-gain-2d
 domain: potts_local
 lattice:
-  dim: [6, 4, 1]
+  dim: [20, 20, 1]
   boundary:
     x: fixed
     y: fixed
@@ -37,8 +37,9 @@ queries:
     source: [2, 1, 0]
     target: [3, 1, 0]
     expected:
-      value: -2.0
+      value: 4.0
       tolerance: 1.0e-12
 notes:
   - Draft pilot case for a single copy attempt affecting only the volume term.
-  - Expected value is a placeholder until reference behavior is encoded.
+  - Reference value matches CC3D VolumePlugin::changeEnergy(...) for the specified state.
+  - Lattice dimensions are intentionally larger than the occupied region to satisfy CC3D neighborhood initialization constraints.

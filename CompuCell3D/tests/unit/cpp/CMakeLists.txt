@@ -14,4 +14,5 @@ set_target_properties(cc3d_unit_test_defaults PROPERTIES
 )
 
 add_subdirectory(fixtures)
+add_subdirectory(conformance)
 add_subdirectory(plugins)

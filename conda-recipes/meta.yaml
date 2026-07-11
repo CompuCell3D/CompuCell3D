@@ -40,6 +40,7 @@ requirements:
     - {{ openmp }}  # [osx]
     - cmake={{ cmake_version }}
     - gtest
+    - yaml-cpp
     - swig>={{ swig_version }}
     - python {{ python }}
     - pip>=23.0
