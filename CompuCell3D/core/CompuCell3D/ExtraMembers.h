@@ -14,6 +14,8 @@ namespace CompuCell3D {
     template<class T>
     class ExtraMembersFactory {
     public:
+        virtual ~ExtraMembersFactory() = default;
+
         virtual T *create() = 0;
 
         virtual void destroy(T *em) = 0;
@@ -35,11 +37,12 @@ namespace CompuCell3D {
 
     // Extra members group; classes can be dynamically assigned per group and instantiated per group instance
     class ExtraMembersGroup {
+        std::vector<ExtraMembersFactory<void> *> factories;
         std::vector<void *> members;
 
     public:
-        ExtraMembersGroup(const std::vector<ExtraMembersFactory<void> *> &factories) {
-            for (auto &itr: factories) members.push_back(itr->create());
+        ExtraMembersGroup(const std::vector<ExtraMembersFactory<void> *> &_factories) : factories(_factories) {
+            for (auto &factory: factories) members.push_back(factory->create());
         }
 
         ~ExtraMembersGroup() { destroy(); }
@@ -48,7 +51,10 @@ namespace CompuCell3D {
 
         void destroy() {
             for (unsigned int i = 0; i < members.size(); i++) {
-                delete (members[i]);
+                if (!members[i]) {
+                    continue;
+                }
+                factories[i]->destroy(members[i]);
                 members[i] = nullptr;
             }
         }
@@ -93,7 +99,7 @@ namespace CompuCell3D {
         ~ExtraMembersGroupFactory() {
             for (unsigned int i = 0; i < factories.size(); i++) {
                 delete factories[i];
-                factories[i] = 0;
+                factories[i] = nullptr;
             }
         }
 
@@ -107,7 +113,7 @@ namespace CompuCell3D {
         ExtraMembersGroup *create() { return new ExtraMembersGroup(factories); }
 
         // Destroys a group
-        void destroy(ExtraMembersGroup *g) { g->destroy(); }
+        void destroy(ExtraMembersGroup *g) { delete g; }
 
     };
 

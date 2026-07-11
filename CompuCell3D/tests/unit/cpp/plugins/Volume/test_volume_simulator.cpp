@@ -72,6 +72,18 @@ TEST_F(VolumePluginSimulatorTest, HandlesGainFromMedium) {
     EXPECT_DOUBLE_EQ(volumePlugin->changeEnergy(Point3D(3, 1, 0), newCell, nullptr), expected);
 }
 
+TEST_F(VolumePluginSimulatorTest, HandlesSinglePixelCellGainFromMedium) {
+    CellG *newCell = testSim.createCell(Point3D(1, 1, 0), 1);
+    newCell->targetVolume = 3.0f;
+    newCell->lambdaVolume = 1.25f;
+
+    ASSERT_EQ(newCell->volume, 1);
+
+    const double expected = 1.25 * (1 + 2 * (1 - 3.0));
+
+    EXPECT_DOUBLE_EQ(volumePlugin->changeEnergy(Point3D(2, 1, 0), newCell, nullptr), expected);
+}
+
 TEST_F(VolumePluginSimulatorTest, HandlesLossToMedium) {
     CellG *oldCell = testSim.createCell(Point3D(4, 1, 0), 2, {
             Point3D(4, 2, 0),
@@ -83,6 +95,18 @@ TEST_F(VolumePluginSimulatorTest, HandlesLossToMedium) {
     ASSERT_EQ(oldCell->volume, 3);
 
     const double expected = 0.5 * (1 - 2 * (3 - 4.0));
+
+    EXPECT_DOUBLE_EQ(volumePlugin->changeEnergy(Point3D(4, 1, 0), nullptr, oldCell), expected);
+}
+
+TEST_F(VolumePluginSimulatorTest, HandlesSinglePixelCellLossToMedium) {
+    CellG *oldCell = testSim.createCell(Point3D(4, 1, 0), 2);
+    oldCell->targetVolume = 3.0f;
+    oldCell->lambdaVolume = 0.5f;
+
+    ASSERT_EQ(oldCell->volume, 1);
+
+    const double expected = 0.5 * (1 - 2 * (1 - 3.0));
 
     EXPECT_DOUBLE_EQ(volumePlugin->changeEnergy(Point3D(4, 1, 0), nullptr, oldCell), expected);
 }
