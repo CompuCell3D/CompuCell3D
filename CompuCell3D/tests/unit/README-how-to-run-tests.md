@@ -36,6 +36,33 @@ cmake --build build-unit --target cc3d_unit_volume -j4
 ctest --test-dir build-unit -R cc3d_unit_volume --output-on-failure
 ```
 
+## Native Surface Unit Test
+
+The `Surface` unit tests use the same small deterministic geometries as the `Volume` tests, with the default surface neighbor order of `1`.
+
+```bash
+cmake --build build-unit --target cc3d_unit_surface -j4
+ctest --test-dir build-unit -R cc3d_unit_surface --output-on-failure
+```
+
+To build all native unit-test targets together:
+
+```bash
+cmake --build build-unit --target cc3d_unit_all -j4
+```
+
+To clean:
+
+```bash
+cmake --build build-unit --target clean
+```
+
+To run all native plugin suites together:
+
+```bash
+ctest --test-dir build-unit -R "cc3d_unit_" --output-on-failure
+```
+
 ## YAML Conformance Runner
 
 The first portable interchange path is a YAML-driven conformance runner for deterministic local volume energy cases.
@@ -49,6 +76,12 @@ Build and run the conformance runner from the repo root:
 ```bash
 cmake --build build-unit --target cc3d_conformance_runner -j4
 ctest --test-dir build-unit -R cc3d_conformance_volume_single_pixel_gain_2d --output-on-failure
+```
+
+To build all conformance targets together:
+
+```bash
+cmake --build build-unit --target cc3d_conformance_all -j4
 ```
 
 You can also run the executable directly on a specific YAML case:

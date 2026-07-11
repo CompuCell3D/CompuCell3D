@@ -13,6 +13,9 @@ set_target_properties(cc3d_unit_test_defaults PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
+add_custom_target(cc3d_unit_all)
+add_custom_target(cc3d_conformance_all)
+
 add_subdirectory(fixtures)
 add_subdirectory(conformance)
 add_subdirectory(plugins)

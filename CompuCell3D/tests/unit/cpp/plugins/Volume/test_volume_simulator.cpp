@@ -26,6 +26,7 @@ protected:
 };
 
 TEST_F(VolumePluginSimulatorTest, ReturnsZeroWhenCopyDoesNotChangeCellIdentity) {
+    // Copy source and target belong to the same cell, so the volume term must not change.
     CellG *cell = testSim.createCell(Point3D(1, 1, 0), 1, {Point3D(1, 2, 0)});
     cell->targetVolume = 4.0f;
     cell->lambdaVolume = 2.0f;
@@ -35,6 +36,8 @@ TEST_F(VolumePluginSimulatorTest, ReturnsZeroWhenCopyDoesNotChangeCellIdentity) 
 }
 
 TEST_F(VolumePluginSimulatorTest, ComputesEnergyWhenOneCellGainsAndOneCellLosesPixel) {
+    // Cell A copies into a pixel occupied by Cell B. The expected delta is the sum of
+    // A gaining one pixel and B losing one pixel under the quadratic volume constraint.
     CellG *newCell = testSim.createCell(Point3D(1, 1, 0), 1, {
             Point3D(1, 2, 0),
             Point3D(2, 1, 0)
@@ -58,6 +61,7 @@ TEST_F(VolumePluginSimulatorTest, ComputesEnergyWhenOneCellGainsAndOneCellLosesP
 }
 
 TEST_F(VolumePluginSimulatorTest, HandlesGainFromMedium) {
+    // A multi-pixel cell expands into medium. Only the gaining cell contributes to dE.
     CellG *newCell = testSim.createCell(Point3D(1, 1, 0), 1, {
             Point3D(1, 2, 0),
             Point3D(2, 1, 0)
@@ -73,6 +77,7 @@ TEST_F(VolumePluginSimulatorTest, HandlesGainFromMedium) {
 }
 
 TEST_F(VolumePluginSimulatorTest, HandlesSinglePixelCellGainFromMedium) {
+    // A one-pixel cell expands into medium. This exercises the smallest non-zero cell volume.
     CellG *newCell = testSim.createCell(Point3D(1, 1, 0), 1);
     newCell->targetVolume = 3.0f;
     newCell->lambdaVolume = 1.25f;
@@ -85,6 +90,7 @@ TEST_F(VolumePluginSimulatorTest, HandlesSinglePixelCellGainFromMedium) {
 }
 
 TEST_F(VolumePluginSimulatorTest, HandlesLossToMedium) {
+    // A multi-pixel cell is overwritten by medium. Only the losing cell contributes to dE.
     CellG *oldCell = testSim.createCell(Point3D(4, 1, 0), 2, {
             Point3D(4, 2, 0),
             Point3D(3, 1, 0)
@@ -100,6 +106,7 @@ TEST_F(VolumePluginSimulatorTest, HandlesLossToMedium) {
 }
 
 TEST_F(VolumePluginSimulatorTest, HandlesSinglePixelCellLossToMedium) {
+    // A one-pixel cell is overwritten by medium, covering the volume-to-zero boundary case.
     CellG *oldCell = testSim.createCell(Point3D(4, 1, 0), 2);
     oldCell->targetVolume = 3.0f;
     oldCell->lambdaVolume = 0.5f;

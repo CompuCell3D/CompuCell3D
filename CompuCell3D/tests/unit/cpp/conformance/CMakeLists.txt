@@ -31,3 +31,5 @@ add_test(
         $<TARGET_FILE:cc3d_conformance_runner>
         ${CMAKE_SOURCE_DIR}/tests/unit/spec/cases/potts_core/volume_single_pixel_gain_2d.yaml
 )
+
+add_dependencies(cc3d_conformance_all cc3d_conformance_runner)

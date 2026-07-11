@@ -16,3 +16,5 @@ target_link_libraries(cc3d_unit_volume
 gtest_discover_tests(cc3d_unit_volume
     TEST_PREFIX cc3d_unit_volume.
 )
+
+add_dependencies(cc3d_unit_all cc3d_unit_volume)
