@@ -19,7 +19,8 @@ namespace CompuCell3D {
         ~CC3DTestSimulator();
 
         CC3DXMLElement *addPottsData(const Dim3D &dim, unsigned int neighborOrder = 1, double temperature = 10.0,
-                                     unsigned int steps = 1);
+                                     unsigned int steps = 1, const std::string &latticeType = "",
+                                     const std::string &dimensionType = "");
         CC3DXMLElement *addPluginData(const std::string &name);
         CC3DXMLElement *addCellTypePluginData(const std::vector<std::pair<std::string, unsigned char>> &types);
 

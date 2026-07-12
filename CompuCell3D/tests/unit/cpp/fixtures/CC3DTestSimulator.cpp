@@ -34,7 +34,8 @@ std::string CC3DTestSimulator::toString(double value) {
 }
 
 CC3DXMLElement *CC3DTestSimulator::addPottsData(const Dim3D &dim, unsigned int neighborOrder, double temperature,
-                                                unsigned int steps) {
+                                                unsigned int steps, const std::string &latticeType,
+                                                const std::string &dimensionType) {
     CC3DXMLElement *pottsData = createElement("Potts");
     CC3DXMLElement *dimensions = pottsData->attachElement("Dimensions");
     dimensions->attachAttribute("x", toString(dim.x));
@@ -43,6 +44,12 @@ CC3DXMLElement *CC3DTestSimulator::addPottsData(const Dim3D &dim, unsigned int n
     pottsData->attachElement("Temperature", toString(temperature));
     pottsData->attachElement("Steps", toString(steps));
     pottsData->attachElement("NeighborOrder", toString(neighborOrder));
+    if (!latticeType.empty()) {
+        pottsData->attachElement("LatticeType", latticeType);
+    }
+    if (!dimensionType.empty()) {
+        pottsData->attachElement("DimensionType", dimensionType);
+    }
 
     simulator->ps.addPottsDataCC3D(pottsData);
     return pottsData;
