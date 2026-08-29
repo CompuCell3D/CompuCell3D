@@ -15,6 +15,7 @@ endif(BUILD_QT_WRAPPERS)
 
 
 SET(SRCS
+  CompiledSteppable.cpp
   PluginInfo.cpp
   PluginManager.cpp
   Simulator.cpp
@@ -49,6 +50,9 @@ ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${
 
 TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PUBLIC ${INCLUDE_DIRS})
 
+install(FILES ${COMPUCELL3D_SOURCE_DIR}/core/cc3d/kernel.h
+        DESTINATION ${COMPUCELL3D_INSTALL_INCLUDE_DIR}/cc3d)
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
   if(BUILD_CPP_ONLY_EXECUTABLE)
@@ -73,6 +77,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   ClassRegistry
+  CompiledSteppable
   CompuCellLibDLLSpecifier  
   DerivedProperty
   ExtraMembers

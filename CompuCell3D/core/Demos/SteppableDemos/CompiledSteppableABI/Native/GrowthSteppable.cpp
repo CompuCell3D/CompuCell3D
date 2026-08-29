@@ -1,0 +1,60 @@
+#include <cc3d/kernel.h>
+
+#include <cstdio>
+
+namespace {
+    constexpr uint8_t TUMOR = 1u;
+
+    struct GrowthState {
+        uint64_t executionCount;
+    };
+
+    void *create() {
+        return new GrowthState{0u};
+    }
+
+    void start(CC3DKernelContext *, void *statePtr) {
+        auto *state = static_cast<GrowthState *>(statePtr);
+        state->executionCount = 0u;
+        std::printf("Compiled growth start\n");
+    }
+
+    void step(CC3DKernelContext *ctx, void *statePtr) {
+        auto *state = static_cast<GrowthState *>(statePtr);
+
+        for (auto cell : ctx->cells) {
+            if (cell.type == TUMOR) {
+                cell.targetVolume += 0.2f;
+            }
+        }
+
+        ++state->executionCount;
+        std::printf("Compiled growth step mcs=%llu execution=%llu\n",
+                    static_cast<unsigned long long>(ctx->mcs),
+                    static_cast<unsigned long long>(state->executionCount));
+    }
+
+    void finish(CC3DKernelContext *ctx, void *statePtr) {
+        auto *state = static_cast<GrowthState *>(statePtr);
+        std::printf("Compiled growth finish mcs=%llu execution=%llu\n",
+                    static_cast<unsigned long long>(ctx->mcs),
+                    static_cast<unsigned long long>(state->executionCount));
+    }
+
+    void destroy(void *statePtr) {
+        delete static_cast<GrowthState *>(statePtr);
+    }
+
+    const CC3DSteppableV1 api = {
+        CC3D_KERNEL_ABI_VERSION,
+        &create,
+        &start,
+        &step,
+        &finish,
+        &destroy
+    };
+}
+
+extern "C" const CC3DSteppableV1 *cc3d_get_steppable_v1() {
+    return &api;
+}

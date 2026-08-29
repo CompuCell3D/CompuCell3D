@@ -190,6 +190,28 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
+def register_compiled_steppable(library_path, frequency=1, entry_point='cc3d_get_steppable_v1', name=None):
+    """
+    Registers a compiled kernel ABI steppable in the normal Python scheduling path.
+
+    :param str library_path: shared library path
+    :param int frequency: execution frequency
+    :param str entry_point: exported ABI symbol name
+    :param str name: optional display name
+    :return: wrapper steppable instance
+    """
+    from cc3d.core.CompiledSteppable import CompiledSteppable
+
+    steppable = CompiledSteppable(
+        library_path=library_path,
+        frequency=frequency,
+        entry_point=entry_point,
+        name=name
+    )
+    register_steppable(steppable=steppable)
+    return steppable
+
+
 def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
     """
     Generates profiling information string after simulation finishes running

@@ -3,6 +3,7 @@ import unittest
 
 # import your test modules
 import test_api
+import test_compiled_steppable_abi
 
 if __name__=='__main__':
     # initialize the test suite
@@ -10,6 +11,7 @@ if __name__=='__main__':
     suite = unittest.TestSuite()
 
     suite.addTests(loader.loadTestsFromModule(test_api))
+    suite.addTests(loader.loadTestsFromModule(test_compiled_steppable_abi))
     # suite.test_api(test_api.test_core_object_createion_api)
     # initialize a runner, pass it your suite and run it
     runner = unittest.TextTestRunner(verbosity=3)

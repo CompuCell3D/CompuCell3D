@@ -66,6 +66,7 @@
 #include <CompuCell3D/CC3DEvents.h>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/CC3DExceptions.h>
+#include <CompuCell3D/CompiledSteppable.h>
 
 #include <CompuCell3D/PluginManager.h>
 #include <CompuCell3D/Potts3D/CellInventoryWatcher.h>
@@ -786,6 +787,7 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %include "ClassRegistry.h"
 %include <CompuCell3D/SteerableObject.h>
 %include "Simulator.h"
+%include "CompiledSteppable.h"
 
 // template definitios must be right after Simulator object inclusions
 //getGenericScalarField
