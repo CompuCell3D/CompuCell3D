@@ -59,9 +59,13 @@ def macos_compile_command(source_path: Path, include_root: Path, output_path: Pa
         text=True
     ).strip()
 
-    compiler = os.environ.get("CXX")
+    compiler = subprocess.check_output(["xcrun", "--find", "clang++"], text=True).strip()
     if not compiler:
-        compiler = subprocess.check_output(["xcrun", "--find", "clang++"], text=True).strip()
+        compiler = os.environ.get("CXX")
+    if not compiler:
+        compiler = shutil.which("clang++")
+    if not compiler:
+        raise RuntimeError("Could not locate Apple clang++. Install Xcode Command Line Tools.")
 
     return [
         compiler,

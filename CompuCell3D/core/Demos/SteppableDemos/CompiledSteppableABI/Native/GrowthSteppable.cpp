@@ -1,4 +1,5 @@
 #include <cc3d/kernel.h>
+#include <iostream>
 
 #include <cstdio>
 
@@ -13,11 +14,37 @@ namespace {
         return new GrowthState{0u};
     }
 
-    void start(CC3DKernelContext *, void *statePtr) {
-        auto *state = static_cast<GrowthState *>(statePtr);
-        state->executionCount = 0u;
-        std::printf("Compiled growth start\n");
+void start(CC3DKernelContext *ctx, void *statePtr) {
+    auto *state = static_cast<GrowthState *>(statePtr);
+    state->executionCount = 0u;
+
+    int count = 0;
+    for (auto cell : ctx->cells) {
+        if (count > 10) {
+            break;
+        }
+        std::cerr << "cell.id=" << cell.id
+                  << " targetVol=" << cell.targetVolume
+                  << '\n';
+        count++;
     }
+
+    std::printf("Compiled growth start\n");
+}
+
+//     void start(CC3DKernelContext *ctx, void *statePtr) {
+//         auto *state = static_cast<GrowthState *>(statePtr);
+//         state->executionCount = 0u;
+//         int count = 0;
+//         for (auto cell : ctx->cells){
+//             if (count) > 10{
+//                 break;
+//                 }
+//             std::cerr<<"cell.id="cell->id<<" targetVol="<<cell->targetVolume<<std::endl;
+//             count++;
+//             }
+//         std::printf("Compiled growth start\n");
+//     }
 
     void step(CC3DKernelContext *ctx, void *statePtr) {
         auto *state = static_cast<GrowthState *>(statePtr);
