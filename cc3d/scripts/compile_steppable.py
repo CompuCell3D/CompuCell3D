@@ -53,19 +53,67 @@ def build_output_path(source_path: Path) -> Path:
     return source_path.with_suffix(platform_suffix())
 
 
-def macos_compile_command(source_path: Path, include_root: Path, output_path: Path) -> list[str]:
-    sdkroot = subprocess.check_output(
-        ["xcrun", "--sdk", "macosx", "--show-sdk-path"],
-        text=True
-    ).strip()
+def conda_compiler() -> str | None:
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        compiler = Path(conda_prefix) / "bin" / "clang++"
+        if compiler.exists():
+            return str(compiler)
 
-    compiler = subprocess.check_output(["xcrun", "--find", "clang++"], text=True).strip()
+    compiler = os.environ.get("CXX")
+    if compiler:
+        return compiler
+
+    return shutil.which("clang++")
+
+
+def macos_compile_command(
+    source_path: Path,
+    include_root: Path,
+    output_path: Path,
+) -> list[str]:
+
+    try:
+        compiler = subprocess.check_output(
+            ["xcrun", "--find", "clang++"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+
+        sdkroot = subprocess.check_output(
+            ["xcrun", "--sdk", "macosx", "--show-sdk-path"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+
+    except (FileNotFoundError, subprocess.CalledProcessError) as e:
+        raise RuntimeError(
+            "Apple Xcode Command Line Tools are required to compile "
+            "CC3D native steppables.\n\n"
+            "Install them with:\n"
+            "    xcode-select --install"
+        ) from e
+
     if not compiler:
-        compiler = os.environ.get("CXX")
-    if not compiler:
-        compiler = shutil.which("clang++")
-    if not compiler:
-        raise RuntimeError("Could not locate Apple clang++. Install Xcode Command Line Tools.")
+        raise RuntimeError(
+            "Could not locate Apple clang++. "
+            "Install Xcode Command Line Tools with: xcode-select --install"
+        )
+
+    if not sdkroot:
+        raise RuntimeError(
+            "Could not locate the macOS SDK. "
+            "Install Xcode Command Line Tools with: xcode-select --install"
+        )
+
+    libcxx_include = Path(sdkroot) / "usr" / "include" / "c++" / "v1"
+
+    if not libcxx_include.exists():
+        raise RuntimeError(
+            f"Could not locate libc++ headers at:\n"
+            f"    {libcxx_include}\n\n"
+            "Your Xcode Command Line Tools installation may be incomplete."
+        )
 
     return [
         compiler,
@@ -73,12 +121,35 @@ def macos_compile_command(source_path: Path, include_root: Path, output_path: Pa
         "-std=c++17",
         "-stdlib=libc++",
         "-dynamiclib",
-        str(source_path),
-        f"-I{include_root}",
+
         "-isysroot",
         sdkroot,
+
         "-isystem",
-        f"{sdkroot}/usr/include/c++/v1",
+        str(libcxx_include),
+
+        f"-I{include_root}",
+
+        str(source_path),
+
+        "-o",
+        str(output_path),
+    ]
+
+
+
+def macos_compile_command_conda(source_path: Path, include_root: Path, output_path: Path) -> list[str]:
+    compiler = conda_compiler()
+    if not compiler:
+        raise RuntimeError("Could not locate a conda clang++. Activate the conda environment or set CXX.")
+
+    return [
+        compiler,
+        "-O3",
+        "-std=c++17",
+        "-dynamiclib",
+        str(source_path),
+        f"-I{include_root}",
         "-o",
         str(output_path),
     ]
@@ -118,10 +189,16 @@ def windows_compile_command(source_path: Path, include_root: Path, output_path: 
     ]
 
 
-def compile_command(source_path: Path, repo_path: Path, output_path: Path) -> list[str]:
+def compile_command(source_path: Path, repo_path: Path, output_path: Path, macos_toolchain: str) -> list[str]:
     include_root = repo_path / "CompuCell3D" / "core"
 
     if sys.platform == "darwin":
+        if macos_toolchain == "conda":
+            return macos_compile_command_conda(
+                source_path=source_path,
+                include_root=include_root,
+                output_path=output_path
+            )
         return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path)
     if sys.platform.startswith("win"):
         return windows_compile_command(source_path=source_path, include_root=include_root, output_path=output_path)
@@ -159,6 +236,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print the full compiler command before running it."
     )
+    parser.add_argument(
+        "--macos-toolchain",
+        choices=("apple", "conda"),
+        default="apple",
+        help="macOS only: choose the Apple or conda compiler toolchain. Default: apple"
+    )
     return parser.parse_args()
 
 
@@ -172,7 +255,12 @@ def main() -> int:
         clean_output(output_path)
         return 0
 
-    cmd = compile_command(source_path=source_path, repo_path=repo_path, output_path=output_path)
+    cmd = compile_command(
+        source_path=source_path,
+        repo_path=repo_path,
+        output_path=output_path,
+        macos_toolchain=args.macos_toolchain
+    )
 
     print(f"Source : {source_path}")
     print(f"Output : {output_path}")
