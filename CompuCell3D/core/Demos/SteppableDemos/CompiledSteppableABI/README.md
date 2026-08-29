@@ -57,6 +57,51 @@ $CC3D_CMAKE --install .
 
 ## 3. Compile the standalone demo steppable
 
+You can either use the helper script below or run the equivalent manual command.
+
+### Preferred: helper script
+
+The helper script only builds the standalone compiled steppable. It does not rebuild CC3D itself.
+
+```bash
+cd $DEMO_DIR
+
+$CC3D_PYTHON compile_steppable.py GrowthSteppable.cpp
+```
+
+Concrete command sequence verified on macOS on August 29, 2026:
+
+```bash
+python \
+  -m cc3d.scripts.compile_steppable \
+  /Users/m/src/conda-build-repos/CompuCell3D/CompuCell3D/core/Demos/SteppableDemos/CompiledSteppableABI/Native/GrowthSteppable.cpp \
+  --repo /Users/m/src/conda-build-repos/CompuCell3D
+```
+
+To remove the compiled extension:
+
+```bash
+$CC3D_PYTHON compile_steppable.py GrowthSteppable.cpp --clean
+```
+
+Concrete cleanup command:
+
+```bash
+python \
+  -m cc3d.scripts.compile_steppable \
+  /Users/m/src/conda-build-repos/CompuCell3D/CompuCell3D/core/Demos/SteppableDemos/CompiledSteppableABI/Native/GrowthSteppable.cpp \
+  --repo /Users/m/src/conda-build-repos/CompuCell3D \
+  --clean
+```
+
+To point at a different checkout:
+
+```bash
+$CC3D_PYTHON compile_steppable.py GrowthSteppable.cpp --repo /path/to/CompuCell3D
+```
+
+### Manual command
+
 On this machine, the conda `clang++` driver compiled the source but failed to link cleanly against Apple `ld`.
 The command below uses Apple `clang++` for the standalone user module while still including only the public
 `cc3d/kernel.h` header.
