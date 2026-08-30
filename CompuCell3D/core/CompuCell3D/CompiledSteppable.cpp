@@ -72,8 +72,8 @@ namespace {
         CompuCell3D::CellInventory::cellInventoryIterator end;
     };
 
-    CC3DCellIteratorHandle cc3d_cells_begin(void *userdata) {
-        auto *inventory = static_cast<CompuCell3D::CellInventory *>(userdata);
+    CC3DCellIteratorHandle cc3d_cells_begin(void *cellInventoryPtr) {
+        auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
         auto *state = new CellIteratorState{inventory->cellInventoryBegin(), inventory->cellInventoryEnd()};
         return static_cast<CC3DCellIteratorHandle>(state);
     }
@@ -108,8 +108,8 @@ namespace {
         delete static_cast<CellIteratorState *>(iterator);
     }
 
-    CC3DFieldHandle cc3d_scalar_fields_find(void *userdata, const char *name) {
-        auto *simulator = static_cast<CompuCell3D::Simulator *>(userdata);
+    CC3DFieldHandle cc3d_scalar_fields_find(void *simulatorPtr, const char *name) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(simulatorPtr);
         if (!simulator || !name) {
             return nullptr;
         }
@@ -146,9 +146,9 @@ namespace {
         field->set(cc3d_point3d(x, y, z), value);
     }
 
-    CC3DFieldDimV1 cc3d_cell_field_dim(void *userdata) {
+    CC3DFieldDimV1 cc3d_cell_field_dim(void *cellFieldPtr) {
         CC3DFieldDimV1 dim{0, 0, 0};
-        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(userdata);
+        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(cellFieldPtr);
         if (!field) {
             return dim;
         }
@@ -160,9 +160,9 @@ namespace {
         return dim;
     }
 
-    CC3DOptionalCellViewV1 cc3d_cell_field_get(void *userdata, int x, int y, int z) {
+    CC3DOptionalCellViewV1 cc3d_cell_field_get(void *cellFieldPtr, int x, int y, int z) {
         CC3DOptionalCellViewV1 result{};
-        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(userdata);
+        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(cellFieldPtr);
         if (!field) {
             return result;
         }
