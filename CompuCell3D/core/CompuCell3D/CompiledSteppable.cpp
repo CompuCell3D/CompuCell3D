@@ -389,9 +389,6 @@ void CompiledSteppable::ensureLoaded() {
     if (!api_->step_fn) {
         throw CC3DException("Compiled steppable must provide a step callback");
     }
-    if (api_->create_fn && !api_->destroy_fn) {
-        throw CC3DException("Compiled steppable provides create() but not destroy()");
-    }
 }
 
 void CompiledSteppable::createState() {

@@ -9,13 +9,13 @@ namespace {
     using namespace std;
     constexpr unsigned char TUMOR = 1u;
     using namespace std;
-    struct FieldGrowthState {
-        uint64_t executionCount;
-    };
+    // struct FieldGrowthState {
+    //     uint64_t executionCount;
+    // };
 
-    void *create() {
-        return new FieldGrowthState{0u};
-    }
+    // void *create() {
+    //     return new FieldGrowthState{0u};
+    // }
 
 
     void start(CC3DKernelContext *ctx, void *statePtr) {
@@ -43,24 +43,20 @@ namespace {
 
         }
     }
-    void finish(CC3DKernelContext *ctx, void *statePtr) {
-        auto *state = static_cast<FieldGrowthState *>(statePtr);
-        std::printf("Compiled field growth finish mcs=%llu execution=%llu\n",
-                    static_cast<unsigned long long>(ctx->mcs),
-                    static_cast<unsigned long long>(state->executionCount));
-    }
-
-    void destroy(void *statePtr) {
-
-    }
+    // void finish(CC3DKernelContext *ctx, void *statePtr) {
+    //     auto *state = static_cast<FieldGrowthState *>(statePtr);
+    //     std::printf("Compiled field growth finish mcs=%llu execution=%llu\n",
+    //                 static_cast<unsigned long long>(ctx->mcs),
+    //                 static_cast<unsigned long long>(state->executionCount));
+    // }
 
     const CC3DSteppableV1 api = {
         CC3D_KERNEL_ABI_VERSION,
-        &create,
+        nullptr,
         &start,
         &step,
-        &finish,
-        &destroy
+        nullptr,
+        nullptr
     };
 }
 
