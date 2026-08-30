@@ -20,12 +20,20 @@ void start(CC3DKernelContext *ctx, void *statePtr) {
 
     int count = 0;
     for (auto cell : ctx->cells) {
-        if (count > 10) {
-            break;
+        cell.targetVolume = 25;
+        cell.lambdaVolume = 2.0;
+
+        cell.targetSurface =30.;
+        cell.lambdaSurface = 1.0;
+
+        if (count < 10) {
+            std::cerr<<"demo"<<std::endl;
+            std::cerr << "cell.id=" << cell.id
+                      << " targetVol=" << cell.targetVolume
+                      << " targetSur=" << cell.targetSurface
+                      << " lambdaSur=" << cell.lambdaSurface
+                      << '\n';
         }
-        std::cerr << "cell.id=" << cell.id
-                  << " targetVol=" << cell.targetVolume
-                  << '\n';
         count++;
     }
 

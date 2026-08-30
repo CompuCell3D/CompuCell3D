@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 1u
+#define CC3D_KERNEL_ABI_VERSION 2u
 
 #ifdef __cplusplus
 namespace cc3d {
@@ -25,6 +25,8 @@ typedef struct CC3DCellViewV1 {
     const long *volume;
     float *targetVolume;
     float *lambdaVolume;
+    float *targetSurface;
+    float *lambdaSurface;
 } CC3DCellViewV1;
 
 typedef struct CC3DCellsAPIV1 {
@@ -111,13 +113,17 @@ public:
           type(view.type),
           volume(view.volume),
           targetVolume(view.targetVolume),
-          lambdaVolume(view.lambdaVolume) {}
+          lambdaVolume(view.lambdaVolume),
+          targetSurface(view.targetSurface),
+          lambdaSurface(view.lambdaSurface) {}
 
     uint64_t id;
     ReadOnlyProperty<uint8_t> type;
     ReadOnlyProperty<long> volume;
     Property<float> targetVolume;
     Property<float> lambdaVolume;
+    Property<float> targetSurface;
+    Property<float> lambdaSurface;
 };
 
 class CellIterator {

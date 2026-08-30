@@ -43,6 +43,8 @@ namespace {
         view.volume = &cell->volume;
         view.targetVolume = &cell->targetVolume;
         view.lambdaVolume = &cell->lambdaVolume;
+        view.targetSurface = &cell->targetSurface;
+        view.lambdaSurface = &cell->lambdaSurface;
         return view;
     }
 

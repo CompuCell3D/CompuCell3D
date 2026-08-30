@@ -9,6 +9,7 @@ class TargetVolumeVerifierSteppable(SteppableBasePy):
         print('Python verifier start')
 
     def step(self, mcs):
+        print('Python verifier inventory size = ', len(self.cell_list))
         for cell in self.cell_list_by_type(self.A):
             print(
                 f'Python verifier step mcs={mcs} '
