@@ -38,13 +38,50 @@ namespace {
 
         CompuCell3D::CellG *cell = state->current->second;
 
-        view.id = static_cast<uint64_t>(cell->id);
-        view.type = &cell->type;
+        view.id = &cell->id;
+        view.clusterId = &cell->clusterId;
         view.volume = &cell->volume;
+        view.surface = &cell->surface;
+        view.clusterSurface = &cell->clusterSurface;
+        view.type = &cell->type;
+        view.subtype = &cell->subtype;
         view.targetVolume = &cell->targetVolume;
         view.lambdaVolume = &cell->lambdaVolume;
         view.targetSurface = &cell->targetSurface;
+        view.angle = &cell->angle;
         view.lambdaSurface = &cell->lambdaSurface;
+        view.targetClusterSurface = &cell->targetClusterSurface;
+        view.lambdaClusterSurface = &cell->lambdaClusterSurface;
+        view.xCM = &cell->xCM;
+        view.yCM = &cell->yCM;
+        view.zCM = &cell->zCM;
+        view.xCOM = &cell->xCOM;
+        view.yCOM = &cell->yCOM;
+        view.zCOM = &cell->zCOM;
+        view.xCOMPrev = &cell->xCOMPrev;
+        view.yCOMPrev = &cell->yCOMPrev;
+        view.zCOMPrev = &cell->zCOMPrev;
+        view.iXX = &cell->iXX;
+        view.iXY = &cell->iXY;
+        view.iXZ = &cell->iXZ;
+        view.iYY = &cell->iYY;
+        view.iYZ = &cell->iYZ;
+        view.iZZ = &cell->iZZ;
+        view.lX = &cell->lX;
+        view.lY = &cell->lY;
+        view.lZ = &cell->lZ;
+        view.ecc = &cell->ecc;
+        view.lambdaVecX = &cell->lambdaVecX;
+        view.lambdaVecY = &cell->lambdaVecY;
+        view.lambdaVecZ = &cell->lambdaVecZ;
+        view.flag = &cell->flag;
+        view.averageConcentration = &cell->averageConcentration;
+        view.fluctAmpl = &cell->fluctAmpl;
+        view.lambdaMotility = &cell->lambdaMotility;
+        view.biasVecX = &cell->biasVecX;
+        view.biasVecY = &cell->biasVecY;
+        view.biasVecZ = &cell->biasVecZ;
+        view.connectivityOn = &cell->connectivityOn;
         return view;
     }
 
@@ -299,3 +336,4 @@ void CompiledSteppable::cleanup() {
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
 }
+

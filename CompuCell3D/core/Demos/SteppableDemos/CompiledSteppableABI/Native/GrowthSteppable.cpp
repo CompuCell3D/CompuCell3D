@@ -32,6 +32,7 @@ void start(CC3DKernelContext *ctx, void *statePtr) {
                       << " targetVol=" << cell.targetVolume
                       << " targetSur=" << cell.targetSurface
                       << " lambdaSur=" << cell.lambdaSurface
+                      <<" surface="<< cell.surface
                       << '\n';
         }
         count++;

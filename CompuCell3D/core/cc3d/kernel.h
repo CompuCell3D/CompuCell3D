@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 2u
+#define CC3D_KERNEL_ABI_VERSION 3u
 
 #ifdef __cplusplus
 namespace cc3d {
@@ -20,13 +20,50 @@ extern "C" {
 typedef void *CC3DCellIteratorHandle;
 
 typedef struct CC3DCellViewV1 {
-    uint64_t id;
-    const uint8_t *type;
+    const long *id;
+    const long *clusterId;
     const long *volume;
+    const double *surface;
+    const double *clusterSurface;
+    const unsigned char *type;
+    unsigned char *subtype;
     float *targetVolume;
     float *lambdaVolume;
     float *targetSurface;
+    float *angle;
     float *lambdaSurface;
+    float *targetClusterSurface;
+    float *lambdaClusterSurface;
+    const double *xCM;
+    const double *yCM;
+    const double *zCM;
+    const double *xCOM;
+    const double *yCOM;
+    const double *zCOM;
+    const double *xCOMPrev;
+    const double *yCOMPrev;
+    const double *zCOMPrev;
+    const double *iXX;
+    const double *iXY;
+    const double *iXZ;
+    const double *iYY;
+    const double *iYZ;
+    const double *iZZ;
+    const float *lX;
+    const float *lY;
+    const float *lZ;
+    const float *ecc;
+    float *lambdaVecX;
+    float *lambdaVecY;
+    float *lambdaVecZ;
+    unsigned char *flag;
+    float *averageConcentration;
+    double *fluctAmpl;
+    double *lambdaMotility;
+    double *biasVecX;
+    double *biasVecY;
+    double *biasVecZ;
+    bool *connectivityOn;
 } CC3DCellViewV1;
 
 typedef struct CC3DCellsAPIV1 {
@@ -110,20 +147,94 @@ class Cell {
 public:
     explicit Cell(const CC3DCellViewV1 &view)
         : id(view.id),
-          type(view.type),
+          clusterId(view.clusterId),
           volume(view.volume),
+          surface(view.surface),
+          clusterSurface(view.clusterSurface),
+          type(view.type),
+          subtype(view.subtype),
           targetVolume(view.targetVolume),
           lambdaVolume(view.lambdaVolume),
           targetSurface(view.targetSurface),
-          lambdaSurface(view.lambdaSurface) {}
+          angle(view.angle),
+          lambdaSurface(view.lambdaSurface),
+          targetClusterSurface(view.targetClusterSurface),
+          lambdaClusterSurface(view.lambdaClusterSurface),
+          xCM(view.xCM),
+          yCM(view.yCM),
+          zCM(view.zCM),
+          xCOM(view.xCOM),
+          yCOM(view.yCOM),
+          zCOM(view.zCOM),
+          xCOMPrev(view.xCOMPrev),
+          yCOMPrev(view.yCOMPrev),
+          zCOMPrev(view.zCOMPrev),
+          iXX(view.iXX),
+          iXY(view.iXY),
+          iXZ(view.iXZ),
+          iYY(view.iYY),
+          iYZ(view.iYZ),
+          iZZ(view.iZZ),
+          lX(view.lX),
+          lY(view.lY),
+          lZ(view.lZ),
+          ecc(view.ecc),
+          lambdaVecX(view.lambdaVecX),
+          lambdaVecY(view.lambdaVecY),
+          lambdaVecZ(view.lambdaVecZ),
+          flag(view.flag),
+          averageConcentration(view.averageConcentration),
+          fluctAmpl(view.fluctAmpl),
+          lambdaMotility(view.lambdaMotility),
+          biasVecX(view.biasVecX),
+          biasVecY(view.biasVecY),
+          biasVecZ(view.biasVecZ),
+          connectivityOn(view.connectivityOn) {}
 
-    uint64_t id;
-    ReadOnlyProperty<uint8_t> type;
+    ReadOnlyProperty<long> id;
+    ReadOnlyProperty<long> clusterId;
     ReadOnlyProperty<long> volume;
+    ReadOnlyProperty<double> surface;
+    ReadOnlyProperty<double> clusterSurface;
+    ReadOnlyProperty<unsigned char> type;
+    Property<unsigned char> subtype;
     Property<float> targetVolume;
     Property<float> lambdaVolume;
     Property<float> targetSurface;
+    Property<float> angle;
     Property<float> lambdaSurface;
+    Property<float> targetClusterSurface;
+    Property<float> lambdaClusterSurface;
+    ReadOnlyProperty<double> xCM;
+    ReadOnlyProperty<double> yCM;
+    ReadOnlyProperty<double> zCM;
+    ReadOnlyProperty<double> xCOM;
+    ReadOnlyProperty<double> yCOM;
+    ReadOnlyProperty<double> zCOM;
+    ReadOnlyProperty<double> xCOMPrev;
+    ReadOnlyProperty<double> yCOMPrev;
+    ReadOnlyProperty<double> zCOMPrev;
+    ReadOnlyProperty<double> iXX;
+    ReadOnlyProperty<double> iXY;
+    ReadOnlyProperty<double> iXZ;
+    ReadOnlyProperty<double> iYY;
+    ReadOnlyProperty<double> iYZ;
+    ReadOnlyProperty<double> iZZ;
+    ReadOnlyProperty<float> lX;
+    ReadOnlyProperty<float> lY;
+    ReadOnlyProperty<float> lZ;
+    ReadOnlyProperty<float> ecc;
+    Property<float> lambdaVecX;
+    Property<float> lambdaVecY;
+    Property<float> lambdaVecZ;
+    Property<unsigned char> flag;
+    Property<float> averageConcentration;
+    Property<double> fluctAmpl;
+    Property<double> lambdaMotility;
+    Property<double> biasVecX;
+    Property<double> biasVecY;
+    Property<double> biasVecZ;
+    Property<bool> connectivityOn;
 };
 
 class CellIterator {
