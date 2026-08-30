@@ -13,35 +13,12 @@
 using namespace CompuCell3D;
 
 namespace {
-    struct CellIteratorState {
-        CompuCell3D::CellInventory::cellInventoryIterator current;
-        CompuCell3D::CellInventory::cellInventoryIterator end;
-    };
-
-    CC3DCellIteratorHandle cc3d_cells_begin(void *userdata) {
-        auto *inventory = static_cast<CompuCell3D::CellInventory *>(userdata);
-        auto *state = new CellIteratorState{inventory->cellInventoryBegin(), inventory->cellInventoryEnd()};
-        return static_cast<CC3DCellIteratorHandle>(state);
-    }
-
-    uint8_t cc3d_cells_valid(void *, CC3DCellIteratorHandle iterator) {
-        auto *state = static_cast<CellIteratorState *>(iterator);
-        return state && state->current != state->end ? 1u : 0u;
-    }
-
-    Point3D cc3d_point3d(int x, int y, int z) {
-        return Point3D(static_cast<short>(x), static_cast<short>(y), static_cast<short>(z));
-    }
-
-    CC3DCellViewV1 cc3d_cells_get(void *, CC3DCellIteratorHandle iterator) {
-        auto *state = static_cast<CellIteratorState *>(iterator);
+    CC3DCellViewV1 cc3d_cell_view_from_cell(CompuCell3D::CellG *cell) {
         CC3DCellViewV1 view{};
 
-        if (!state || state->current == state->end) {
+        if (!cell) {
             return view;
         }
-
-        CompuCell3D::CellG *cell = state->current->second;
 
         view.id = &cell->id;
         view.clusterId = &cell->clusterId;
@@ -88,6 +65,36 @@ namespace {
         view.biasVecZ = &cell->biasVecZ;
         view.connectivityOn = &cell->connectivityOn;
         return view;
+    }
+
+    struct CellIteratorState {
+        CompuCell3D::CellInventory::cellInventoryIterator current;
+        CompuCell3D::CellInventory::cellInventoryIterator end;
+    };
+
+    CC3DCellIteratorHandle cc3d_cells_begin(void *userdata) {
+        auto *inventory = static_cast<CompuCell3D::CellInventory *>(userdata);
+        auto *state = new CellIteratorState{inventory->cellInventoryBegin(), inventory->cellInventoryEnd()};
+        return static_cast<CC3DCellIteratorHandle>(state);
+    }
+
+    uint8_t cc3d_cells_valid(void *, CC3DCellIteratorHandle iterator) {
+        auto *state = static_cast<CellIteratorState *>(iterator);
+        return state && state->current != state->end ? 1u : 0u;
+    }
+
+    Point3D cc3d_point3d(int x, int y, int z) {
+        return Point3D(static_cast<short>(x), static_cast<short>(y), static_cast<short>(z));
+    }
+
+    CC3DCellViewV1 cc3d_cells_get(void *, CC3DCellIteratorHandle iterator) {
+        auto *state = static_cast<CellIteratorState *>(iterator);
+
+        if (!state || state->current == state->end) {
+            return CC3DCellViewV1{};
+        }
+
+        return cc3d_cell_view_from_cell(state->current->second);
     }
 
     void cc3d_cells_next(void *, CC3DCellIteratorHandle iterator) {
@@ -137,6 +144,33 @@ namespace {
             return;
         }
         field->set(cc3d_point3d(x, y, z), value);
+    }
+
+    CC3DFieldDimV1 cc3d_cell_field_dim(void *userdata) {
+        CC3DFieldDimV1 dim{0, 0, 0};
+        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(userdata);
+        if (!field) {
+            return dim;
+        }
+
+        Dim3D nativeDim = field->getDim();
+        dim.x = nativeDim.x;
+        dim.y = nativeDim.y;
+        dim.z = nativeDim.z;
+        return dim;
+    }
+
+    CC3DOptionalCellViewV1 cc3d_cell_field_get(void *userdata, int x, int y, int z) {
+        CC3DOptionalCellViewV1 result{};
+        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(userdata);
+        if (!field) {
+            return result;
+        }
+
+        CompuCell3D::CellG *cell = field->get(cc3d_point3d(x, y, z));
+        result.hasCell = cell ? 1u : 0u;
+        result.cell = cc3d_cell_view_from_cell(cell);
+        return result;
     }
 }
 
@@ -228,6 +262,9 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.scalarFields.dim_fn = &cc3d_scalar_fields_dim;
     context_.scalarFields.get_fn = &cc3d_scalar_fields_get;
     context_.scalarFields.set_fn = &cc3d_scalar_fields_set;
+    context_.cellField.userdata = nullptr;
+    context_.cellField.dim_fn = &cc3d_cell_field_dim;
+    context_.cellField.get_fn = &cc3d_cell_field_get;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -309,6 +346,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     simulator_ = simulator;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
     context_.scalarFields.userdata = simulator_;
+    context_.cellField.userdata = simulator_->getPotts()->getCellFieldG();
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -385,4 +423,5 @@ void CompiledSteppable::cleanup() {
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
     context_.scalarFields.userdata = nullptr;
+    context_.cellField.userdata = nullptr;
 }

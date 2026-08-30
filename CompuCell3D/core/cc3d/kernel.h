@@ -5,13 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 4u
+#define CC3D_KERNEL_ABI_VERSION 5u
 
 #ifdef __cplusplus
 namespace cc3d {
 namespace kernel {
 class CellIterator;
 struct CellSentinel;
+class OptionalCell;
 class ScalarField;
 struct Dim3;
 }
@@ -89,6 +90,11 @@ typedef struct CC3DFieldDimV1 {
     int z;
 } CC3DFieldDimV1;
 
+typedef struct CC3DOptionalCellViewV1 {
+    uint8_t hasCell;
+    CC3DCellViewV1 cell;
+} CC3DOptionalCellViewV1;
+
 typedef struct CC3DScalarFieldsAPIV1 {
     void *userdata;
     CC3DFieldHandle (*find_fn)(void *userdata, const char *name);
@@ -100,11 +106,22 @@ typedef struct CC3DScalarFieldsAPIV1 {
 #endif
 } CC3DScalarFieldsAPIV1;
 
+typedef struct CC3DCellFieldAPIV1 {
+    void *userdata;
+    CC3DFieldDimV1 (*dim_fn)(void *userdata);
+    CC3DOptionalCellViewV1 (*get_fn)(void *userdata, int x, int y, int z);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::Dim3 dim() const;
+    inline ::cc3d::kernel::OptionalCell operator()(int x, int y, int z) const;
+#endif
+} CC3DCellFieldAPIV1;
+
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
     CC3DCellsAPIV1 cells;
     CC3DScalarFieldsAPIV1 scalarFields;
+    CC3DCellFieldAPIV1 cellField;
 } CC3DKernelContext;
 
 typedef struct CC3DSteppableV1 {
@@ -271,6 +288,23 @@ public:
     Property<bool> connectivityOn;
 };
 
+class OptionalCell {
+public:
+    OptionalCell() : hasValue_(false), value_(CC3DCellViewV1{}) {}
+
+    explicit OptionalCell(const CC3DOptionalCellViewV1 &view)
+        : hasValue_(view.hasCell != 0), value_(view.cell) {}
+
+    explicit operator bool() const { return hasValue_; }
+
+    Cell &value() { return value_; }
+    const Cell &value() const { return value_; }
+
+private:
+    bool hasValue_;
+    Cell value_;
+};
+
 class CellIterator {
 public:
     CellIterator() : api_(nullptr), handle_(nullptr) {}
@@ -405,6 +439,21 @@ inline ::cc3d::kernel::ScalarField CC3DScalarFieldsAPIV1::operator[](const char 
         return ::cc3d::kernel::ScalarField();
     }
     return ::cc3d::kernel::ScalarField(this, find_fn(userdata, name));
+}
+
+inline ::cc3d::kernel::Dim3 CC3DCellFieldAPIV1::dim() const {
+    if (!dim_fn) {
+        return ::cc3d::kernel::Dim3{0, 0, 0};
+    }
+    CC3DFieldDimV1 d = dim_fn(userdata);
+    return ::cc3d::kernel::Dim3{d.x, d.y, d.z};
+}
+
+inline ::cc3d::kernel::OptionalCell CC3DCellFieldAPIV1::operator()(int x, int y, int z) const {
+    if (!get_fn) {
+        return ::cc3d::kernel::OptionalCell();
+    }
+    return ::cc3d::kernel::OptionalCell(get_fn(userdata, x, y, z));
 }
 #endif
 

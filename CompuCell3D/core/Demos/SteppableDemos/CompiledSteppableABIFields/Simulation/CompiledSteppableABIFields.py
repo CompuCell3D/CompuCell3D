@@ -19,6 +19,6 @@ CompuCellSetup.register_compiled_steppable(
     library_path=str(compiled_library_path()),
     frequency=1
 )
-CompuCellSetup.register_steppable(steppable=FieldDrivenGrowthVerifierSteppable(frequency=10))
+CompuCellSetup.register_steppable(steppable=FieldDrivenGrowthVerifierSteppable(frequency=1))
 
 CompuCellSetup.run()
