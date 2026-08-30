@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "CC3DExceptions.h"
+#include "Field3D/Field3D.h"
 #include "PluginManager.h"
 #include "Potts3D/Cell.h"
 #include "Potts3D/CellInventory.h"
@@ -26,6 +27,10 @@ namespace {
     uint8_t cc3d_cells_valid(void *, CC3DCellIteratorHandle iterator) {
         auto *state = static_cast<CellIteratorState *>(iterator);
         return state && state->current != state->end ? 1u : 0u;
+    }
+
+    Point3D cc3d_point3d(int x, int y, int z) {
+        return Point3D(static_cast<short>(x), static_cast<short>(y), static_cast<short>(z));
     }
 
     CC3DCellViewV1 cc3d_cells_get(void *, CC3DCellIteratorHandle iterator) {
@@ -94,6 +99,44 @@ namespace {
 
     void cc3d_cells_destroy(void *, CC3DCellIteratorHandle iterator) {
         delete static_cast<CellIteratorState *>(iterator);
+    }
+
+    CC3DFieldHandle cc3d_scalar_fields_find(void *userdata, const char *name) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(userdata);
+        if (!simulator || !name) {
+            return nullptr;
+        }
+        return static_cast<CC3DFieldHandle>(simulator->getConcentrationFieldByName(name));
+    }
+
+    CC3DFieldDimV1 cc3d_scalar_fields_dim(void *, CC3DFieldHandle fieldHandle) {
+        CC3DFieldDimV1 dim{0, 0, 0};
+        auto *field = static_cast<CompuCell3D::Field3D<float> *>(fieldHandle);
+        if (!field) {
+            return dim;
+        }
+
+        Dim3D nativeDim = field->getDim();
+        dim.x = nativeDim.x;
+        dim.y = nativeDim.y;
+        dim.z = nativeDim.z;
+        return dim;
+    }
+
+    float cc3d_scalar_fields_get(void *, CC3DFieldHandle fieldHandle, int x, int y, int z) {
+        auto *field = static_cast<CompuCell3D::Field3D<float> *>(fieldHandle);
+        if (!field) {
+            return 0.0f;
+        }
+        return field->get(cc3d_point3d(x, y, z));
+    }
+
+    void cc3d_scalar_fields_set(void *, CC3DFieldHandle fieldHandle, int x, int y, int z, float value) {
+        auto *field = static_cast<CompuCell3D::Field3D<float> *>(fieldHandle);
+        if (!field) {
+            return;
+        }
+        field->set(cc3d_point3d(x, y, z), value);
     }
 }
 
@@ -180,6 +223,11 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.cells.get_fn = &cc3d_cells_get;
     context_.cells.next_fn = &cc3d_cells_next;
     context_.cells.destroy_fn = &cc3d_cells_destroy;
+    context_.scalarFields.userdata = nullptr;
+    context_.scalarFields.find_fn = &cc3d_scalar_fields_find;
+    context_.scalarFields.dim_fn = &cc3d_scalar_fields_dim;
+    context_.scalarFields.get_fn = &cc3d_scalar_fields_get;
+    context_.scalarFields.set_fn = &cc3d_scalar_fields_set;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -260,6 +308,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
 
     simulator_ = simulator;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
+    context_.scalarFields.userdata = simulator_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -335,5 +384,5 @@ void CompiledSteppable::cleanup() {
     library_.reset();
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
+    context_.scalarFields.userdata = nullptr;
 }
-

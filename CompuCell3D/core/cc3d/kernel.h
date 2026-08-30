@@ -1,16 +1,19 @@
 #ifndef CC3D_KERNEL_H
 #define CC3D_KERNEL_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 3u
+#define CC3D_KERNEL_ABI_VERSION 4u
 
 #ifdef __cplusplus
 namespace cc3d {
 namespace kernel {
 class CellIterator;
 struct CellSentinel;
+class ScalarField;
+struct Dim3;
 }
 }
 
@@ -18,6 +21,7 @@ extern "C" {
 #endif
 
 typedef void *CC3DCellIteratorHandle;
+typedef void *CC3DFieldHandle;
 
 typedef struct CC3DCellViewV1 {
     const long *id;
@@ -79,10 +83,28 @@ typedef struct CC3DCellsAPIV1 {
 #endif
 } CC3DCellsAPIV1;
 
+typedef struct CC3DFieldDimV1 {
+    int x;
+    int y;
+    int z;
+} CC3DFieldDimV1;
+
+typedef struct CC3DScalarFieldsAPIV1 {
+    void *userdata;
+    CC3DFieldHandle (*find_fn)(void *userdata, const char *name);
+    CC3DFieldDimV1 (*dim_fn)(void *userdata, CC3DFieldHandle field);
+    float (*get_fn)(void *userdata, CC3DFieldHandle field, int x, int y, int z);
+    void (*set_fn)(void *userdata, CC3DFieldHandle field, int x, int y, int z, float value);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::ScalarField operator[](const char *name) const;
+#endif
+} CC3DScalarFieldsAPIV1;
+
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
     CC3DCellsAPIV1 cells;
+    CC3DScalarFieldsAPIV1 scalarFields;
 } CC3DKernelContext;
 
 typedef struct CC3DSteppableV1 {
@@ -104,13 +126,19 @@ namespace kernel {
 
 struct CellSentinel {};
 
+struct Dim3 {
+    int x;
+    int y;
+    int z;
+};
+
 template<typename T>
 class ReadOnlyProperty {
 public:
     ReadOnlyProperty() : ptr_(nullptr) {}
     explicit ReadOnlyProperty(const T *ptr) : ptr_(ptr) {}
 
-    operator T() const { return *ptr_; }
+    operator T() const { return ptr_ ? *ptr_ : T(); }
 
 private:
     const T *ptr_;
@@ -122,20 +150,26 @@ public:
     Property() : ptr_(nullptr) {}
     explicit Property(T *ptr) : ptr_(ptr) {}
 
-    operator T() const { return *ptr_; }
+    operator T() const { return ptr_ ? *ptr_ : T(); }
 
     Property &operator=(T value) {
-        *ptr_ = value;
+        if (ptr_) {
+            *ptr_ = value;
+        }
         return *this;
     }
 
     Property &operator+=(T value) {
-        *ptr_ += value;
+        if (ptr_) {
+            *ptr_ += value;
+        }
         return *this;
     }
 
     Property &operator-=(T value) {
-        *ptr_ -= value;
+        if (ptr_) {
+            *ptr_ -= value;
+        }
         return *this;
     }
 
@@ -290,6 +324,68 @@ private:
     CC3DCellIteratorHandle handle_;
 };
 
+class ScalarFieldValue {
+public:
+    ScalarFieldValue(const CC3DScalarFieldsAPIV1 *api, CC3DFieldHandle field, int x, int y, int z)
+        : api_(api), field_(field), x_(x), y_(y), z_(z) {}
+
+    operator float() const {
+        if (!api_ || !field_ || !api_->get_fn) {
+            return 0.0f;
+        }
+        return api_->get_fn(api_->userdata, field_, x_, y_, z_);
+    }
+
+    ScalarFieldValue &operator=(float value) {
+        if (api_ && field_ && api_->set_fn) {
+            api_->set_fn(api_->userdata, field_, x_, y_, z_, value);
+        }
+        return *this;
+    }
+
+    ScalarFieldValue &operator+=(float value) {
+        *this = static_cast<float>(*this) + value;
+        return *this;
+    }
+
+    ScalarFieldValue &operator-=(float value) {
+        *this = static_cast<float>(*this) - value;
+        return *this;
+    }
+
+private:
+    const CC3DScalarFieldsAPIV1 *api_;
+    CC3DFieldHandle field_;
+    int x_;
+    int y_;
+    int z_;
+};
+
+class ScalarField {
+public:
+    ScalarField() : api_(nullptr), field_(nullptr) {}
+    ScalarField(const CC3DScalarFieldsAPIV1 *api, CC3DFieldHandle field)
+        : api_(api), field_(field) {}
+
+    explicit operator bool() const { return api_ && field_; }
+
+    Dim3 dim() const {
+        if (!api_ || !field_ || !api_->dim_fn) {
+            return {0, 0, 0};
+        }
+        CC3DFieldDimV1 d = api_->dim_fn(api_->userdata, field_);
+        return {d.x, d.y, d.z};
+    }
+
+    ScalarFieldValue operator()(int x, int y, int z) const {
+        return ScalarFieldValue(api_, field_, x, y, z);
+    }
+
+private:
+    const CC3DScalarFieldsAPIV1 *api_;
+    CC3DFieldHandle field_;
+};
+
 } // namespace kernel
 } // namespace cc3d
 
@@ -302,6 +398,13 @@ inline ::cc3d::kernel::CellIterator CC3DCellsAPIV1::begin() const {
 
 inline ::cc3d::kernel::CellSentinel CC3DCellsAPIV1::end() const {
     return ::cc3d::kernel::CellSentinel();
+}
+
+inline ::cc3d::kernel::ScalarField CC3DScalarFieldsAPIV1::operator[](const char *name) const {
+    if (!find_fn || !name) {
+        return ::cc3d::kernel::ScalarField();
+    }
+    return ::cc3d::kernel::ScalarField(this, find_fn(userdata, name));
 }
 #endif
 

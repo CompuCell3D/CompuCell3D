@@ -1,0 +1,47 @@
+<CompuCell3D Revision="20260829" Version="4.0.0">
+
+   <Potts>
+      <Dimensions x="55" y="55" z="1"/>
+      <Steps>200</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="A"/>
+   </Plugin>
+
+   <Plugin Name="Volume"/>
+
+   <Plugin Name="CenterOfMass"/>
+
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="A">12.0</Energy>
+      <Energy Type1="A" Type2="A">8.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="15" y="15" z="0"/>
+         <BoxMax x="40" y="40" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>A</Types>
+      </Region>
+   </Steppable>
+
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField>
+         <DiffusionData>
+            <FieldName>FGF</FieldName>
+            <DiffusionConstant>0.010</DiffusionConstant>
+            <DecayConstant>0.000</DecayConstant>
+            <ConcentrationFileName>Simulation/fgf_2D.pulse.txt</ConcentrationFileName>
+         </DiffusionData>
+      </DiffusionField>
+   </Steppable>
+
+</CompuCell3D>
