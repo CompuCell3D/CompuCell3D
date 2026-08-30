@@ -5,11 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 5u
+#define CC3D_KERNEL_ABI_VERSION 6u
 
 #ifdef __cplusplus
 namespace cc3d {
 namespace kernel {
+class Cell;
 class CellIterator;
 struct CellSentinel;
 class OptionalCell;
@@ -23,8 +24,10 @@ extern "C" {
 
 typedef void *CC3DCellIteratorHandle;
 typedef void *CC3DFieldHandle;
+typedef void *CC3DCellHandle;
 
 typedef struct CC3DCellViewV1 {
+    CC3DCellHandle handle;
     const long *id;
     const long *clusterId;
     const long *volume;
@@ -110,11 +113,21 @@ typedef struct CC3DCellFieldAPIV1 {
     void *userdata;
     CC3DFieldDimV1 (*dim_fn)(void *userdata);
     CC3DOptionalCellViewV1 (*get_fn)(void *userdata, int x, int y, int z);
+    void (*assign_fn)(void *userdata, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max, CC3DCellHandle cell);
 #ifdef __cplusplus
     inline ::cc3d::kernel::Dim3 dim() const;
     inline ::cc3d::kernel::OptionalCell operator()(int x, int y, int z) const;
+    inline void assign(int x_min, int x_max, int y_min, int y_max, int z_min, int z_max, const ::cc3d::kernel::Cell &cell) const;
 #endif
 } CC3DCellFieldAPIV1;
+
+typedef struct CC3DCellFactoryAPIV1 {
+    void *userdata;
+    CC3DCellViewV1 (*create_fn)(void *userdata, unsigned char cell_type);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::Cell create(unsigned char cell_type) const;
+#endif
+} CC3DCellFactoryAPIV1;
 
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
@@ -122,6 +135,10 @@ typedef struct CC3DKernelContext {
     CC3DCellsAPIV1 cells;
     CC3DScalarFieldsAPIV1 scalarFields;
     CC3DCellFieldAPIV1 cellField;
+    CC3DCellFactoryAPIV1 cellFactory;
+#ifdef __cplusplus
+    inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
+#endif
 } CC3DKernelContext;
 
 typedef struct CC3DSteppableV1 {
@@ -197,7 +214,8 @@ private:
 class Cell {
 public:
     explicit Cell(const CC3DCellViewV1 &view)
-        : id(view.id),
+        : handle_(view.handle),
+          id(view.id),
           clusterId(view.clusterId),
           volume(view.volume),
           surface(view.surface),
@@ -241,6 +259,8 @@ public:
           biasVecY(view.biasVecY),
           biasVecZ(view.biasVecZ),
           connectivityOn(view.connectivityOn) {}
+
+    CC3DCellHandle handle() const { return handle_; }
 
     ReadOnlyProperty<long> id;
     ReadOnlyProperty<long> clusterId;
@@ -286,6 +306,9 @@ public:
     Property<double> biasVecY;
     Property<double> biasVecZ;
     Property<bool> connectivityOn;
+
+private:
+    CC3DCellHandle handle_;
 };
 
 class OptionalCell {
@@ -454,6 +477,32 @@ inline ::cc3d::kernel::OptionalCell CC3DCellFieldAPIV1::operator()(int x, int y,
         return ::cc3d::kernel::OptionalCell();
     }
     return ::cc3d::kernel::OptionalCell(get_fn(userdata, x, y, z));
+}
+
+inline void CC3DCellFieldAPIV1::assign(
+    int x_min,
+    int x_max,
+    int y_min,
+    int y_max,
+    int z_min,
+    int z_max,
+    const ::cc3d::kernel::Cell &cell
+) const {
+    if (!assign_fn) {
+        return;
+    }
+    assign_fn(userdata, x_min, x_max, y_min, y_max, z_min, z_max, cell.handle());
+}
+
+inline ::cc3d::kernel::Cell CC3DCellFactoryAPIV1::create(unsigned char cell_type) const {
+    if (!create_fn) {
+        return ::cc3d::kernel::Cell(CC3DCellViewV1{});
+    }
+    return ::cc3d::kernel::Cell(create_fn(userdata, cell_type));
+}
+
+inline ::cc3d::kernel::Cell CC3DKernelContext::newCell(unsigned char cell_type) const {
+    return cellFactory.create(cell_type);
 }
 #endif
 

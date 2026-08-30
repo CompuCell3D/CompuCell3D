@@ -20,6 +20,11 @@ namespace {
         auto *state = static_cast<FieldGrowthState *>(statePtr);
         state->executionCount = 0u;
 
+        auto seededTumor = ctx->newCell(TUMOR);
+        seededTumor.targetVolume = 25.0f;
+        seededTumor.lambdaVolume = 2.0f;
+        ctx->cellField.assign(1, 6, 1, 6, 0, 1, seededTumor);
+
         for (auto cell : ctx->cells) {
             if (cell.type == TUMOR) {
                 cell.targetVolume = 25.0f;

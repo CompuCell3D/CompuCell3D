@@ -6,8 +6,10 @@
 #include "CC3DExceptions.h"
 #include "Field3D/Field3D.h"
 #include "PluginManager.h"
+#include "plugins/VolumeTracker/VolumeTrackerPlugin.h"
 #include "Potts3D/Cell.h"
 #include "Potts3D/CellInventory.h"
+#include "Potts3D/Potts3D.h"
 #include "Simulator.h"
 
 using namespace CompuCell3D;
@@ -20,6 +22,7 @@ namespace {
             return view;
         }
 
+        view.handle = static_cast<CC3DCellHandle>(cell);
         view.id = &cell->id;
         view.clusterId = &cell->clusterId;
         view.volume = &cell->volume;
@@ -87,6 +90,34 @@ namespace {
         return Point3D(static_cast<short>(x), static_cast<short>(y), static_cast<short>(z));
     }
 
+    CompuCell3D::Simulator *cc3d_simulator_from_ptr(void *simulatorPtr) {
+        return static_cast<CompuCell3D::Simulator *>(simulatorPtr);
+    }
+
+    CompuCell3D::Potts3D *cc3d_potts_from_simulator(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        return simulator ? simulator->getPotts() : nullptr;
+    }
+
+    CompuCell3D::Field3D<CompuCell3D::CellG *> *cc3d_cell_field_from_simulator(void *simulatorPtr) {
+        auto *potts = cc3d_potts_from_simulator(simulatorPtr);
+        return potts ? potts->getCellFieldG() : nullptr;
+    }
+
+    CompuCell3D::VolumeTrackerPlugin *cc3d_ensure_volume_tracker(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) {
+            return nullptr;
+        }
+
+        bool pluginAlreadyRegisteredFlag = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("VolumeTracker", &pluginAlreadyRegisteredFlag);
+        if (!pluginAlreadyRegisteredFlag) {
+            plugin->init(simulator);
+        }
+        return static_cast<CompuCell3D::VolumeTrackerPlugin *>(plugin);
+    }
+
     CC3DCellViewV1 cc3d_cells_get(void *, CC3DCellIteratorHandle iterator) {
         auto *state = static_cast<CellIteratorState *>(iterator);
 
@@ -146,9 +177,9 @@ namespace {
         field->set(cc3d_point3d(x, y, z), value);
     }
 
-    CC3DFieldDimV1 cc3d_cell_field_dim(void *cellFieldPtr) {
+    CC3DFieldDimV1 cc3d_cell_field_dim(void *simulatorPtr) {
         CC3DFieldDimV1 dim{0, 0, 0};
-        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(cellFieldPtr);
+        auto *field = cc3d_cell_field_from_simulator(simulatorPtr);
         if (!field) {
             return dim;
         }
@@ -160,9 +191,9 @@ namespace {
         return dim;
     }
 
-    CC3DOptionalCellViewV1 cc3d_cell_field_get(void *cellFieldPtr, int x, int y, int z) {
+    CC3DOptionalCellViewV1 cc3d_cell_field_get(void *simulatorPtr, int x, int y, int z) {
         CC3DOptionalCellViewV1 result{};
-        auto *field = static_cast<CompuCell3D::Field3D<CompuCell3D::CellG *> *>(cellFieldPtr);
+        auto *field = cc3d_cell_field_from_simulator(simulatorPtr);
         if (!field) {
             return result;
         }
@@ -171,6 +202,60 @@ namespace {
         result.hasCell = cell ? 1u : 0u;
         result.cell = cc3d_cell_view_from_cell(cell);
         return result;
+    }
+
+    void cc3d_validate_box_range(const CC3DFieldDimV1 &dim,
+                                 int xMin, int xMax,
+                                 int yMin, int yMax,
+                                 int zMin, int zMax) {
+        if (xMin < 0 || yMin < 0 || zMin < 0 ||
+            xMin > xMax || yMin > yMax || zMin > zMax ||
+            xMax > dim.x || yMax > dim.y || zMax > dim.z) {
+            throw CC3DException("Compiled steppable cellField.assign() box is out of range");
+        }
+    }
+
+    void cc3d_cell_field_assign(void *simulatorPtr,
+                                int xMin, int xMax,
+                                int yMin, int yMax,
+                                int zMin, int zMax,
+                                CC3DCellHandle cellHandle) {
+        auto *field = cc3d_cell_field_from_simulator(simulatorPtr);
+        auto *volumeTracker = cc3d_ensure_volume_tracker(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+
+        if (!field) {
+            throw CC3DException("Compiled steppable cell field is not initialized");
+        }
+        if (!volumeTracker) {
+            throw CC3DException("Compiled steppable could not initialize VolumeTracker");
+        }
+        if (!cell) {
+            throw CC3DException("Compiled steppable cellField.assign() received a null cell");
+        }
+
+        const CC3DFieldDimV1 dim = cc3d_cell_field_dim(simulatorPtr);
+        cc3d_validate_box_range(dim, xMin, xMax, yMin, yMax, zMin, zMax);
+
+        for (int z = zMin; z < zMax; ++z) {
+            for (int y = yMin; y < yMax; ++y) {
+                for (int x = xMin; x < xMax; ++x) {
+                    field->set(cc3d_point3d(x, y, z), cell);
+                    volumeTracker->step();
+                }
+            }
+        }
+    }
+
+    CC3DCellViewV1 cc3d_cell_factory_create(void *simulatorPtr, unsigned char cellType) {
+        auto *potts = cc3d_potts_from_simulator(simulatorPtr);
+        if (!potts) {
+            throw CC3DException("Compiled steppable could not access Potts3D to create a cell");
+        }
+
+        auto *cell = potts->createCell();
+        cell->type = cellType;
+        return cc3d_cell_view_from_cell(cell);
     }
 }
 
@@ -265,6 +350,9 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.cellField.userdata = nullptr;
     context_.cellField.dim_fn = &cc3d_cell_field_dim;
     context_.cellField.get_fn = &cc3d_cell_field_get;
+    context_.cellField.assign_fn = &cc3d_cell_field_assign;
+    context_.cellFactory.userdata = nullptr;
+    context_.cellFactory.create_fn = &cc3d_cell_factory_create;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -346,7 +434,8 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     simulator_ = simulator;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
     context_.scalarFields.userdata = simulator_;
-    context_.cellField.userdata = simulator_->getPotts()->getCellFieldG();
+    context_.cellField.userdata = simulator_;
+    context_.cellFactory.userdata = simulator_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -424,4 +513,5 @@ void CompiledSteppable::cleanup() {
     context_.cells.userdata = nullptr;
     context_.scalarFields.userdata = nullptr;
     context_.cellField.userdata = nullptr;
+    context_.cellFactory.userdata = nullptr;
 }
