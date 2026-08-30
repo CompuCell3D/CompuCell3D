@@ -56,11 +56,13 @@ void start(CC3DKernelContext *ctx, void *statePtr) {
 //     }
 
     void step(CC3DKernelContext *ctx, void *statePtr) {
+        using namespace std;
         auto *state = static_cast<GrowthState *>(statePtr);
 
         for (auto cell : ctx->cells) {
             if (cell.type == TUMOR) {
                 cell.targetVolume += 0.2f;
+                cerr<<" cell.id="<<cell.id<<" xcom="<<cell.xCOM<<" yCOM="<<cell.yCOM<<endl;
             }
         }
 
