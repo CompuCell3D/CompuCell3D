@@ -28,10 +28,10 @@ class CellGDerivedPropertiesSteppable(SteppableBasePy):
         """
         for cell in self.cell_list:
             print(f"cell id: {cell.id}")
-            # Derived property: internal pressure
+            # Derived property: internal pressureLocal
             print("cell volume, target volume, volume lambda:",
                   cell.volume, cell.targetVolume, cell.lambdaVolume)
-            print(f"   internal pressure: {cell.pressure}")
+            print(f"   internal pressureLocal: {cell.pressureLocal}")
             # Derived property: surface tension
             print("cell surface, target surface, surface lambda:",
                   cell.surface, cell.targetSurface, cell.lambdaSurface)

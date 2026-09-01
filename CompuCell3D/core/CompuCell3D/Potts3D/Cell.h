@@ -25,6 +25,7 @@ namespace CompuCell3D {
         long volume;
         float targetVolume;
         float lambdaVolume;
+        double pressure;
         double surface;
         float targetSurface;
         float angle;
@@ -60,8 +61,8 @@ namespace CompuCell3D {
 
     public:
 
-        // Function defining the value of derived property: pressure
-        float getPressure();
+        // Function defining the value of derived property: pressureLocal
+        float getPressureLocal();
 
         // Function defining the value of derived property: surface tension
         float getSurfaceTension();
@@ -69,8 +70,8 @@ namespace CompuCell3D {
         // Function defining the value of derived property: cluster surface tension
         float getClusterSurfaceTension();
 
-        // Internal pressure
-        DerivedProperty<CellG, float, &CellG::getPressure> pressure;
+        // Internal pressureLocal
+        DerivedProperty<CellG, float, &CellG::getPressureLocal> pressureLocal;
         // Surface tension
         DerivedProperty<CellG, float, &CellG::getSurfaceTension> surfaceTension;
         // Cluster surface tension
