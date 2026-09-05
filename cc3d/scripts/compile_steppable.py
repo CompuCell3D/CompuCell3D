@@ -9,8 +9,28 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from cc3d.scripts.windows_vcvars import (
+        environment_from_vcvars64,
+        list_visual_studio_installs,
+        select_visual_studio_install,
+    )
+except ImportError:
+    from windows_vcvars import (
+        environment_from_vcvars64,
+        list_visual_studio_installs,
+        select_visual_studio_install,
+    )
+
 
 DEFAULT_REPO = Path("/")
+
+
+def env_value(env: dict[str, str], name: str) -> str | None:
+    for key, value in env.items():
+        if key.upper() == name.upper():
+            return value
+    return None
 
 
 def platform_suffix() -> str:
@@ -173,10 +193,31 @@ def linux_compile_command(source_path: Path, include_root: Path, output_path: Pa
     ]
 
 
-def windows_compile_command(source_path: Path, include_root: Path, output_path: Path) -> list[str]:
+def windows_compile_command(
+    source_path: Path,
+    include_root: Path,
+    output_path: Path,
+    msvc_version: str | None,
+) -> tuple[list[str], dict[str, str] | None]:
     compiler = os.environ.get("CXX") or shutil.which("cl")
+    env = None
     if not compiler:
-        raise RuntimeError("Could not locate cl.exe. Run from a Visual Studio developer shell or set CXX.")
+        install = select_visual_studio_install(msvc_version)
+        env = environment_from_vcvars64(install.vcvars64)
+        vc_tools = env_value(env, "VCToolsInstallDir")
+        if vc_tools:
+            vc_cl = Path(vc_tools) / "bin" / "HostX64" / "x64" / "cl.exe"
+            if vc_cl.exists():
+                compiler = str(vc_cl)
+        if not compiler:
+            compiler = shutil.which("cl.exe", path=env_value(env, "PATH"))
+        if not compiler:
+            for path_item in (env_value(env, "PATH") or "").split(os.pathsep):
+                if path_item.lower().endswith("\\bin\\hostx64\\x64"):
+                    compiler = str(Path(path_item) / "cl.exe")
+                    break
+        if not compiler:
+            raise RuntimeError(f"Could not locate cl.exe after activating {install.vcvars64}")
 
     return [
         compiler,
@@ -187,10 +228,16 @@ def windows_compile_command(source_path: Path, include_root: Path, output_path: 
         str(source_path),
         f"/I{include_root}",
         f"/Fe:{output_path}",
-    ]
+    ], env
 
 
-def compile_command(source_path: Path, repo_path: Path, output_path: Path, macos_toolchain: str) -> list[str]:
+def compile_command(
+    source_path: Path,
+    repo_path: Path,
+    output_path: Path,
+    macos_toolchain: str,
+    msvc_version: str | None,
+) -> tuple[list[str], dict[str, str] | None]:
     include_root = repo_path / "CompuCell3D" / "core"
 
     if sys.platform == "darwin":
@@ -199,11 +246,16 @@ def compile_command(source_path: Path, repo_path: Path, output_path: Path, macos
                 source_path=source_path,
                 include_root=include_root,
                 output_path=output_path
-            )
-        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path)
+            ), None
+        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path), None
     if sys.platform.startswith("win"):
-        return windows_compile_command(source_path=source_path, include_root=include_root, output_path=output_path)
-    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path)
+        return windows_compile_command(
+            source_path=source_path,
+            include_root=include_root,
+            output_path=output_path,
+            msvc_version=msvc_version,
+        )
+    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path), None
 
 
 def clean_output(output_path: Path) -> None:
@@ -214,12 +266,21 @@ def clean_output(output_path: Path) -> None:
         print(f"Nothing to clean: {output_path}")
 
 
+def run_compile_command(cmd: list[str], env: dict[str, str] | None) -> None:
+    if sys.platform.startswith("win") and env is not None:
+        cmd = ["cl.exe", *cmd[1:]]
+        subprocess.run(["cmd.exe", "/d", "/c", subprocess.list2cmdline(cmd)], check=True, env=env)
+        return
+    subprocess.run(cmd, check=True, env=env)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Compile a standalone CompuCell3D compiled steppable against cc3d/kernel.h"
     )
     parser.add_argument(
         "source",
+        nargs="?",
         help="Steppable C++ source file. May be an absolute path, relative path, or basename such as GrowthSteppable.cpp."
     )
     parser.add_argument(
@@ -243,11 +304,30 @@ def parse_args() -> argparse.Namespace:
         default="apple",
         help="macOS only: choose the Apple or conda compiler toolchain. Default: apple"
     )
+    parser.add_argument(
+        "--msvc-version",
+        default=None,
+        help="Windows only: Visual Studio major version to use, such as 18 or 17. Defaults to latest."
+    )
+    parser.add_argument(
+        "--list-msvc",
+        action="store_true",
+        help="Windows only: list Visual Studio installations with x64 C++ tools and exit."
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.list_msvc:
+        for install in list_visual_studio_installs():
+            print(f"{install.installation_version}: {install.display_name}")
+            print(f"  {install.installation_path}")
+            print(f"  {install.vcvars64}")
+        return 0
+    if not args.source:
+        raise RuntimeError("Missing steppable source path.")
+
     repo_path = Path(args.repo).expanduser().resolve()
     source_path = resolve_source(repo_path=repo_path, source_arg=args.source)
     output_path = build_output_path(source_path)
@@ -256,11 +336,12 @@ def main() -> int:
         clean_output(output_path)
         return 0
 
-    cmd = compile_command(
+    cmd, env = compile_command(
         source_path=source_path,
         repo_path=repo_path,
         output_path=output_path,
-        macos_toolchain=args.macos_toolchain
+        macos_toolchain=args.macos_toolchain,
+        msvc_version=args.msvc_version,
     )
 
     print(f"Source : {source_path}")
@@ -270,7 +351,7 @@ def main() -> int:
         print("Command:")
         print(" ".join(cmd))
 
-    subprocess.run(cmd, check=True)
+    run_compile_command(cmd, env)
     print(f"Built {output_path}")
     return 0
 
