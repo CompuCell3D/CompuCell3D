@@ -617,11 +617,7 @@ FIELD3DEXTENDERBASE(className,returnType)
             int ok = PySlice_GetIndices(xCoord, dim.x, &start_x, &stop_x, &step_x);
 
         }else{
-            if (PyInt_Check(xCoord)){
-                start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-                stop_x=start_x;
-                step_x=1;
-            }else if (PyLong_Check(xCoord)){
+            if (PyLong_Check(xCoord)){
                 start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
                 stop_x=start_x;
                 step_x=1;
@@ -648,11 +644,7 @@ FIELD3DEXTENDERBASE(className,returnType)
             int ok = PySlice_GetIndices(yCoord, dim.y, &start_y, &stop_y, &step_y);
 
         }else{
-            if (PyInt_Check(yCoord)){
-                start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-                stop_y=start_y;
-                step_y=1;
-            }else if (PyLong_Check(yCoord)){
+            if (PyLong_Check(yCoord)){
                 start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
                 stop_y=start_y;
                 step_y=1;
@@ -680,11 +672,7 @@ FIELD3DEXTENDERBASE(className,returnType)
             int ok = PySlice_GetIndices(zCoord, dim.z, &start_z, &stop_z, &step_z);
 
         }else{
-            if (PyInt_Check(zCoord)){
-                start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-                stop_z=start_z;
-                step_z=1;
-            }else if (PyLong_Check(zCoord)){
+            if (PyLong_Check(zCoord)){
                 start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
                 stop_z=start_z;
                 step_z=1;

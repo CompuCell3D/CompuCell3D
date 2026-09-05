@@ -5,9 +5,9 @@
         int size = PyList_Size($input);        
         if (size==3){
             
-            dim.x=(short)PyInt_AsLong(PyList_GetItem($input,0));
-            dim.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
-            dim.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            dim.x=(short)PyLong_AsLong(PyList_GetItem($input,0));
+            dim.y=(short)PyLong_AsLong(PyList_GetItem($input,1));
+            dim.z=(short)PyLong_AsLong(PyList_GetItem($input,2));
             $1=dim;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -19,9 +19,9 @@
         int size = PyTuple_Size($input);        
         if (size==3){
             
-            dim.x=(short)PyInt_AsLong(PyTuple_GetItem($input,0));
-            dim.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
-            dim.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            dim.x=(short)PyLong_AsLong(PyTuple_GetItem($input,0));
+            dim.y=(short)PyLong_AsLong(PyTuple_GetItem($input,1));
+            dim.z=(short)PyLong_AsLong(PyTuple_GetItem($input,2));
             $1=dim;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -34,9 +34,9 @@
         if (SWIG_IsOK(res)) {
             
             //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
-            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
-            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
-            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyLong_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyLong_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyLong_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=dim;
         } else {
         
@@ -55,9 +55,9 @@
         int size = PyList_Size($input);        
         if (size==3){
             
-            dim.x=(short)PyInt_AsLong(PyList_GetItem($input,0));
-            dim.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
-            dim.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            dim.x=(short)PyLong_AsLong(PyList_GetItem($input,0));
+            dim.y=(short)PyLong_AsLong(PyList_GetItem($input,1));
+            dim.z=(short)PyLong_AsLong(PyList_GetItem($input,2));
             $1=&dim;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -68,9 +68,9 @@
         //check if it is a tuple
         int size = PyTuple_Size($input);        
         if (size==3){            
-            dim.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
-            dim.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
-            dim.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            dim.x= (short)PyLong_AsLong(PyTuple_GetItem($input,0));
+            dim.y=(short)PyLong_AsLong(PyTuple_GetItem($input,1));
+            dim.z=(short)PyLong_AsLong(PyTuple_GetItem($input,2));
             $1=&dim;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -82,9 +82,9 @@
          
         if (SWIG_IsOK(res)) {            
             //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
-            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
-            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
-            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyLong_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyLong_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyLong_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=&dim;
         } else {
         
@@ -107,9 +107,9 @@
         int size = PyList_Size($input);        
         if (size==3){
             // CompuCell3D::Point3D pt;    
-            pt.x=(short)PyInt_AsLong(PyList_GetItem($input,0));
-            pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
-            pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            pt.x=(short)PyLong_AsLong(PyList_GetItem($input,0));
+            pt.y=(short)PyLong_AsLong(PyList_GetItem($input,1));
+            pt.z=(short)PyLong_AsLong(PyList_GetItem($input,2));
             $1=pt;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -121,9 +121,9 @@
         int size = PyTuple_Size($input);        
         if (size==3){
             // CompuCell3D::Point3D pt;    
-            pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
-            pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
-            pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            pt.x= (short)PyLong_AsLong(PyTuple_GetItem($input,0));
+            pt.y=(short)PyLong_AsLong(PyTuple_GetItem($input,1));
+            pt.z=(short)PyLong_AsLong(PyTuple_GetItem($input,2));
             $1=pt;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -162,9 +162,9 @@
         if (SWIG_IsOK(res)) {
             // CompuCell3D::Point3D pt;    
             //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
-            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
-            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
-            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyLong_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyLong_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyLong_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=pt;
         } else {
         
@@ -183,17 +183,17 @@
     
 //     int res = SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,0);
 
-//     PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
-//     PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
-//     PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
+//     PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyLong_AsLong(xPyRef); Py_DECREF(xPyRef);
+//     PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyLong_AsLong(yPyRef); Py_DECREF(yPyRef);
+//     PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyLong_AsLong(zPyRef); Py_DECREF(zPyRef);    
     
 //     $1=&pt;     
     
 //     if (SWIG_IsOK(res)) {
 //         // CompuCell3D::Point3D pt;    
-//         pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-//         pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-//         pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+//         pt.x=(short)PyLong_AsLong(PyObject_GetAttrString($input,"x"));
+//         pt.y=(short)PyLong_AsLong(PyObject_GetAttrString($input,"y"));
+//         pt.z=(short)PyLong_AsLong(PyObject_GetAttrString($input,"z"));
 //         $1=&pt;
 //     } else {
 
@@ -206,9 +206,9 @@
         int size = PyList_Size($input);        
         if (size==3){
             // CompuCell3D::Point3D pt;    
-            pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
-            pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
-            pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            pt.x= (short)PyLong_AsLong(PyList_GetItem($input,0));
+            pt.y=(short)PyLong_AsLong(PyList_GetItem($input,1));
+            pt.z=(short)PyLong_AsLong(PyList_GetItem($input,2));
             $1=&pt;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -220,9 +220,9 @@
         int size = PyTuple_Size($input);        
         if (size==3){
             // CompuCell3D::Point3D pt;    
-            pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
-            pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
-            pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            pt.x= (short)PyLong_AsLong(PyTuple_GetItem($input,0));
+            pt.y=(short)PyLong_AsLong(PyTuple_GetItem($input,1));
+            pt.z=(short)PyLong_AsLong(PyTuple_GetItem($input,2));
             $1=&pt;
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -264,13 +264,13 @@
         if (SWIG_IsOK(res)) {
             // CompuCell3D::Point3D pt; 
             //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
-            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
-            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
-            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyLong_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyLong_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyLong_AsLong(zPyRef); Py_DECREF(zPyRef);    
             
-//             pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-//             pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-//             pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+//             pt.x=(short)PyLong_AsLong(PyObject_GetAttrString($input,"x"));
+//             pt.y=(short)PyLong_AsLong(PyObject_GetAttrString($input,"y"));
+//             pt.z=(short)PyLong_AsLong(PyObject_GetAttrString($input,"z"));
             $1=&pt;
         } else {
         
@@ -290,9 +290,9 @@
         // int size = PyList_Size($input);        
         // if (size==3){
             // CompuCell3D::Point3D pt;    
-            // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
-            // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
-            // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // pt.x= (short)PyLong_AsLong(PyList_GetItem($input,0));
+            // pt.y=(short)PyLong_AsLong(PyList_GetItem($input,1));
+            // pt.z=(short)PyLong_AsLong(PyList_GetItem($input,2));
             // $1=pt;
         // }else{
             // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -304,9 +304,9 @@
         // int size = PyTuple_Size($input);        
         // if (size==3){
             // CompuCell3D::Point3D pt;    
-            // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
-            // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
-            // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // pt.x= (short)PyLong_AsLong(PyTuple_GetItem($input,0));
+            // pt.y=(short)PyLong_AsLong(PyTuple_GetItem($input,1));
+            // pt.z=(short)PyLong_AsLong(PyTuple_GetItem($input,2));
             // $1=pt;
         // }else{
             // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
@@ -318,9 +318,9 @@
          
         // if (SWIG_IsOK(res)) {
             // CompuCell3D::Point3D pt;    
-            // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-            // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-            // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // pt.x=(short)PyLong_AsLong(PyObject_GetAttrString($input,"x"));
+            // pt.y=(short)PyLong_AsLong(PyObject_GetAttrString($input,"y"));
+            // pt.z=(short)PyLong_AsLong(PyObject_GetAttrString($input,"z"));
             // $1=pt;
         // } else {
         

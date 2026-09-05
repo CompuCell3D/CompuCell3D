@@ -337,7 +337,7 @@ class BS{
         throw std::runtime_error(" Wrong Syntax: Expected someting like: field[1,2,3]");
     }
 
-    return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
+    return self->get(Point3D(PyLong_AsLong(PyTuple_GetItem(_indexTuple,0)),PyLong_AsLong(PyTuple_GetItem(_indexTuple,1)),PyLong_AsLong(PyTuple_GetItem(_indexTuple,2))));    
   }
   
   
@@ -366,7 +366,7 @@ class BS{
 //         cerr<<"step_x="<<PyInt_AsSsize_t((PyObject*)&step_x)<<endl;
         
     }else{
-        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+        start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
         stop_x=start_x;
         step_x=1;
     }
@@ -377,7 +377,7 @@ class BS{
         
         
     }else{
-        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+        start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
         stop_y=start_y;
         step_y=1;
     }
@@ -388,7 +388,7 @@ class BS{
         
         
     }else{
-        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+        start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
         stop_z=start_z;
         step_z=1;
     }
@@ -411,7 +411,7 @@ class BS{
 //                 CompuCell3D_Field3D_Sl_int_Sg__runSteppers(self);
             }
     
-//     return self->set(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))),_val);    
+//     return self->set(Point3D(PyLong_AsLong(PyTuple_GetItem(_indexTuple,0)),PyLong_AsLong(PyTuple_GetItem(_indexTuple,1)),PyLong_AsLong(PyTuple_GetItem(_indexTuple,2))),_val);    
   }
   
   
