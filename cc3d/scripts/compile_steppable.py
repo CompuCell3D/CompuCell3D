@@ -11,14 +11,16 @@ from pathlib import Path
 
 try:
     from cc3d.scripts.windows_vcvars import (
+        compiler_path_from_env,
         environment_from_vcvars64,
-        list_visual_studio_installs,
+        msvc_compiler_info,
         select_visual_studio_install,
     )
 except ImportError:
     from windows_vcvars import (
+        compiler_path_from_env,
         environment_from_vcvars64,
-        list_visual_studio_installs,
+        msvc_compiler_info,
         select_visual_studio_install,
     )
 
@@ -204,18 +206,7 @@ def windows_compile_command(
     if not compiler:
         install = select_visual_studio_install(msvc_version)
         env = environment_from_vcvars64(install.vcvars64)
-        vc_tools = env_value(env, "VCToolsInstallDir")
-        if vc_tools:
-            vc_cl = Path(vc_tools) / "bin" / "HostX64" / "x64" / "cl.exe"
-            if vc_cl.exists():
-                compiler = str(vc_cl)
-        if not compiler:
-            compiler = shutil.which("cl.exe", path=env_value(env, "PATH"))
-        if not compiler:
-            for path_item in (env_value(env, "PATH") or "").split(os.pathsep):
-                if path_item.lower().endswith("\\bin\\hostx64\\x64"):
-                    compiler = str(Path(path_item) / "cl.exe")
-                    break
+        compiler = compiler_path_from_env(env)
         if not compiler:
             raise RuntimeError(f"Could not locate cl.exe after activating {install.vcvars64}")
 
@@ -314,16 +305,29 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Windows only: list Visual Studio installations with x64 C++ tools and exit."
     )
+    parser.add_argument(
+        "--probe-msvc",
+        action="store_true",
+        help="Windows only: activate detected Visual Studio installations while listing compiler details."
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     if args.list_msvc:
-        for install in list_visual_studio_installs():
-            print(f"{install.installation_version}: {install.display_name}")
-            print(f"  {install.installation_path}")
-            print(f"  {install.vcvars64}")
+        for info in msvc_compiler_info(msvc_version=args.msvc_version, probe=args.probe_msvc):
+            marker = " [selected]" if info.selected else ""
+            status = "available" if info.available else "unavailable"
+            print(f"{info.installation_version}: {info.display_name}{marker} ({status})")
+            print(f"  installation_path: {info.installation_path}")
+            print(f"  vcvars64: {info.vcvars64}")
+            if info.compiler_path:
+                print(f"  compiler_path: {info.compiler_path}")
+            if info.compiler_version:
+                print(f"  compiler_version: {info.compiler_version}")
+            if info.error:
+                print(f"  error: {info.error}")
         return 0
     if not args.source:
         raise RuntimeError("Missing steppable source path.")
