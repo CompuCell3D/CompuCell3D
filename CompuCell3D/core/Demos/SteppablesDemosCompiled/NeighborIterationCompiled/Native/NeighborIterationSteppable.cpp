@@ -119,6 +119,6 @@ namespace {
     };
 }
 
-extern "C" const CC3DSteppableV1 *cc3d_get_steppable_v1() {
+extern "C" CC3D_STEPPABLE_EXPORT const CC3DSteppableV1 *cc3d_get_steppable_v1() {
     return &api;
 }

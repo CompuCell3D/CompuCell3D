@@ -7,6 +7,12 @@
 
 #define CC3D_KERNEL_ABI_VERSION 7u
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
+#else
+#define CC3D_STEPPABLE_EXPORT
+#endif
+
 #ifdef __cplusplus
 namespace cc3d {
 namespace kernel {

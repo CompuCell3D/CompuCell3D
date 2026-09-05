@@ -182,6 +182,7 @@ def windows_compile_command(source_path: Path, include_root: Path, output_path: 
         compiler,
         "/O2",
         "/std:c++17",
+        "/EHsc",
         "/LD",
         str(source_path),
         f"/I{include_root}",
