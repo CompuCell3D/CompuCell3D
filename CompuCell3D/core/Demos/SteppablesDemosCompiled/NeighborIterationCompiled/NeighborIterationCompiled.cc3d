@@ -1,0 +1,6 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/NeighborIterationCompiled.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/NeighborIterationCompiled.py</PythonScript>
+   <Resource Type="Python">Simulation/NeighborIterationCompiledSteppables.py</Resource>
+   <Resource Type="Cpp">Native/NeighborIterationSteppable.cpp</Resource>
+</Simulation>

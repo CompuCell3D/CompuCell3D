@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 6u
+#define CC3D_KERNEL_ABI_VERSION 7u
 
 #ifdef __cplusplus
 namespace cc3d {
@@ -13,6 +13,10 @@ namespace kernel {
 class Cell;
 class CellIterator;
 struct CellSentinel;
+class CellNeighbor;
+class CellNeighborIterator;
+class CellNeighborRange;
+struct CellNeighborSentinel;
 class OptionalCell;
 class ScalarField;
 struct Dim3;
@@ -23,6 +27,7 @@ extern "C" {
 #endif
 
 typedef void *CC3DCellIteratorHandle;
+typedef void *CC3DCellNeighborIteratorHandle;
 typedef void *CC3DFieldHandle;
 typedef void *CC3DCellHandle;
 
@@ -87,6 +92,23 @@ typedef struct CC3DCellsAPIV1 {
 #endif
 } CC3DCellsAPIV1;
 
+typedef struct CC3DCellNeighborViewV1 {
+    CC3DCellViewV1 neighbor;
+    int commonSurfaceArea;
+} CC3DCellNeighborViewV1;
+
+typedef struct CC3DCellNeighborsAPIV1 {
+    void *userdata;
+    CC3DCellNeighborIteratorHandle (*begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*valid_fn)(void *userdata, CC3DCellNeighborIteratorHandle iterator);
+    CC3DCellNeighborViewV1 (*get_fn)(void *userdata, CC3DCellNeighborIteratorHandle iterator);
+    void (*next_fn)(void *userdata, CC3DCellNeighborIteratorHandle iterator);
+    void (*destroy_fn)(void *userdata, CC3DCellNeighborIteratorHandle iterator);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::CellNeighborRange forCell(const ::cc3d::kernel::Cell &cell) const;
+#endif
+} CC3DCellNeighborsAPIV1;
+
 typedef struct CC3DFieldDimV1 {
     int x;
     int y;
@@ -133,6 +155,7 @@ typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
     CC3DCellsAPIV1 cells;
+    CC3DCellNeighborsAPIV1 neighbors;
     CC3DScalarFieldsAPIV1 scalarFields;
     CC3DCellFieldAPIV1 cellField;
     CC3DCellFactoryAPIV1 cellFactory;
@@ -159,6 +182,8 @@ namespace cc3d {
 namespace kernel {
 
 struct CellSentinel {};
+
+struct CellNeighborSentinel {};
 
 struct Dim3 {
     int x;
@@ -311,6 +336,24 @@ private:
     CC3DCellHandle handle_;
 };
 
+class CellNeighbor {
+public:
+    CellNeighbor() : neighbor_(CC3DCellViewV1{}), commonSurfaceArea(0) {}
+
+    explicit CellNeighbor(const CC3DCellNeighborViewV1 &view)
+        : neighbor_(view.neighbor), commonSurfaceArea(view.commonSurfaceArea) {}
+
+    explicit operator bool() const { return neighbor_.handle() != nullptr; }
+
+    Cell &neighbor() { return neighbor_; }
+    const Cell &neighbor() const { return neighbor_; }
+
+    int commonSurfaceArea;
+
+private:
+    Cell neighbor_;
+};
+
 class OptionalCell {
 public:
     OptionalCell() : hasValue_(false), value_(CC3DCellViewV1{}) {}
@@ -379,6 +422,80 @@ private:
 
     const CC3DCellsAPIV1 *api_;
     CC3DCellIteratorHandle handle_;
+};
+
+class CellNeighborIterator {
+public:
+    CellNeighborIterator() : api_(nullptr), handle_(nullptr) {}
+
+    CellNeighborIterator(const CC3DCellNeighborsAPIV1 *api, CC3DCellNeighborIteratorHandle handle)
+        : api_(api), handle_(handle) {}
+
+    CellNeighborIterator(const CellNeighborIterator &) = delete;
+    CellNeighborIterator &operator=(const CellNeighborIterator &) = delete;
+
+    CellNeighborIterator(CellNeighborIterator &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    CellNeighborIterator &operator=(CellNeighborIterator &&other) noexcept {
+        if (this != &other) {
+            cleanup();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~CellNeighborIterator() { cleanup(); }
+
+    CellNeighbor operator*() const { return CellNeighbor(api_->get_fn(api_->userdata, handle_)); }
+
+    CellNeighborIterator &operator++() {
+        api_->next_fn(api_->userdata, handle_);
+        return *this;
+    }
+
+    bool operator!=(CellNeighborSentinel) const {
+        return api_ && handle_ && api_->valid_fn(api_->userdata, handle_) != 0;
+    }
+
+private:
+    void cleanup() {
+        if (api_ && handle_ && api_->destroy_fn) {
+            api_->destroy_fn(api_->userdata, handle_);
+        }
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DCellNeighborsAPIV1 *api_;
+    CC3DCellNeighborIteratorHandle handle_;
+};
+
+class CellNeighborRange {
+public:
+    CellNeighborRange() : api_(nullptr), cell_(nullptr) {}
+
+    CellNeighborRange(const CC3DCellNeighborsAPIV1 *api, CC3DCellHandle cell)
+        : api_(api), cell_(cell) {}
+
+    CellNeighborIterator begin() const {
+        if (!api_ || !api_->begin_fn || !cell_) {
+            return CellNeighborIterator();
+        }
+        return CellNeighborIterator(api_, api_->begin_fn(api_->userdata, cell_));
+    }
+
+    CellNeighborSentinel end() const { return CellNeighborSentinel(); }
+
+private:
+    const CC3DCellNeighborsAPIV1 *api_;
+    CC3DCellHandle cell_;
 };
 
 class ScalarFieldValue {
@@ -455,6 +572,12 @@ inline ::cc3d::kernel::CellIterator CC3DCellsAPIV1::begin() const {
 
 inline ::cc3d::kernel::CellSentinel CC3DCellsAPIV1::end() const {
     return ::cc3d::kernel::CellSentinel();
+}
+
+inline ::cc3d::kernel::CellNeighborRange CC3DCellNeighborsAPIV1::forCell(
+    const ::cc3d::kernel::Cell &cell
+) const {
+    return ::cc3d::kernel::CellNeighborRange(this, cell.handle());
 }
 
 inline ::cc3d::kernel::ScalarField CC3DScalarFieldsAPIV1::operator[](const char *name) const {

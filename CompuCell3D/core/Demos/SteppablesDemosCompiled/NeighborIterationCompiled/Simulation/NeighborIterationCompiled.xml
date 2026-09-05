@@ -1,0 +1,30 @@
+<CompuCell3D Revision="20260829" Version="4.0.0">
+
+   <Potts>
+      <Dimensions x="40" y="40" z="1"/>
+      <Steps>80</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="A"/>
+      <CellType TypeId="2" TypeName="B"/>
+   </Plugin>
+
+   <Plugin Name="Volume"/>
+   <Plugin Name="CenterOfMass"/>
+   <Plugin Name="NeighborTracker"/>
+
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="A">16.0</Energy>
+      <Energy Type1="Medium" Type2="B">16.0</Energy>
+      <Energy Type1="A" Type2="A">8.0</Energy>
+      <Energy Type1="A" Type2="B">20.0</Energy>
+      <Energy Type1="B" Type2="B">8.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+
+</CompuCell3D>
