@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 7u
+#define CC3D_KERNEL_ABI_VERSION 8u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -25,6 +25,7 @@ class CellNeighborRange;
 struct CellNeighborSentinel;
 class OptionalCell;
 class ScalarField;
+class SBMLModel;
 struct Dim3;
 }
 }
@@ -36,6 +37,7 @@ typedef void *CC3DCellIteratorHandle;
 typedef void *CC3DCellNeighborIteratorHandle;
 typedef void *CC3DFieldHandle;
 typedef void *CC3DCellHandle;
+typedef void *CC3DSBMLModelHandle;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -149,6 +151,18 @@ typedef struct CC3DCellFieldAPIV1 {
 #endif
 } CC3DCellFieldAPIV1;
 
+typedef struct CC3DSBMLAPIV1 {
+    void *userdata;
+    CC3DSBMLModelHandle (*find_model_fn)(void *userdata, CC3DCellHandle cell, const char *model_name);
+    void (*destroy_model_fn)(void *userdata, CC3DSBMLModelHandle model);
+    uint8_t (*has_value_fn)(void *userdata, CC3DSBMLModelHandle model, const char *value_name);
+    uint8_t (*get_value_fn)(void *userdata, CC3DSBMLModelHandle model, const char *value_name, double *value);
+    uint8_t (*set_value_fn)(void *userdata, CC3DSBMLModelHandle model, const char *value_name, double value);
+    uint8_t (*timestep_fn)(void *userdata, CC3DSBMLModelHandle model);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::SBMLModel find(const ::cc3d::kernel::Cell &cell, const char *model_name) const;
+#endif
+} CC3DSBMLAPIV1;
 typedef struct CC3DCellFactoryAPIV1 {
     void *userdata;
     CC3DCellViewV1 (*create_fn)(void *userdata, unsigned char cell_type);
@@ -165,6 +179,7 @@ typedef struct CC3DKernelContext {
     CC3DScalarFieldsAPIV1 scalarFields;
     CC3DCellFieldAPIV1 cellField;
     CC3DCellFactoryAPIV1 cellFactory;
+    CC3DSBMLAPIV1 sbml;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -566,6 +581,72 @@ private:
     CC3DFieldHandle field_;
 };
 
+
+class SBMLModel {
+public:
+    SBMLModel() : api_(nullptr), handle_(nullptr) {}
+
+    SBMLModel(const CC3DSBMLAPIV1 *api, CC3DSBMLModelHandle handle)
+        : api_(api), handle_(handle) {}
+
+    SBMLModel(const SBMLModel &) = delete;
+    SBMLModel &operator=(const SBMLModel &) = delete;
+
+    SBMLModel(SBMLModel &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    SBMLModel &operator=(SBMLModel &&other) noexcept {
+        if (this != &other) {
+            cleanup();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~SBMLModel() { cleanup(); }
+
+    explicit operator bool() const { return api_ && handle_; }
+
+    bool has(const char *value_name) const {
+        return api_ && handle_ && api_->has_value_fn && api_->has_value_fn(api_->userdata, handle_, value_name) != 0;
+    }
+
+    bool get(const char *value_name, double *value) const {
+        return api_ && handle_ && value && api_->get_value_fn && api_->get_value_fn(api_->userdata, handle_, value_name, value) != 0;
+    }
+
+    double get(const char *value_name, double default_value = 0.0) const {
+        double value = default_value;
+        get(value_name, &value);
+        return value;
+    }
+
+    bool set(const char *value_name, double value) const {
+        return api_ && handle_ && api_->set_value_fn && api_->set_value_fn(api_->userdata, handle_, value_name, value) != 0;
+    }
+
+    bool timestep() const {
+        return api_ && handle_ && api_->timestep_fn && api_->timestep_fn(api_->userdata, handle_) != 0;
+    }
+
+private:
+    void cleanup() {
+        if (api_ && handle_ && api_->destroy_model_fn) {
+            api_->destroy_model_fn(api_->userdata, handle_);
+        }
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DSBMLAPIV1 *api_;
+    CC3DSBMLModelHandle handle_;
+};
 } // namespace kernel
 } // namespace cc3d
 
@@ -623,6 +704,15 @@ inline void CC3DCellFieldAPIV1::assign(
     assign_fn(userdata, x_min, x_max, y_min, y_max, z_min, z_max, cell.handle());
 }
 
+inline ::cc3d::kernel::SBMLModel CC3DSBMLAPIV1::find(
+    const ::cc3d::kernel::Cell &cell,
+    const char *model_name
+) const {
+    if (!find_model_fn || !model_name) {
+        return ::cc3d::kernel::SBMLModel();
+    }
+    return ::cc3d::kernel::SBMLModel(this, find_model_fn(userdata, cell.handle(), model_name));
+}
 inline ::cc3d::kernel::Cell CC3DCellFactoryAPIV1::create(unsigned char cell_type) const {
     if (!create_fn) {
         return ::cc3d::kernel::Cell(CC3DCellViewV1{});

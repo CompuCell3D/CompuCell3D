@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <Python.h>
+
 #include "CC3DExceptions.h"
 #include "Field3D/Field3D.h"
 #include "PluginManager.h"
@@ -311,6 +313,176 @@ namespace {
         }
     }
 
+    struct SBMLModelHandleState {
+        PyObject *model;
+    };
+
+    struct PyGilGuard {
+        PyGILState_STATE state;
+
+        PyGilGuard() : state(PyGILState_Ensure()) {}
+        ~PyGilGuard() { PyGILState_Release(state); }
+    };
+
+    void cc3d_clear_python_error() {
+        if (PyErr_Occurred()) {
+            PyErr_Clear();
+        }
+    }
+
+    PyObject *cc3d_unicode_from_cstr(const char *value) {
+        if (!value) {
+            return nullptr;
+        }
+        PyObject *pyValue = PyUnicode_FromString(value);
+        if (!pyValue) {
+            cc3d_clear_python_error();
+        }
+        return pyValue;
+    }
+
+    CC3DSBMLModelHandle cc3d_sbml_find_model(void *, CC3DCellHandle cellHandle, const char *modelName) {
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (!cell || !cell->pyAttrib || !modelName) {
+            return nullptr;
+        }
+
+        PyGilGuard gil;
+        PyObject *sbmlKey = cc3d_unicode_from_cstr("SBMLSolver");
+        PyObject *modelKey = cc3d_unicode_from_cstr(modelName);
+        if (!sbmlKey || !modelKey) {
+            Py_XDECREF(sbmlKey);
+            Py_XDECREF(modelKey);
+            return nullptr;
+        }
+
+        PyObject *sbmlDict = PyObject_GetItem(cell->pyAttrib, sbmlKey);
+        Py_DECREF(sbmlKey);
+        if (!sbmlDict) {
+            Py_DECREF(modelKey);
+            cc3d_clear_python_error();
+            return nullptr;
+        }
+
+        PyObject *model = PyObject_GetItem(sbmlDict, modelKey);
+        Py_DECREF(sbmlDict);
+        Py_DECREF(modelKey);
+        if (!model) {
+            cc3d_clear_python_error();
+            return nullptr;
+        }
+
+        auto *state = new SBMLModelHandleState{model};
+        return static_cast<CC3DSBMLModelHandle>(state);
+    }
+
+    void cc3d_sbml_destroy_model(void *, CC3DSBMLModelHandle modelHandle) {
+        auto *state = static_cast<SBMLModelHandleState *>(modelHandle);
+        if (!state) {
+            return;
+        }
+
+        PyGilGuard gil;
+        Py_XDECREF(state->model);
+        delete state;
+    }
+
+    PyObject *cc3d_sbml_model_object(CC3DSBMLModelHandle modelHandle) {
+        auto *state = static_cast<SBMLModelHandleState *>(modelHandle);
+        return state ? state->model : nullptr;
+    }
+
+    uint8_t cc3d_sbml_has_value(void *, CC3DSBMLModelHandle modelHandle, const char *valueName) {
+        PyObject *model = cc3d_sbml_model_object(modelHandle);
+        if (!model || !valueName) {
+            return 0u;
+        }
+
+        PyGilGuard gil;
+        PyObject *key = cc3d_unicode_from_cstr(valueName);
+        if (!key) {
+            return 0u;
+        }
+        PyObject *value = PyObject_GetItem(model, key);
+        Py_DECREF(key);
+        if (!value) {
+            cc3d_clear_python_error();
+            return 0u;
+        }
+        Py_DECREF(value);
+        return 1u;
+    }
+
+    uint8_t cc3d_sbml_get_value(void *, CC3DSBMLModelHandle modelHandle, const char *valueName, double *valueOut) {
+        PyObject *model = cc3d_sbml_model_object(modelHandle);
+        if (!model || !valueName || !valueOut) {
+            return 0u;
+        }
+
+        PyGilGuard gil;
+        PyObject *key = cc3d_unicode_from_cstr(valueName);
+        if (!key) {
+            return 0u;
+        }
+        PyObject *value = PyObject_GetItem(model, key);
+        Py_DECREF(key);
+        if (!value) {
+            cc3d_clear_python_error();
+            return 0u;
+        }
+
+        double converted = PyFloat_AsDouble(value);
+        Py_DECREF(value);
+        if (PyErr_Occurred()) {
+            cc3d_clear_python_error();
+            return 0u;
+        }
+
+        *valueOut = converted;
+        return 1u;
+    }
+
+    uint8_t cc3d_sbml_set_value(void *, CC3DSBMLModelHandle modelHandle, const char *valueName, double value) {
+        PyObject *model = cc3d_sbml_model_object(modelHandle);
+        if (!model || !valueName) {
+            return 0u;
+        }
+
+        PyGilGuard gil;
+        PyObject *key = cc3d_unicode_from_cstr(valueName);
+        PyObject *pyValue = PyFloat_FromDouble(value);
+        if (!key || !pyValue) {
+            Py_XDECREF(key);
+            Py_XDECREF(pyValue);
+            cc3d_clear_python_error();
+            return 0u;
+        }
+
+        int status = PyObject_SetItem(model, key, pyValue);
+        Py_DECREF(key);
+        Py_DECREF(pyValue);
+        if (status != 0) {
+            cc3d_clear_python_error();
+            return 0u;
+        }
+        return 1u;
+    }
+
+    uint8_t cc3d_sbml_timestep(void *, CC3DSBMLModelHandle modelHandle) {
+        PyObject *model = cc3d_sbml_model_object(modelHandle);
+        if (!model) {
+            return 0u;
+        }
+
+        PyGilGuard gil;
+        PyObject *result = PyObject_CallMethod(model, "timestep", nullptr);
+        if (!result) {
+            cc3d_clear_python_error();
+            return 0u;
+        }
+        Py_DECREF(result);
+        return 1u;
+    }
     CC3DCellViewV1 cc3d_cell_factory_create(void *simulatorPtr, unsigned char cellType) {
         auto *potts = cc3d_potts_from_simulator(simulatorPtr);
         if (!potts) {
@@ -423,6 +595,13 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.cellField.assign_fn = &cc3d_cell_field_assign;
     context_.cellFactory.userdata = nullptr;
     context_.cellFactory.create_fn = &cc3d_cell_factory_create;
+    context_.sbml.userdata = nullptr;
+    context_.sbml.find_model_fn = &cc3d_sbml_find_model;
+    context_.sbml.destroy_model_fn = &cc3d_sbml_destroy_model;
+    context_.sbml.has_value_fn = &cc3d_sbml_has_value;
+    context_.sbml.get_value_fn = &cc3d_sbml_get_value;
+    context_.sbml.set_value_fn = &cc3d_sbml_set_value;
+    context_.sbml.timestep_fn = &cc3d_sbml_timestep;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -504,6 +683,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.scalarFields.userdata = simulator_;
     context_.cellField.userdata = simulator_;
     context_.cellFactory.userdata = simulator_;
+    context_.sbml.userdata = simulator_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -583,4 +763,5 @@ void CompiledSteppable::cleanup() {
     context_.scalarFields.userdata = nullptr;
     context_.cellField.userdata = nullptr;
     context_.cellFactory.userdata = nullptr;
+    context_.sbml.userdata = nullptr;
 }
