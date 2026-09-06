@@ -8,6 +8,8 @@
 #include "CC3DExceptions.h"
 #include "Field3D/Field3D.h"
 #include "PluginManager.h"
+#include "plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
+#include "plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "plugins/NeighborTracker/NeighborTrackerPlugin.h"
 #include "plugins/VolumeTracker/VolumeTrackerPlugin.h"
 #include "Potts3D/Cell.h"
@@ -83,6 +85,17 @@ namespace {
         std::set<CompuCell3D::NeighborSurfaceData>::iterator end;
     };
 
+
+    struct PixelIteratorState {
+        std::set<CompuCell3D::PixelTrackerData>::iterator current;
+        std::set<CompuCell3D::PixelTrackerData>::iterator end;
+    };
+
+    struct BoundaryPixelIteratorState {
+        std::set<CompuCell3D::BoundaryPixelTrackerData>::iterator current;
+        std::set<CompuCell3D::BoundaryPixelTrackerData>::iterator end;
+    };
+
     CC3DCellIteratorHandle cc3d_cells_begin(void *cellInventoryPtr) {
         auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
         auto *state = new CellIteratorState{inventory->cellInventoryBegin(), inventory->cellInventoryEnd()};
@@ -124,6 +137,35 @@ namespace {
             plugin->init(simulator);
         }
         return static_cast<CompuCell3D::VolumeTrackerPlugin *>(plugin);
+    }
+
+
+    CompuCell3D::PixelTrackerPlugin *cc3d_ensure_pixel_tracker(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) {
+            return nullptr;
+        }
+
+        bool pluginAlreadyRegisteredFlag = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("PixelTracker", &pluginAlreadyRegisteredFlag);
+        if (!pluginAlreadyRegisteredFlag) {
+            plugin->init(simulator);
+        }
+        return static_cast<CompuCell3D::PixelTrackerPlugin *>(plugin);
+    }
+
+    CompuCell3D::BoundaryPixelTrackerPlugin *cc3d_ensure_boundary_pixel_tracker(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) {
+            return nullptr;
+        }
+
+        bool pluginAlreadyRegisteredFlag = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("BoundaryPixelTracker", &pluginAlreadyRegisteredFlag);
+        if (!pluginAlreadyRegisteredFlag) {
+            plugin->init(simulator);
+        }
+        return static_cast<CompuCell3D::BoundaryPixelTrackerPlugin *>(plugin);
     }
 
     CompuCell3D::NeighborTrackerPlugin *cc3d_ensure_neighbor_tracker(void *simulatorPtr) {
@@ -203,6 +245,91 @@ namespace {
 
     void cc3d_cell_neighbors_destroy(void *, CC3DCellNeighborIteratorHandle iterator) {
         delete static_cast<CellNeighborIteratorState *>(iterator);
+    }
+
+
+    CC3DPixelViewV1 cc3d_pixel_view_from_point(const CompuCell3D::Point3D &pt) {
+        return CC3DPixelViewV1{static_cast<int>(pt.x), static_cast<int>(pt.y), static_cast<int>(pt.z)};
+    }
+
+    CC3DPixelIteratorHandle cc3d_cell_pixels_begin(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        auto *plugin = cc3d_ensure_pixel_tracker(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+
+        if (!plugin) {
+            throw CC3DException("Compiled steppable could not initialize PixelTracker");
+        }
+        if (!cell) {
+            throw CC3DException("Compiled steppable pixel iterator received a null cell");
+        }
+
+        auto &pixels = plugin->getPixelTrackerAccessorPtr()->get(cell->extraAttribPtr)->pixelSet;
+        auto *state = new PixelIteratorState{pixels.begin(), pixels.end()};
+        return static_cast<CC3DPixelIteratorHandle>(state);
+    }
+
+    uint8_t cc3d_cell_pixels_valid(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<PixelIteratorState *>(iterator);
+        return state && state->current != state->end ? 1u : 0u;
+    }
+
+    CC3DPixelViewV1 cc3d_cell_pixels_get(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<PixelIteratorState *>(iterator);
+        if (!state || state->current == state->end) {
+            return CC3DPixelViewV1{0, 0, 0};
+        }
+        return cc3d_pixel_view_from_point(state->current->pixel);
+    }
+
+    void cc3d_cell_pixels_next(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<PixelIteratorState *>(iterator);
+        if (state && state->current != state->end) {
+            ++state->current;
+        }
+    }
+
+    void cc3d_cell_pixels_destroy(void *, CC3DPixelIteratorHandle iterator) {
+        delete static_cast<PixelIteratorState *>(iterator);
+    }
+
+    CC3DPixelIteratorHandle cc3d_boundary_pixels_begin(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        auto *plugin = cc3d_ensure_boundary_pixel_tracker(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+
+        if (!plugin) {
+            throw CC3DException("Compiled steppable could not initialize BoundaryPixelTracker");
+        }
+        if (!cell) {
+            throw CC3DException("Compiled steppable boundary pixel iterator received a null cell");
+        }
+
+        auto &pixels = plugin->getBoundaryPixelTrackerAccessorPtr()->get(cell->extraAttribPtr)->pixelSet;
+        auto *state = new BoundaryPixelIteratorState{pixels.begin(), pixels.end()};
+        return static_cast<CC3DPixelIteratorHandle>(state);
+    }
+
+    uint8_t cc3d_boundary_pixels_valid(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<BoundaryPixelIteratorState *>(iterator);
+        return state && state->current != state->end ? 1u : 0u;
+    }
+
+    CC3DPixelViewV1 cc3d_boundary_pixels_get(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<BoundaryPixelIteratorState *>(iterator);
+        if (!state || state->current == state->end) {
+            return CC3DPixelViewV1{0, 0, 0};
+        }
+        return cc3d_pixel_view_from_point(state->current->pixel);
+    }
+
+    void cc3d_boundary_pixels_next(void *, CC3DPixelIteratorHandle iterator) {
+        auto *state = static_cast<BoundaryPixelIteratorState *>(iterator);
+        if (state && state->current != state->end) {
+            ++state->current;
+        }
+    }
+
+    void cc3d_boundary_pixels_destroy(void *, CC3DPixelIteratorHandle iterator) {
+        delete static_cast<BoundaryPixelIteratorState *>(iterator);
     }
 
     CC3DFieldHandle cc3d_scalar_fields_find(void *simulatorPtr, const char *name) {
@@ -584,6 +711,18 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.neighbors.get_fn = &cc3d_cell_neighbors_get;
     context_.neighbors.next_fn = &cc3d_cell_neighbors_next;
     context_.neighbors.destroy_fn = &cc3d_cell_neighbors_destroy;
+    context_.pixels.userdata = nullptr;
+    context_.pixels.begin_fn = &cc3d_cell_pixels_begin;
+    context_.pixels.valid_fn = &cc3d_cell_pixels_valid;
+    context_.pixels.get_fn = &cc3d_cell_pixels_get;
+    context_.pixels.next_fn = &cc3d_cell_pixels_next;
+    context_.pixels.destroy_fn = &cc3d_cell_pixels_destroy;
+    context_.boundaryPixels.userdata = nullptr;
+    context_.boundaryPixels.begin_fn = &cc3d_boundary_pixels_begin;
+    context_.boundaryPixels.valid_fn = &cc3d_boundary_pixels_valid;
+    context_.boundaryPixels.get_fn = &cc3d_boundary_pixels_get;
+    context_.boundaryPixels.next_fn = &cc3d_boundary_pixels_next;
+    context_.boundaryPixels.destroy_fn = &cc3d_boundary_pixels_destroy;
     context_.scalarFields.userdata = nullptr;
     context_.scalarFields.find_fn = &cc3d_scalar_fields_find;
     context_.scalarFields.dim_fn = &cc3d_scalar_fields_dim;
@@ -680,6 +819,8 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     simulator_ = simulator;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
     context_.neighbors.userdata = simulator_;
+    context_.pixels.userdata = simulator_;
+    context_.boundaryPixels.userdata = simulator_;
     context_.scalarFields.userdata = simulator_;
     context_.cellField.userdata = simulator_;
     context_.cellFactory.userdata = simulator_;
@@ -760,6 +901,8 @@ void CompiledSteppable::cleanup() {
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
     context_.neighbors.userdata = nullptr;
+    context_.pixels.userdata = nullptr;
+    context_.boundaryPixels.userdata = nullptr;
     context_.scalarFields.userdata = nullptr;
     context_.cellField.userdata = nullptr;
     context_.cellFactory.userdata = nullptr;

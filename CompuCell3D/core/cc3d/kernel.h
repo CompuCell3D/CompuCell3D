@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 8u
+#define CC3D_KERNEL_ABI_VERSION 9u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -23,6 +23,9 @@ class CellNeighbor;
 class CellNeighborIterator;
 class CellNeighborRange;
 struct CellNeighborSentinel;
+class PixelIterator;
+class PixelRange;
+struct PixelSentinel;
 class OptionalCell;
 class ScalarField;
 class SBMLModel;
@@ -35,6 +38,7 @@ extern "C" {
 
 typedef void *CC3DCellIteratorHandle;
 typedef void *CC3DCellNeighborIteratorHandle;
+typedef void *CC3DPixelIteratorHandle;
 typedef void *CC3DFieldHandle;
 typedef void *CC3DCellHandle;
 typedef void *CC3DSBMLModelHandle;
@@ -117,6 +121,24 @@ typedef struct CC3DCellNeighborsAPIV1 {
 #endif
 } CC3DCellNeighborsAPIV1;
 
+typedef struct CC3DPixelViewV1 {
+    int x;
+    int y;
+    int z;
+} CC3DPixelViewV1;
+
+typedef struct CC3DCellPixelsAPIV1 {
+    void *userdata;
+    CC3DPixelIteratorHandle (*begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*valid_fn)(void *userdata, CC3DPixelIteratorHandle iterator);
+    CC3DPixelViewV1 (*get_fn)(void *userdata, CC3DPixelIteratorHandle iterator);
+    void (*next_fn)(void *userdata, CC3DPixelIteratorHandle iterator);
+    void (*destroy_fn)(void *userdata, CC3DPixelIteratorHandle iterator);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::PixelRange forCell(const ::cc3d::kernel::Cell &cell) const;
+#endif
+} CC3DCellPixelsAPIV1;
+
 typedef struct CC3DFieldDimV1 {
     int x;
     int y;
@@ -176,6 +198,8 @@ typedef struct CC3DKernelContext {
     uint64_t mcs;
     CC3DCellsAPIV1 cells;
     CC3DCellNeighborsAPIV1 neighbors;
+    CC3DCellPixelsAPIV1 pixels;
+    CC3DCellPixelsAPIV1 boundaryPixels;
     CC3DScalarFieldsAPIV1 scalarFields;
     CC3DCellFieldAPIV1 cellField;
     CC3DCellFactoryAPIV1 cellFactory;
@@ -205,6 +229,8 @@ namespace kernel {
 struct CellSentinel {};
 
 struct CellNeighborSentinel {};
+
+struct PixelSentinel {};
 
 struct Dim3 {
     int x;
@@ -519,6 +545,91 @@ private:
     CC3DCellHandle cell_;
 };
 
+
+class Pixel {
+public:
+    Pixel() : x(0), y(0), z(0) {}
+    explicit Pixel(const CC3DPixelViewV1 &view) : x(view.x), y(view.y), z(view.z) {}
+
+    int x;
+    int y;
+    int z;
+};
+
+class PixelIterator {
+public:
+    PixelIterator() : api_(nullptr), handle_(nullptr) {}
+
+    PixelIterator(const CC3DCellPixelsAPIV1 *api, CC3DPixelIteratorHandle handle)
+        : api_(api), handle_(handle) {}
+
+    PixelIterator(const PixelIterator &) = delete;
+    PixelIterator &operator=(const PixelIterator &) = delete;
+
+    PixelIterator(PixelIterator &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    PixelIterator &operator=(PixelIterator &&other) noexcept {
+        if (this != &other) {
+            cleanup();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~PixelIterator() { cleanup(); }
+
+    Pixel operator*() const { return Pixel(api_->get_fn(api_->userdata, handle_)); }
+
+    PixelIterator &operator++() {
+        api_->next_fn(api_->userdata, handle_);
+        return *this;
+    }
+
+    bool operator!=(PixelSentinel) const {
+        return api_ && handle_ && api_->valid_fn(api_->userdata, handle_) != 0;
+    }
+
+private:
+    void cleanup() {
+        if (api_ && handle_ && api_->destroy_fn) {
+            api_->destroy_fn(api_->userdata, handle_);
+        }
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DCellPixelsAPIV1 *api_;
+    CC3DPixelIteratorHandle handle_;
+};
+
+class PixelRange {
+public:
+    PixelRange() : api_(nullptr), cell_(nullptr) {}
+
+    PixelRange(const CC3DCellPixelsAPIV1 *api, CC3DCellHandle cell)
+        : api_(api), cell_(cell) {}
+
+    PixelIterator begin() const {
+        if (!api_ || !api_->begin_fn || !cell_) {
+            return PixelIterator();
+        }
+        return PixelIterator(api_, api_->begin_fn(api_->userdata, cell_));
+    }
+
+    PixelSentinel end() const { return PixelSentinel(); }
+
+private:
+    const CC3DCellPixelsAPIV1 *api_;
+    CC3DCellHandle cell_;
+};
+
 class ScalarFieldValue {
 public:
     ScalarFieldValue(const CC3DScalarFieldsAPIV1 *api, CC3DFieldHandle field, int x, int y, int z)
@@ -665,6 +776,13 @@ inline ::cc3d::kernel::CellNeighborRange CC3DCellNeighborsAPIV1::forCell(
     const ::cc3d::kernel::Cell &cell
 ) const {
     return ::cc3d::kernel::CellNeighborRange(this, cell.handle());
+}
+
+
+inline ::cc3d::kernel::PixelRange CC3DCellPixelsAPIV1::forCell(
+    const ::cc3d::kernel::Cell &cell
+) const {
+    return ::cc3d::kernel::PixelRange(this, cell.handle());
 }
 
 inline ::cc3d::kernel::ScalarField CC3DScalarFieldsAPIV1::operator[](const char *name) const {
