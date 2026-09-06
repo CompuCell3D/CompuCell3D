@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 try:
@@ -25,7 +26,21 @@ except ImportError:
     )
 
 
-DEFAULT_REPO = Path("/")
+DEFAULT_REPO = None
+
+
+@dataclass(frozen=True)
+class IncludeRootInfo:
+    include_root: Path
+    kernel_header: Path
+    source: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "include_root": str(self.include_root),
+            "kernel_header": str(self.kernel_header),
+            "source": self.source,
+        }
 
 
 def env_value(env: dict[str, str], name: str) -> str | None:
@@ -69,6 +84,56 @@ def resolve_source(repo_path: Path, source_arg: str) -> Path:
         )
 
     return matches[0]
+
+
+def _kernel_header_at(include_root: Path) -> Path | None:
+    kernel_header = include_root / "cc3d" / "kernel.h"
+    if kernel_header.exists():
+        return kernel_header
+    return None
+
+
+def resolve_kernel_include_root(
+    repo_path: Path | None = None,
+    include_root: Path | None = None,
+) -> IncludeRootInfo:
+    checked = []
+
+    if include_root:
+        candidate = include_root.expanduser().resolve()
+        checked.append(candidate / "cc3d" / "kernel.h")
+        kernel_header = _kernel_header_at(candidate)
+        if kernel_header:
+            return IncludeRootInfo(candidate, kernel_header, "explicit")
+
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        candidate = Path(conda_prefix) / "include"
+        checked.append(candidate / "cc3d" / "kernel.h")
+        kernel_header = _kernel_header_at(candidate)
+        if kernel_header:
+            return IncludeRootInfo(candidate, kernel_header, "conda-prefix")
+
+    candidate = Path(sys.prefix) / "include"
+    checked.append(candidate / "cc3d" / "kernel.h")
+    kernel_header = _kernel_header_at(candidate)
+    if kernel_header:
+        return IncludeRootInfo(candidate, kernel_header, "sys-prefix")
+
+    if repo_path:
+        candidate = repo_path.expanduser().resolve() / "CompuCell3D" / "core"
+        checked.append(candidate / "cc3d" / "kernel.h")
+        kernel_header = _kernel_header_at(candidate)
+        if kernel_header:
+            return IncludeRootInfo(candidate, kernel_header, "repo")
+
+    checked_paths = "\n".join(f"  {path}" for path in checked)
+    raise FileNotFoundError(
+        "Could not locate cc3d/kernel.h. Checked:\n"
+        f"{checked_paths}\n\n"
+        "Install CC3D headers into the active environment, pass --include-root, "
+        "or pass --repo for a source checkout."
+    )
 
 
 def build_output_path(source_path: Path) -> Path:
@@ -218,19 +283,18 @@ def windows_compile_command(
         "/LD",
         str(source_path),
         f"/I{include_root}",
+        f"/Fo:{output_path.with_suffix('.obj')}",
         f"/Fe:{output_path}",
     ], env
 
 
 def compile_command(
     source_path: Path,
-    repo_path: Path,
+    include_root: Path,
     output_path: Path,
     macos_toolchain: str,
     msvc_version: str | None,
 ) -> tuple[list[str], dict[str, str] | None]:
-    include_root = repo_path / "CompuCell3D" / "core"
-
     if sys.platform == "darwin":
         if macos_toolchain == "conda":
             return macos_compile_command_conda(
@@ -276,8 +340,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--repo",
-        default=str(DEFAULT_REPO),
-        help=f"Path to the CompuCell3D repository. Default: {DEFAULT_REPO}"
+        default=DEFAULT_REPO,
+        help="Path to the CompuCell3D repository. Used as a fallback for source-tree development."
+    )
+    parser.add_argument(
+        "--include-root",
+        default=None,
+        help="Include root containing cc3d/kernel.h. Overrides conda/sys prefix and --repo."
     )
     parser.add_argument(
         "--clean",
@@ -332,17 +401,23 @@ def main() -> int:
     if not args.source:
         raise RuntimeError("Missing steppable source path.")
 
-    repo_path = Path(args.repo).expanduser().resolve()
-    source_path = resolve_source(repo_path=repo_path, source_arg=args.source)
+    repo_path = Path(args.repo).expanduser().resolve() if args.repo else None
+    search_root = repo_path or Path.cwd()
+    source_path = resolve_source(repo_path=search_root, source_arg=args.source)
     output_path = build_output_path(source_path)
 
     if args.clean:
         clean_output(output_path)
         return 0
 
+    include_root_info = resolve_kernel_include_root(
+        repo_path=repo_path,
+        include_root=Path(args.include_root) if args.include_root else None,
+    )
+
     cmd, env = compile_command(
         source_path=source_path,
-        repo_path=repo_path,
+        include_root=include_root_info.include_root,
         output_path=output_path,
         macos_toolchain=args.macos_toolchain,
         msvc_version=args.msvc_version,
@@ -350,7 +425,9 @@ def main() -> int:
 
     print(f"Source : {source_path}")
     print(f"Output : {output_path}")
-    print(f"Repo   : {repo_path}")
+    if repo_path:
+        print(f"Repo   : {repo_path}")
+    print(f"Include: {include_root_info.include_root} ({include_root_info.source})")
     if args.verbose:
         print("Command:")
         print(" ".join(cmd))

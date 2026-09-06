@@ -6,7 +6,7 @@
 - macOS: `.dylib`
 - Linux: `.so`
 
-Run the command from an activated CC3D conda environment so `python -m cc3d.scripts.compile_steppable` resolves to the installed CC3D package.
+Run the command from an activated CC3D conda environment so `python -m cc3d.scripts.compile_steppable` resolves to the installed CC3D package. In an installed conda package, the script expects the public ABI header at `$CONDA_PREFIX/include/cc3d/kernel.h`.
 
 ## Windows
 
@@ -22,8 +22,7 @@ Build with the latest detected Visual Studio:
 
 ```bat
 python -m cc3d.scripts.compile_steppable ^
-  C:\path\to\YourSteppable.cpp ^
-  --repo C:\path\to\compucell3d_kernel
+  C:\path\to\YourSteppable.cpp
 ```
 
 Build with a specific Visual Studio major version:
@@ -31,7 +30,6 @@ Build with a specific Visual Studio major version:
 ```bat
 python -m cc3d.scripts.compile_steppable ^
   C:\path\to\YourSteppable.cpp ^
-  --repo C:\path\to\compucell3d_kernel ^
   --msvc-version 18
 ```
 
@@ -48,7 +46,6 @@ Example using the bundled demo:
 ```bat
 python -m cc3d.scripts.compile_steppable ^
   C:\Users\m\src\compucell3d_kernel\CompuCell3D\core\Demos\SteppablesDemosCompiled\CellFieldOperations\Native\CellFieldOperationsSteppableCompiled.cpp ^
-  --repo C:\Users\m\src\compucell3d_kernel ^
   --msvc-version 16 ^
   --verbose
 ```
@@ -57,7 +54,23 @@ If you already have a compiler configured, you can set `CXX` explicitly:
 
 ```bat
 set CXX=C:\path\to\cl.exe
-python -m cc3d.scripts.compile_steppable C:\path\to\YourSteppable.cpp --repo C:\path\to\compucell3d_kernel
+python -m cc3d.scripts.compile_steppable C:\path\to\YourSteppable.cpp
+```
+
+For source-tree development before headers are installed, pass the repository path:
+
+```bat
+python -m cc3d.scripts.compile_steppable ^
+  C:\path\to\YourSteppable.cpp ^
+  --repo C:\path\to\compucell3d_kernel
+```
+
+You can also pass an explicit include root containing `cc3d/kernel.h`:
+
+```bat
+python -m cc3d.scripts.compile_steppable ^
+  C:\path\to\YourSteppable.cpp ^
+  --include-root C:\path\to\include
 ```
 
 ## macOS
@@ -66,8 +79,7 @@ By default, macOS builds use Apple `clang++` and the active macOS SDK discovered
 
 ```bash
 python -m cc3d.scripts.compile_steppable \
-  /path/to/YourSteppable.cpp \
-  --repo /path/to/compucell3d_kernel
+  /path/to/YourSteppable.cpp
 ```
 
 The default macOS mode requires Xcode Command Line Tools:
@@ -81,7 +93,6 @@ You can also request the conda compiler toolchain:
 ```bash
 python -m cc3d.scripts.compile_steppable \
   /path/to/YourSteppable.cpp \
-  --repo /path/to/compucell3d_kernel \
   --macos-toolchain conda
 ```
 
@@ -89,15 +100,17 @@ If needed, set `CXX` to a specific compiler:
 
 ```bash
 export CXX=/path/to/clang++
-python -m cc3d.scripts.compile_steppable /path/to/YourSteppable.cpp --repo /path/to/compucell3d_kernel
+python -m cc3d.scripts.compile_steppable /path/to/YourSteppable.cpp
 ```
+
+For source-tree development before headers are installed, pass `--repo /path/to/compucell3d_kernel` or `--include-root /path/to/include`.
 
 ## Cleaning
 
 Remove the compiled output next to the source file:
 
 ```bash
-python -m cc3d.scripts.compile_steppable /path/to/YourSteppable.cpp --repo /path/to/compucell3d_kernel --clean
+python -m cc3d.scripts.compile_steppable /path/to/YourSteppable.cpp --clean
 ```
 
 On Windows, use the same command form with Windows paths.
