@@ -4,6 +4,11 @@ import cc3d
 from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
+from cc3d.core.CompiledSteppableAutoCompiler import (
+    compile_project_steppables,
+    format_compiled_steppable_summary,
+)
+from cc3d.core.CompiledSteppableCompilerSettings import auto_compile_enabled
 from cc3d.core.DefaultSettingsData import SETTINGS_FOLDER
 from cc3d.core.RollbackImporter import RollbackImporter
 
@@ -76,6 +81,25 @@ def process_cml(known_args=None):
                             default=SETTINGS_FOLDER,
                             help='directory name under the user home directory for global settings files')
 
+    cml_parser.add_argument('--no-compile-steppables', required=False, action='store_true', default=False,
+                            help='skip automatic compilation of C++ steppable resources listed in the .cc3d file')
+
+    cml_parser.add_argument('--force-compile-steppables', required=False, action='store_true', default=False,
+                            help='compile C++ steppable resources even when the output library is up to date')
+
+    cml_parser.add_argument('--steppable-include-root', required=False, action='store',
+                            help='include root containing cc3d/kernel.h for compiled steppables')
+
+    cml_parser.add_argument('--steppable-repo', required=False, action='store',
+                            help='CompuCell3D repository path used as a source-tree fallback for cc3d/kernel.h')
+
+    cml_parser.add_argument('--steppable-msvc-version', required=False, action='store',
+                            help='Windows only: Visual Studio major version for compiling steppables, e.g. 16, 17, 18')
+
+    cml_parser.add_argument('--steppable-macos-toolchain', required=False, action='store',
+                            choices=('apple', 'conda'), default=None,
+                            help='macOS only: compiler toolchain for compiled steppables')
+
     return cml_parser.parse_args(args=known_args)
 
 
@@ -105,7 +129,7 @@ def main(args:argparse.Namespace=None):
 
     set_global_settings_dir_name(getattr(args, 'global_settings_dir_name', SETTINGS_FOLDER))
 
-    print(cc3d.get_formatted_version_info())
+    print(cc3d.get_formatted_version_info(), flush=True)
 
     cc3d_sim_fname = args.input
     output_frequency = args.output_frequency
@@ -139,6 +163,19 @@ def main(args:argparse.Namespace=None):
         persistent_globals.log_level = "LOG_CURRENT"
 
     persistent_globals.log_to_file = args.log_to_file
+
+    if not args.no_compile_steppables and (args.force_compile_steppables or auto_compile_enabled()):
+        compile_summary = compile_project_steppables(
+            cc3d_project_path=cc3d_sim_fname_abs,
+            repo_path=args.steppable_repo,
+            include_root=args.steppable_include_root,
+            force=args.force_compile_steppables,
+            macos_toolchain=args.steppable_macos_toolchain,
+            msvc_version=args.steppable_msvc_version,
+        )
+        print(format_compiled_steppable_summary(compile_summary), flush=True)
+        if not compile_summary.success:
+            raise RuntimeError("Automatic compilation of C++ steppables failed.")
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname_abs)
 

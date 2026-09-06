@@ -43,6 +43,39 @@ class IncludeRootInfo:
         }
 
 
+@dataclass(frozen=True)
+class CompileResult:
+    source_path: Path
+    output_path: Path
+    include_root: Path
+    include_root_source: str
+    command: tuple[str, ...]
+    return_code: int
+    stdout: str
+    stderr: str
+
+    @property
+    def success(self) -> bool:
+        return self.return_code == 0
+
+    @property
+    def log(self) -> str:
+        return "\n".join(part for part in (self.stdout, self.stderr) if part)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "source_path": str(self.source_path),
+            "output_path": str(self.output_path),
+            "include_root": str(self.include_root),
+            "include_root_source": self.include_root_source,
+            "command": list(self.command),
+            "return_code": self.return_code,
+            "stdout": self.stdout,
+            "stderr": self.stderr,
+            "success": self.success,
+        }
+
+
 def env_value(env: dict[str, str], name: str) -> str | None:
     for key, value in env.items():
         if key.upper() == name.upper():
@@ -321,12 +354,58 @@ def clean_output(output_path: Path) -> None:
         print(f"Nothing to clean: {output_path}")
 
 
-def run_compile_command(cmd: list[str], env: dict[str, str] | None) -> None:
+def _effective_compile_command(cmd: list[str], env: dict[str, str] | None) -> list[str]:
     if sys.platform.startswith("win") and env is not None:
         cmd = ["cl.exe", *cmd[1:]]
-        subprocess.run(["cmd.exe", "/d", "/c", subprocess.list2cmdline(cmd)], check=True, env=env)
-        return
-    subprocess.run(cmd, check=True, env=env)
+        return ["cmd.exe", "/d", "/c", subprocess.list2cmdline(cmd)]
+    return cmd
+
+
+def run_compile_command(cmd: list[str], env: dict[str, str] | None) -> None:
+    subprocess.run(_effective_compile_command(cmd, env), check=True, env=env)
+
+
+def compile_steppable_source(
+    source_path: Path | str,
+    repo_path: Path | str | None = None,
+    include_root: Path | str | None = None,
+    output_path: Path | str | None = None,
+    macos_toolchain: str = "apple",
+    msvc_version: str | None = None,
+) -> CompileResult:
+    resolved_repo_path = Path(repo_path).expanduser().resolve() if repo_path else None
+    resolved_source_path = Path(source_path).expanduser().resolve()
+    resolved_output_path = Path(output_path).expanduser().resolve() if output_path else build_output_path(resolved_source_path)
+    include_root_info = resolve_kernel_include_root(
+        repo_path=resolved_repo_path,
+        include_root=Path(include_root) if include_root else None,
+    )
+
+    cmd, env = compile_command(
+        source_path=resolved_source_path,
+        include_root=include_root_info.include_root,
+        output_path=resolved_output_path,
+        macos_toolchain=macos_toolchain,
+        msvc_version=msvc_version,
+    )
+    effective_cmd = _effective_compile_command(cmd, env)
+    completed = subprocess.run(
+        effective_cmd,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return CompileResult(
+        source_path=resolved_source_path,
+        output_path=resolved_output_path,
+        include_root=include_root_info.include_root,
+        include_root_source=include_root_info.source,
+        command=tuple(effective_cmd),
+        return_code=completed.returncode,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
+    )
 
 
 def parse_args() -> argparse.Namespace:

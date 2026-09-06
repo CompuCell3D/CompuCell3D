@@ -156,3 +156,124 @@ compilers = [info.to_dict() for info in msvc_compiler_info("18", probe=True)]
 ```
 
 For GUI use, call with `probe=False` to populate a fast initial selector, then call with `probe=True` when the user selects a compiler or starts a build.
+
+## Automatic Compilation for `.cc3d` Projects
+
+`cc3d.run_script` automatically compiles C++ steppable resources listed in a `.cc3d` file before starting the simulation. It looks for resources such as:
+
+```xml
+<Resource Type="Cpp">Native/CellFieldOperationsSteppableCompiled.cpp</Resource>
+```
+
+Resource paths are resolved relative to the folder containing the `.cc3d` project file.
+
+Automatic compilation only rebuilds when needed:
+
+- the native library does not exist
+- the C++ source is newer than the native library
+- `cc3d/kernel.h` is newer than the native library
+- `--force-compile-steppables` is passed
+
+Run a project with automatic compilation:
+
+```bash
+python -m cc3d.run_script -i /path/to/project.cc3d
+```
+
+Disable automatic compilation:
+
+```bash
+python -m cc3d.run_script -i /path/to/project.cc3d --no-compile-steppables
+```
+
+Force compilation:
+
+```bash
+python -m cc3d.run_script -i /path/to/project.cc3d --force-compile-steppables
+```
+
+Windows compiler selection:
+
+```bat
+python -m cc3d.run_script ^
+  -i C:\path\to\project.cc3d ^
+  --steppable-msvc-version 16
+```
+
+Client code can use the same project-level API:
+
+```python
+from cc3d.core.CompiledSteppableAutoCompiler import (
+    compiled_steppable_build_plan,
+    compile_project_steppables,
+    format_compiled_steppable_summary,
+)
+
+plans = compiled_steppable_build_plan("/path/to/project.cc3d")
+summary = compile_project_steppables("/path/to/project.cc3d", msvc_version="16")
+print(format_compiled_steppable_summary(summary))
+```
+
+The summary object exposes `to_dict()` for GUI clients that need structured status instead of formatted terminal output.
+
+## Compiler Settings File
+
+The first automatic compilation run creates a user settings file:
+
+```text
+~/.compucell3d_py3/compiled_steppables.yaml
+```
+
+On Windows this is typically:
+
+```text
+C:\Users\<user>\.compucell3d_py3\compiled_steppables.yaml
+```
+
+The default policy is `latest`, meaning CC3D uses the latest compiler it can detect on the current platform. The generated file also stores a `detected` section for diagnostics.
+
+Example Windows configuration:
+
+```yaml
+version: 1
+auto_compile:
+  enabled: true
+  compile_if:
+    output_missing: true
+    source_newer: true
+    kernel_header_newer: true
+compiler:
+  selection_policy: latest
+platforms:
+  windows:
+    family: msvc
+    selection_policy: latest
+    preferred:
+      visual_studio_major: null
+      installation_path: null
+      display_name: null
+      vcvars64: null
+      compiler_path: null
+    detected:
+      visual_studio_major: '18'
+      installation_version: 18.9.12120.119
+      display_name: Visual Studio Community 2026
+      installation_path: C:\Program Files\Microsoft Visual Studio\18\Community
+      vcvars64: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat
+      compiler_path: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\...\cl.exe
+      compiler_version: Microsoft (R) C/C++ Optimizing Compiler Version ... for x64
+```
+
+To pin Windows builds to a Visual Studio major version, use:
+
+```yaml
+platforms:
+  windows:
+    selection_policy: visual_studio_major
+    preferred:
+      visual_studio_major: '16'
+```
+
+CC3D validates stored compiler preferences on each automatic build. If the stored compiler is unavailable, it prints a warning and falls back to the latest detected compiler.
+
+Command-line options have priority over this file. For example, `--steppable-msvc-version 16` uses Visual Studio 2019 for that run regardless of the YAML setting.
