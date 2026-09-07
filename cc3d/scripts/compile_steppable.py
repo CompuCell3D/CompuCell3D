@@ -91,6 +91,20 @@ def platform_suffix() -> str:
     return ".so"
 
 
+def normalized_build_type(build_type: str) -> str:
+    value = build_type.lower().replace("_", "")
+    if value not in {"debug", "release", "relwithdebinfo"}:
+        raise ValueError("build_type must be Debug, Release, or RelWithDebInfo")
+    return value
+
+
+def compiler_debug_flags(build_type: str, compiler: str) -> list[str]:
+    value = normalized_build_type(build_type)
+    if compiler == "msvc":
+        return ["/Od", "/Zi"] if value == "debug" else (["/O2", "/Zi"] if value == "relwithdebinfo" else ["/O2"])
+    return ["-O0", "-g"] if value == "debug" else (["-O2", "-g"] if value == "relwithdebinfo" else ["-O3"])
+
+
 def resolve_source(repo_path: Path, source_arg: str) -> Path:
     candidate = Path(source_arg).expanduser()
     if candidate.is_absolute() and candidate.exists():
@@ -191,6 +205,7 @@ def macos_compile_command(
     source_path: Path,
     include_root: Path,
     output_path: Path,
+    build_type: str = "Release",
 ) -> list[str]:
 
     try:
@@ -237,7 +252,7 @@ def macos_compile_command(
 
     return [
         compiler,
-        "-O3",
+        *compiler_debug_flags(build_type, "clang"),
         "-std=c++17",
         "-stdlib=libc++",
         "-dynamiclib",
@@ -258,14 +273,14 @@ def macos_compile_command(
 
 
 
-def macos_compile_command_conda(source_path: Path, include_root: Path, output_path: Path) -> list[str]:
+def macos_compile_command_conda(source_path: Path, include_root: Path, output_path: Path, build_type: str = "Release") -> list[str]:
     compiler = conda_compiler()
     if not compiler:
         raise RuntimeError("Could not locate a conda clang++. Activate the conda environment or set CXX.")
 
     return [
         compiler,
-        "-O3",
+        *compiler_debug_flags(build_type, "clang"),
         "-std=c++17",
         "-dynamiclib",
         str(source_path),
@@ -275,14 +290,14 @@ def macos_compile_command_conda(source_path: Path, include_root: Path, output_pa
     ]
 
 
-def linux_compile_command(source_path: Path, include_root: Path, output_path: Path) -> list[str]:
+def linux_compile_command(source_path: Path, include_root: Path, output_path: Path, build_type: str = "Release") -> list[str]:
     compiler = os.environ.get("CXX") or shutil.which("g++") or shutil.which("clang++")
     if not compiler:
         raise RuntimeError("Could not locate a C++ compiler. Set CXX or install g++/clang++.")
 
     return [
         compiler,
-        "-O3",
+        *compiler_debug_flags(build_type, "clang"),
         "-std=c++17",
         "-fPIC",
         "-shared",
@@ -298,6 +313,7 @@ def windows_compile_command(
     include_root: Path,
     output_path: Path,
     msvc_version: str | None,
+    build_type: str = "Release",
 ) -> tuple[list[str], dict[str, str] | None]:
     compiler = os.environ.get("CXX") or shutil.which("cl")
     env = None
@@ -310,10 +326,11 @@ def windows_compile_command(
 
     return [
         compiler,
-        "/O2",
+        *compiler_debug_flags(build_type, "msvc"),
         "/std:c++17",
         "/EHsc",
         "/LD",
+        *(["/DEBUG"] if normalized_build_type(build_type) in {"debug", "relwithdebinfo"} else []),
         str(source_path),
         f"/I{include_root}",
         f"/Fo:{output_path.with_suffix('.obj')}",
@@ -327,23 +344,26 @@ def compile_command(
     output_path: Path,
     macos_toolchain: str,
     msvc_version: str | None,
+    build_type: str = "Release",
 ) -> tuple[list[str], dict[str, str] | None]:
     if sys.platform == "darwin":
         if macos_toolchain == "conda":
             return macos_compile_command_conda(
                 source_path=source_path,
                 include_root=include_root,
-                output_path=output_path
+                output_path=output_path,
+                build_type=build_type,
             ), None
-        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path), None
+        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, build_type=build_type), None
     if sys.platform.startswith("win"):
         return windows_compile_command(
             source_path=source_path,
             include_root=include_root,
             output_path=output_path,
             msvc_version=msvc_version,
+            build_type=build_type,
         )
-    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path), None
+    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, build_type=build_type), None
 
 
 def clean_output(output_path: Path) -> None:
@@ -372,6 +392,7 @@ def compile_steppable_source(
     output_path: Path | str | None = None,
     macos_toolchain: str = "apple",
     msvc_version: str | None = None,
+    build_type: str = "Release",
 ) -> CompileResult:
     resolved_repo_path = Path(repo_path).expanduser().resolve() if repo_path else None
     resolved_source_path = Path(source_path).expanduser().resolve()
@@ -387,6 +408,7 @@ def compile_steppable_source(
         output_path=resolved_output_path,
         macos_toolchain=macos_toolchain,
         msvc_version=msvc_version,
+        build_type=build_type,
     )
     effective_cmd = _effective_compile_command(cmd, env)
     completed = subprocess.run(
@@ -436,6 +458,12 @@ def parse_args() -> argparse.Namespace:
         "--verbose",
         action="store_true",
         help="Print the full compiler command before running it."
+    )
+    parser.add_argument(
+        "--build-type",
+        choices=("Debug", "Release", "RelWithDebInfo"),
+        default="Release",
+        help="Compiler configuration. RelWithDebInfo enables optimization and debug symbols. Default: Release."
     )
     parser.add_argument(
         "--macos-toolchain",
@@ -500,6 +528,7 @@ def main() -> int:
         output_path=output_path,
         macos_toolchain=args.macos_toolchain,
         msvc_version=args.msvc_version,
+        build_type=args.build_type,
     )
 
     print(f"Source : {source_path}")
