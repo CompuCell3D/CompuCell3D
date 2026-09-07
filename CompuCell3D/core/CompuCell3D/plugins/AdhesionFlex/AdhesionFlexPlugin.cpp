@@ -5,6 +5,8 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "AdhesionFlexPlugin.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+extern "C" void cc3d_register_adhesion_flex_plugin(void *, void *);
 #include <Logger/CC3DLogger.h>
 
 AdhesionFlexPlugin::AdhesionFlexPlugin() :
@@ -23,6 +25,7 @@ AdhesionFlexPlugin::~AdhesionFlexPlugin() {
 }
 
 void AdhesionFlexPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+    cc3d_register_adhesion_flex_plugin(simulator, this);
     xmlData = _xmlData;
     sim = simulator;
     potts = simulator->getPotts();
