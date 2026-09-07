@@ -27,7 +27,7 @@ FocalPointPlasticityPlugin::FocalPointPlasticityPlugin() : pUtils(0), xmlData(0)
 }
 
 FocalPointPlasticityPlugin::~FocalPointPlasticityPlugin() {
-
+    cc3d_unregister_focal_point_plasticity_callbacks(this);
 }
 
 void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {

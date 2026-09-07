@@ -19,6 +19,7 @@ AdhesionFlexPlugin::AdhesionFlexPlugin() :
         adhesionDensityInitialized(false) {}
 
 AdhesionFlexPlugin::~AdhesionFlexPlugin() {
+    cc3d_unregister_adhesion_flex_callbacks(this);
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr = 0;

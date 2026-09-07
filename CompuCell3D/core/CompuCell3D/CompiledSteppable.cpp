@@ -27,9 +27,9 @@ namespace {
     struct LengthConstraintRegistration { void *simulator; CC3DLengthConstraintCallbacksV1 callbacks; };
     struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
     struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
-    std::vector<LengthConstraintRegistration> lengthConstraintRegistrations;
-    std::vector<AdhesionFlexRegistration> adhesionFlexRegistrations;
-    std::vector<FocalPointPlasticityRegistration> focalPointPlasticityRegistrations;
+    LengthConstraintRegistration lengthConstraintRegistration{};
+    AdhesionFlexRegistration adhesionFlexRegistration{};
+    FocalPointPlasticityRegistration focalPointPlasticityRegistration{};
 
     struct AdhesionFlexBridge {
         const CC3DAdhesionFlexCallbacksV1 *callbacks;
@@ -66,36 +66,36 @@ namespace {
 
 extern "C" void cc3d_register_length_constraint_callbacks(void *simulator, const CC3DLengthConstraintCallbacksV1 *callbacks) {
     if (!simulator || !callbacks) return;
-    for (auto &registration : lengthConstraintRegistrations) {
-        if (registration.simulator == simulator) { registration.callbacks = *callbacks; return; }
-    }
-    lengthConstraintRegistrations.push_back({simulator, *callbacks});
+    lengthConstraintRegistration = {simulator, *callbacks};
 }
 
 extern "C" const CC3DLengthConstraintCallbacksV1 *cc3d_get_length_constraint_callbacks(void *simulator) {
-    for (const auto &registration : lengthConstraintRegistrations) {
-        if (registration.simulator == simulator) return &registration.callbacks;
-    }
-    return nullptr;
+    return lengthConstraintRegistration.simulator == simulator ? &lengthConstraintRegistration.callbacks : nullptr;
+}
+
+extern "C" void cc3d_unregister_length_constraint_callbacks(void *plugin_instance) {
+    if (lengthConstraintRegistration.callbacks.plugin_instance == plugin_instance) lengthConstraintRegistration = {};
 }
 
 extern "C" void cc3d_register_adhesion_flex_callbacks(void *simulator, const CC3DAdhesionFlexCallbacksV1 *callbacks) {
     if (!simulator || !callbacks) return;
-    for (auto &r : adhesionFlexRegistrations) if (r.simulator == simulator) { r.callbacks = *callbacks; return; }
-    adhesionFlexRegistrations.push_back({simulator, *callbacks});
+    adhesionFlexRegistration = {simulator, *callbacks};
 }
 extern "C" const CC3DAdhesionFlexCallbacksV1 *cc3d_get_adhesion_flex_callbacks(void *simulator) {
-    for (const auto &r : adhesionFlexRegistrations) if (r.simulator == simulator) return &r.callbacks;
-    return nullptr;
+    return adhesionFlexRegistration.simulator == simulator ? &adhesionFlexRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_adhesion_flex_callbacks(void *plugin_instance) {
+    if (adhesionFlexRegistration.callbacks.plugin_instance == plugin_instance) adhesionFlexRegistration = {};
 }
 extern "C" void cc3d_register_focal_point_plasticity_callbacks(void *simulator, const CC3DFocalPointPlasticityCallbacksV1 *callbacks) {
     if (!simulator || !callbacks) return;
-    for (auto &r : focalPointPlasticityRegistrations) if (r.simulator == simulator) { r.callbacks = *callbacks; return; }
-    focalPointPlasticityRegistrations.push_back({simulator, *callbacks});
+    focalPointPlasticityRegistration = {simulator, *callbacks};
 }
 extern "C" const CC3DFocalPointPlasticityCallbacksV1 *cc3d_get_focal_point_plasticity_callbacks(void *simulator) {
-    for (const auto &r : focalPointPlasticityRegistrations) if (r.simulator == simulator) return &r.callbacks;
-    return nullptr;
+    return focalPointPlasticityRegistration.simulator == simulator ? &focalPointPlasticityRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_focal_point_plasticity_callbacks(void *plugin_instance) {
+    if (focalPointPlasticityRegistration.callbacks.plugin_instance == plugin_instance) focalPointPlasticityRegistration = {};
 }
 
 namespace {

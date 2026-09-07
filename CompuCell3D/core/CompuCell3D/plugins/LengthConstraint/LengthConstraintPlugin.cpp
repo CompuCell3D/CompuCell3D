@@ -13,7 +13,9 @@ extern "C" void cc3d_register_length_constraint_plugin(void *, void *);
 
 LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(nullptr), potts(nullptr), changeEnergyFcnPtr(nullptr) {}
 
-LengthConstraintPlugin::~LengthConstraintPlugin() = default;
+LengthConstraintPlugin::~LengthConstraintPlugin() {
+    cc3d_unregister_length_constraint_callbacks(this);
+}
 
 void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 

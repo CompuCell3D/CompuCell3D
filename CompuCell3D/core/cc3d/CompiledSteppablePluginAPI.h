@@ -57,10 +57,13 @@ extern "C" {
 #endif
 CC3D_PLUGIN_API_EXPORT void cc3d_register_length_constraint_callbacks(CC3DPluginSimulatorHandle, const CC3DLengthConstraintCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DLengthConstraintCallbacksV1 *cc3d_get_length_constraint_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_length_constraint_callbacks(void *plugin_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_adhesion_flex_callbacks(CC3DPluginSimulatorHandle, const CC3DAdhesionFlexCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DAdhesionFlexCallbacksV1 *cc3d_get_adhesion_flex_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_adhesion_flex_callbacks(void *plugin_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_focal_point_plasticity_callbacks(CC3DPluginSimulatorHandle, const CC3DFocalPointPlasticityCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DFocalPointPlasticityCallbacksV1 *cc3d_get_focal_point_plasticity_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_focal_point_plasticity_callbacks(void *plugin_instance);
 #ifdef __cplusplus
 }
 #endif
