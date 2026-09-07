@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 9u
+#define CC3D_KERNEL_ABI_VERSION 12u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -29,6 +29,9 @@ struct PixelSentinel;
 class OptionalCell;
 class ScalarField;
 class SBMLModel;
+class AdhesionFlex;
+class LengthConstraint;
+class FocalPointPlasticity;
 struct Dim3;
 }
 }
@@ -193,6 +196,61 @@ typedef struct CC3DCellFactoryAPIV1 {
 #endif
 } CC3DCellFactoryAPIV1;
 
+typedef struct CC3DAdhesionFlexAPIV1 {
+    void *userdata;
+    size_t (*molecule_count_fn)(void *userdata);
+    const char *(*molecule_name_fn)(void *userdata, size_t index);
+    float (*get_density_fn)(void *userdata, CC3DCellHandle cell, const char *molecule_name);
+    float (*get_density_by_index_fn)(void *userdata, CC3DCellHandle cell, size_t index);
+    void (*set_density_fn)(void *userdata, CC3DCellHandle cell, const char *molecule_name, float density);
+    void (*set_density_by_index_fn)(void *userdata, CC3DCellHandle cell, size_t index, float density);
+    uint8_t (*set_density_vector_fn)(void *userdata, CC3DCellHandle cell, const float *densities, size_t count);
+    void (*assign_density_vector_fn)(void *userdata, CC3DCellHandle cell, const float *densities, size_t count);
+    float (*get_medium_density_fn)(void *userdata, const char *molecule_name);
+    float (*get_medium_density_by_index_fn)(void *userdata, size_t index);
+    void (*set_medium_density_fn)(void *userdata, const char *molecule_name, float density);
+    void (*set_medium_density_by_index_fn)(void *userdata, size_t index, float density);
+    uint8_t (*set_medium_density_vector_fn)(void *userdata, const float *densities, size_t count);
+    void (*assign_medium_density_vector_fn)(void *userdata, const float *densities, size_t count);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::AdhesionFlex adhesionFlex() const;
+#endif
+} CC3DAdhesionFlexAPIV1;
+
+typedef struct CC3DLengthConstraintAPIV1 {
+    void *userdata;
+    void (*set_fn)(void *userdata, CC3DCellHandle cell, double lambda_length,
+                   double target_length, double minor_target_length);
+    double (*get_lambda_fn)(void *userdata, CC3DCellHandle cell);
+    double (*get_target_fn)(void *userdata, CC3DCellHandle cell);
+    double (*get_minor_target_fn)(void *userdata, CC3DCellHandle cell);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::LengthConstraint lengthConstraint() const;
+#endif
+} CC3DLengthConstraintAPIV1;
+
+typedef struct CC3DFocalPointPlasticityAPIV1 {
+    void *userdata;
+    void (*create_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2,
+                           double lambda, double target_distance, double max_distance);
+    void (*create_internal_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2,
+                                    double lambda, double target_distance, double max_distance);
+    void (*delete_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    void (*delete_internal_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    void (*set_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2,
+                        double lambda, double target_distance, double max_distance);
+    double (*get_lambda_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    double (*get_target_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    int (*create_anchor_fn)(void *userdata, CC3DCellHandle cell, double lambda,
+                            double target_distance, double max_distance, float x, float y, float z);
+    void (*delete_anchor_fn)(void *userdata, CC3DCellHandle cell, int anchor_id);
+    void (*set_anchor_fn)(void *userdata, CC3DCellHandle cell, int anchor_id, double lambda,
+                          double target_distance, double max_distance, float x, float y, float z);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::FocalPointPlasticity focalPointPlasticity() const;
+#endif
+} CC3DFocalPointPlasticityAPIV1;
+
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
@@ -204,6 +262,9 @@ typedef struct CC3DKernelContext {
     CC3DCellFieldAPIV1 cellField;
     CC3DCellFactoryAPIV1 cellFactory;
     CC3DSBMLAPIV1 sbml;
+    CC3DAdhesionFlexAPIV1 adhesionFlex;
+    CC3DLengthConstraintAPIV1 lengthConstraint;
+    CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -758,6 +819,167 @@ private:
     const CC3DSBMLAPIV1 *api_;
     CC3DSBMLModelHandle handle_;
 };
+
+class AdhesionFlex {
+public:
+    explicit AdhesionFlex(const CC3DAdhesionFlexAPIV1 *api) : api_(api) {}
+
+    size_t moleculeCount() const {
+        return api_ && api_->molecule_count_fn ? api_->molecule_count_fn(api_->userdata) : 0u;
+    }
+
+    const char *moleculeName(size_t index) const {
+        return api_ && api_->molecule_name_fn ? api_->molecule_name_fn(api_->userdata, index) : nullptr;
+    }
+
+    float get(const Cell &cell, const char *molecule_name) const {
+        if (!api_ || !api_->get_density_fn || !molecule_name) {
+            return 0.0f;
+        }
+        return api_->get_density_fn(api_->userdata, cell.handle(), molecule_name);
+    }
+
+    float get(const Cell &cell, size_t index) const {
+        return api_ && api_->get_density_by_index_fn
+               ? api_->get_density_by_index_fn(api_->userdata, cell.handle(), index)
+               : 0.0f;
+    }
+
+    void set(const Cell &cell, const char *molecule_name, float density) const {
+        if (api_ && api_->set_density_fn && molecule_name) {
+            api_->set_density_fn(api_->userdata, cell.handle(), molecule_name, density);
+        }
+    }
+
+    void set(const Cell &cell, size_t index, float density) const {
+        if (api_ && api_->set_density_by_index_fn) {
+            api_->set_density_by_index_fn(api_->userdata, cell.handle(), index, density);
+        }
+    }
+
+    bool setVector(const Cell &cell, const float *densities, size_t count) const {
+        return api_ && api_->set_density_vector_fn && densities
+               ? api_->set_density_vector_fn(api_->userdata, cell.handle(), densities, count) != 0
+               : false;
+    }
+
+    void assignVector(const Cell &cell, const float *densities, size_t count) const {
+        if (api_ && api_->assign_density_vector_fn && densities) {
+            api_->assign_density_vector_fn(api_->userdata, cell.handle(), densities, count);
+        }
+    }
+
+    float medium(const char *molecule_name) const {
+        if (!api_ || !api_->get_medium_density_fn || !molecule_name) {
+            return 0.0f;
+        }
+        return api_->get_medium_density_fn(api_->userdata, molecule_name);
+    }
+
+    float medium(size_t index) const {
+        return api_ && api_->get_medium_density_by_index_fn
+               ? api_->get_medium_density_by_index_fn(api_->userdata, index)
+               : 0.0f;
+    }
+
+    void setMedium(const char *molecule_name, float density) const {
+        if (api_ && api_->set_medium_density_fn && molecule_name) {
+            api_->set_medium_density_fn(api_->userdata, molecule_name, density);
+        }
+    }
+
+    void setMedium(size_t index, float density) const {
+        if (api_ && api_->set_medium_density_by_index_fn) {
+            api_->set_medium_density_by_index_fn(api_->userdata, index, density);
+        }
+    }
+
+    bool setMediumVector(const float *densities, size_t count) const {
+        return api_ && api_->set_medium_density_vector_fn && densities
+               ? api_->set_medium_density_vector_fn(api_->userdata, densities, count) != 0
+               : false;
+    }
+
+    void assignMediumVector(const float *densities, size_t count) const {
+        if (api_ && api_->assign_medium_density_vector_fn && densities) {
+            api_->assign_medium_density_vector_fn(api_->userdata, densities, count);
+        }
+    }
+
+private:
+    const CC3DAdhesionFlexAPIV1 *api_;
+};
+
+class LengthConstraint {
+public:
+    explicit LengthConstraint(const CC3DLengthConstraintAPIV1 *api) : api_(api) {}
+
+    void set(const Cell &cell, double lambda_length, double target_length,
+             double minor_target_length = 0.0) const {
+        if (api_ && api_->set_fn) {
+            api_->set_fn(api_->userdata, cell.handle(), lambda_length, target_length,
+                         minor_target_length);
+        }
+    }
+
+    double lambda(const Cell &cell) const {
+        return api_ && api_->get_lambda_fn ? api_->get_lambda_fn(api_->userdata, cell.handle()) : 0.0;
+    }
+
+    double target(const Cell &cell) const {
+        return api_ && api_->get_target_fn ? api_->get_target_fn(api_->userdata, cell.handle()) : 0.0;
+    }
+
+    double minorTarget(const Cell &cell) const {
+        return api_ && api_->get_minor_target_fn ? api_->get_minor_target_fn(api_->userdata, cell.handle()) : 0.0;
+    }
+
+private:
+    const CC3DLengthConstraintAPIV1 *api_;
+};
+
+class FocalPointPlasticity {
+public:
+    explicit FocalPointPlasticity(const CC3DFocalPointPlasticityAPIV1 *api) : api_(api) {}
+
+    void create(const Cell &cell1, const Cell &cell2, double lambda,
+                double target_distance = 0.0, double max_distance = 0.0) const {
+        if (api_ && api_->create_link_fn) api_->create_link_fn(api_->userdata, cell1.handle(), cell2.handle(), lambda, target_distance, max_distance);
+    }
+    void createInternal(const Cell &cell1, const Cell &cell2, double lambda,
+                        double target_distance = 0.0, double max_distance = 0.0) const {
+        if (api_ && api_->create_internal_link_fn) api_->create_internal_link_fn(api_->userdata, cell1.handle(), cell2.handle(), lambda, target_distance, max_distance);
+    }
+    void erase(const Cell &cell1, const Cell &cell2) const {
+        if (api_ && api_->delete_link_fn) api_->delete_link_fn(api_->userdata, cell1.handle(), cell2.handle());
+    }
+    void eraseInternal(const Cell &cell1, const Cell &cell2) const {
+        if (api_ && api_->delete_internal_link_fn) api_->delete_internal_link_fn(api_->userdata, cell1.handle(), cell2.handle());
+    }
+    void set(const Cell &cell1, const Cell &cell2, double lambda,
+             double target_distance = 0.0, double max_distance = 0.0) const {
+        if (api_ && api_->set_link_fn) api_->set_link_fn(api_->userdata, cell1.handle(), cell2.handle(), lambda, target_distance, max_distance);
+    }
+    double lambda(const Cell &cell1, const Cell &cell2) const {
+        return api_ && api_->get_lambda_fn ? api_->get_lambda_fn(api_->userdata, cell1.handle(), cell2.handle()) : 0.0;
+    }
+    double target(const Cell &cell1, const Cell &cell2) const {
+        return api_ && api_->get_target_fn ? api_->get_target_fn(api_->userdata, cell1.handle(), cell2.handle()) : 0.0;
+    }
+    int createAnchor(const Cell &cell, double lambda, double target_distance = 0.0,
+                     double max_distance = 100000.0, float x = 0, float y = 0, float z = 0) const {
+        return api_ && api_->create_anchor_fn ? api_->create_anchor_fn(api_->userdata, cell.handle(), lambda, target_distance, max_distance, x, y, z) : -1;
+    }
+    void eraseAnchor(const Cell &cell, int anchor_id) const {
+        if (api_ && api_->delete_anchor_fn) api_->delete_anchor_fn(api_->userdata, cell.handle(), anchor_id);
+    }
+    void setAnchor(const Cell &cell, int anchor_id, double lambda, double target_distance = 0.0,
+                   double max_distance = 100000.0, float x = -1, float y = -1, float z = -1) const {
+        if (api_ && api_->set_anchor_fn) api_->set_anchor_fn(api_->userdata, cell.handle(), anchor_id, lambda, target_distance, max_distance, x, y, z);
+    }
+private:
+    const CC3DFocalPointPlasticityAPIV1 *api_;
+};
 } // namespace kernel
 } // namespace cc3d
 
@@ -836,6 +1058,18 @@ inline ::cc3d::kernel::Cell CC3DCellFactoryAPIV1::create(unsigned char cell_type
         return ::cc3d::kernel::Cell(CC3DCellViewV1{});
     }
     return ::cc3d::kernel::Cell(create_fn(userdata, cell_type));
+}
+
+inline ::cc3d::kernel::AdhesionFlex CC3DAdhesionFlexAPIV1::adhesionFlex() const {
+    return ::cc3d::kernel::AdhesionFlex(this);
+}
+
+inline ::cc3d::kernel::LengthConstraint CC3DLengthConstraintAPIV1::lengthConstraint() const {
+    return ::cc3d::kernel::LengthConstraint(this);
+}
+
+inline ::cc3d::kernel::FocalPointPlasticity CC3DFocalPointPlasticityAPIV1::focalPointPlasticity() const {
+    return ::cc3d::kernel::FocalPointPlasticity(this);
 }
 
 inline ::cc3d::kernel::Cell CC3DKernelContext::newCell(unsigned char cell_type) const {

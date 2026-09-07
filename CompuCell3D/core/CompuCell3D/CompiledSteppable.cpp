@@ -1,16 +1,20 @@
 #include "CompiledSteppable.h"
+#include "cc3d/CompiledSteppablePluginAPI.h"
 
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 #include <Python.h>
 
 #include "CC3DExceptions.h"
 #include "Field3D/Field3D.h"
 #include "PluginManager.h"
+#include "plugins/AdhesionFlex/AdhesionFlexPlugin.h"
 #include "plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
 #include "plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "plugins/NeighborTracker/NeighborTrackerPlugin.h"
+#include "plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h"
 #include "plugins/VolumeTracker/VolumeTrackerPlugin.h"
 #include "Potts3D/Cell.h"
 #include "Potts3D/CellInventory.h"
@@ -18,6 +22,81 @@
 #include "Simulator.h"
 
 using namespace CompuCell3D;
+
+namespace {
+    struct LengthConstraintRegistration { void *simulator; CC3DLengthConstraintCallbacksV1 callbacks; };
+    struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
+    struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
+    std::vector<LengthConstraintRegistration> lengthConstraintRegistrations;
+    std::vector<AdhesionFlexRegistration> adhesionFlexRegistrations;
+    std::vector<FocalPointPlasticityRegistration> focalPointPlasticityRegistrations;
+
+    struct AdhesionFlexBridge {
+        const CC3DAdhesionFlexCallbacksV1 *callbacks;
+        std::vector<std::string> names;
+        size_t getAdhesionMoleculeNameVecSize() { return callbacks && callbacks->molecule_count_fn ? callbacks->molecule_count_fn(callbacks->plugin_instance) : 0u; }
+        std::vector<std::string> getAdhesionMoleculeNameVec() { names.clear(); for (size_t i = 0; i < getAdhesionMoleculeNameVecSize(); ++i) { const char *name = callbacks->molecule_name_fn(callbacks->plugin_instance, i); if (name) names.emplace_back(name); } return names; }
+        float getAdhesionMoleculeDensity(CompuCell3D::CellG *c, const char *n) { return callbacks->get_density_fn(callbacks->plugin_instance, c, n); }
+        float getAdhesionMoleculeDensityByIndex(CompuCell3D::CellG *c, int i) { return callbacks->get_density_by_index_fn(callbacks->plugin_instance, c, static_cast<size_t>(i)); }
+        void setAdhesionMoleculeDensity(CompuCell3D::CellG *c, const char *n, float v) { callbacks->set_density_fn(callbacks->plugin_instance, c, n, v); }
+        void setAdhesionMoleculeDensityByIndex(CompuCell3D::CellG *c, int i, float v) { callbacks->set_density_by_index_fn(callbacks->plugin_instance, c, static_cast<size_t>(i), v); }
+        void setAdhesionMoleculeDensityVector(CompuCell3D::CellG *c, std::vector<float> v) { callbacks->set_density_vector_fn(callbacks->plugin_instance, c, v.data(), v.size()); }
+        void assignNewAdhesionMoleculeDensityVector(CompuCell3D::CellG *c, std::vector<float> v) { callbacks->assign_density_vector_fn(callbacks->plugin_instance, c, v.data(), v.size()); }
+        float getMediumAdhesionMoleculeDensity(const char *n) { return callbacks->get_medium_density_fn(callbacks->plugin_instance, n); }
+        float getMediumAdhesionMoleculeDensityByIndex(int i) { return callbacks->get_medium_density_by_index_fn(callbacks->plugin_instance, static_cast<size_t>(i)); }
+        void setMediumAdhesionMoleculeDensity(const char *n, float v) { callbacks->set_medium_density_fn(callbacks->plugin_instance, n, v); }
+        void setMediumAdhesionMoleculeDensityByIndex(int i, float v) { callbacks->set_medium_density_by_index_fn(callbacks->plugin_instance, static_cast<size_t>(i), v); }
+        void setMediumAdhesionMoleculeDensityVector(std::vector<float> v) { callbacks->set_medium_density_vector_fn(callbacks->plugin_instance, v.data(), v.size()); }
+        void assignNewMediumAdhesionMoleculeDensityVector(std::vector<float> v) { callbacks->assign_medium_density_vector_fn(callbacks->plugin_instance, v.data(), v.size()); }
+    };
+    struct FocalPointPlasticityBridge {
+        const CC3DFocalPointPlasticityCallbacksV1 *callbacks;
+        void createFocalPointPlasticityLink(CompuCell3D::CellG *a, CompuCell3D::CellG *b, double l, double t, double m) { callbacks->create_link_fn(callbacks->plugin_instance, a, b, l, t, m); }
+        void createInternalFocalPointPlasticityLink(CompuCell3D::CellG *a, CompuCell3D::CellG *b, double l, double t, double m) { callbacks->create_internal_link_fn(callbacks->plugin_instance, a, b, l, t, m); }
+        void deleteFocalPointPlasticityLink(CompuCell3D::CellG *a, CompuCell3D::CellG *b) { callbacks->delete_link_fn(callbacks->plugin_instance, a, b); }
+        void deleteInternalFocalPointPlasticityLink(CompuCell3D::CellG *a, CompuCell3D::CellG *b) { callbacks->delete_internal_link_fn(callbacks->plugin_instance, a, b); }
+        void setFocalPointPlasticityParameters(CompuCell3D::CellG *a, CompuCell3D::CellG *b, double l, double t, double m) { callbacks->set_link_fn(callbacks->plugin_instance, a, b, l, t, m); }
+        double getPlasticityParametersLambdaDistance(CompuCell3D::CellG *a, CompuCell3D::CellG *b) { return callbacks->get_lambda_fn(callbacks->plugin_instance, a, b); }
+        double getPlasticityParametersTargetDistance(CompuCell3D::CellG *a, CompuCell3D::CellG *b) { return callbacks->get_target_fn(callbacks->plugin_instance, a, b); }
+        int createAnchor(CompuCell3D::CellG *c, double l, double t, double m, float x, float y, float z) { return callbacks->create_anchor_fn(callbacks->plugin_instance, c, l, t, m, x, y, z); }
+        void deleteAnchor(CompuCell3D::CellG *c, int id) { callbacks->delete_anchor_fn(callbacks->plugin_instance, c, id); }
+        void setAnchorParameters(CompuCell3D::CellG *c, int id, double l, double t, double m, float x, float y, float z) { callbacks->set_anchor_fn(callbacks->plugin_instance, c, id, l, t, m, x, y, z); }
+    };
+}
+
+extern "C" void cc3d_register_length_constraint_callbacks(void *simulator, const CC3DLengthConstraintCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    for (auto &registration : lengthConstraintRegistrations) {
+        if (registration.simulator == simulator) { registration.callbacks = *callbacks; return; }
+    }
+    lengthConstraintRegistrations.push_back({simulator, *callbacks});
+}
+
+extern "C" const CC3DLengthConstraintCallbacksV1 *cc3d_get_length_constraint_callbacks(void *simulator) {
+    for (const auto &registration : lengthConstraintRegistrations) {
+        if (registration.simulator == simulator) return &registration.callbacks;
+    }
+    return nullptr;
+}
+
+extern "C" void cc3d_register_adhesion_flex_callbacks(void *simulator, const CC3DAdhesionFlexCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    for (auto &r : adhesionFlexRegistrations) if (r.simulator == simulator) { r.callbacks = *callbacks; return; }
+    adhesionFlexRegistrations.push_back({simulator, *callbacks});
+}
+extern "C" const CC3DAdhesionFlexCallbacksV1 *cc3d_get_adhesion_flex_callbacks(void *simulator) {
+    for (const auto &r : adhesionFlexRegistrations) if (r.simulator == simulator) return &r.callbacks;
+    return nullptr;
+}
+extern "C" void cc3d_register_focal_point_plasticity_callbacks(void *simulator, const CC3DFocalPointPlasticityCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    for (auto &r : focalPointPlasticityRegistrations) if (r.simulator == simulator) { r.callbacks = *callbacks; return; }
+    focalPointPlasticityRegistrations.push_back({simulator, *callbacks});
+}
+extern "C" const CC3DFocalPointPlasticityCallbacksV1 *cc3d_get_focal_point_plasticity_callbacks(void *simulator) {
+    for (const auto &r : focalPointPlasticityRegistrations) if (r.simulator == simulator) return &r.callbacks;
+    return nullptr;
+}
 
 namespace {
     CC3DCellViewV1 cc3d_cell_view_from_cell(CompuCell3D::CellG *cell) {
@@ -180,6 +259,254 @@ namespace {
             plugin->init(simulator);
         }
         return static_cast<CompuCell3D::NeighborTrackerPlugin *>(plugin);
+    }
+
+    AdhesionFlexBridge *cc3d_ensure_adhesion_flex(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) {
+            return nullptr;
+        }
+
+        bool pluginAlreadyRegisteredFlag = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("AdhesionFlex", &pluginAlreadyRegisteredFlag);
+        if (!pluginAlreadyRegisteredFlag) {
+            auto *adhesionFlexXML = simulator->getCC3DModuleData("Plugin", "AdhesionFlex");
+            plugin->init(simulator, adhesionFlexXML);
+        }
+        static AdhesionFlexBridge bridge{};
+        bridge.callbacks = cc3d_get_adhesion_flex_callbacks(simulatorPtr);
+        return bridge.callbacks ? &bridge : nullptr;
+    }
+
+    const CC3DLengthConstraintCallbacksV1 *cc3d_ensure_length_constraint(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("LengthConstraint", &alreadyRegistered);
+        if (!alreadyRegistered) {
+            auto *xml = simulator->getCC3DModuleData("Plugin", "LengthConstraint");
+            plugin->init(simulator, xml);
+        }
+        return cc3d_get_length_constraint_callbacks(simulatorPtr);
+    }
+
+    void cc3d_length_constraint_set(void *simulatorPtr, CC3DCellHandle cellHandle,
+                                    double lambdaLength, double targetLength,
+                                    double minorTargetLength) {
+        auto *callbacks = cc3d_ensure_length_constraint(simulatorPtr);
+        if (callbacks && callbacks->set_fn) callbacks->set_fn(callbacks->plugin_instance, cellHandle, lambdaLength, targetLength, minorTargetLength);
+    }
+
+    double cc3d_length_constraint_lambda(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        auto *callbacks = cc3d_ensure_length_constraint(simulatorPtr);
+        return callbacks && callbacks->get_lambda_fn ? callbacks->get_lambda_fn(callbacks->plugin_instance, cellHandle) : 0.0;
+    }
+
+    double cc3d_length_constraint_target(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        auto *callbacks = cc3d_ensure_length_constraint(simulatorPtr);
+        return callbacks && callbacks->get_target_fn ? callbacks->get_target_fn(callbacks->plugin_instance, cellHandle) : 0.0;
+    }
+
+    double cc3d_length_constraint_minor_target(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        auto *callbacks = cc3d_ensure_length_constraint(simulatorPtr);
+        return callbacks && callbacks->get_minor_target_fn ? callbacks->get_minor_target_fn(callbacks->plugin_instance, cellHandle) : 0.0;
+    }
+
+    FocalPointPlasticityBridge *cc3d_ensure_focal_point_plasticity(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("FocalPointPlasticity", &alreadyRegistered);
+        if (!alreadyRegistered) {
+            auto *xml = simulator->getCC3DModuleData("Plugin", "FocalPointPlasticity");
+            plugin->init(simulator, xml);
+        }
+        static FocalPointPlasticityBridge bridge{};
+        bridge.callbacks = cc3d_get_focal_point_plasticity_callbacks(simulatorPtr);
+        return bridge.callbacks ? &bridge : nullptr;
+    }
+
+    void cc3d_fpp_create(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, double lambda, double target, double max) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->createFocalPointPlasticityLink(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b), lambda, target, max);
+    }
+    void cc3d_fpp_create_internal(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, double lambda, double target, double max) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->createInternalFocalPointPlasticityLink(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b), lambda, target, max);
+    }
+    void cc3d_fpp_delete(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->deleteFocalPointPlasticityLink(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b));
+    }
+    void cc3d_fpp_delete_internal(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->deleteInternalFocalPointPlasticityLink(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b));
+    }
+    void cc3d_fpp_set(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, double lambda, double target, double max) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->setFocalPointPlasticityParameters(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b), lambda, target, max);
+    }
+    double cc3d_fpp_lambda(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        return p ? p->getPlasticityParametersLambdaDistance(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b)) : 0.0;
+    }
+    double cc3d_fpp_target(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        return p ? p->getPlasticityParametersTargetDistance(static_cast<CompuCell3D::CellG *>(a), static_cast<CompuCell3D::CellG *>(b)) : 0.0;
+    }
+    int cc3d_fpp_create_anchor(void *simulatorPtr, CC3DCellHandle cell, double lambda, double target, double max, float x, float y, float z) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        return p ? p->createAnchor(static_cast<CompuCell3D::CellG *>(cell), lambda, target, max, x, y, z) : -1;
+    }
+    void cc3d_fpp_delete_anchor(void *simulatorPtr, CC3DCellHandle cell, int id) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->deleteAnchor(static_cast<CompuCell3D::CellG *>(cell), id);
+    }
+    void cc3d_fpp_set_anchor(void *simulatorPtr, CC3DCellHandle cell, int id, double lambda, double target, double max, float x, float y, float z) {
+        auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
+        if (p) p->setAnchorParameters(static_cast<CompuCell3D::CellG *>(cell), id, lambda, target, max, x, y, z);
+    }
+
+    std::vector<float> cc3d_float_vector_from_array(const float *values, size_t count) {
+        if (!values || count == 0u) {
+            return std::vector<float>();
+        }
+        return std::vector<float>(values, values + count);
+    }
+
+    size_t cc3d_adhesion_flex_molecule_count(void *simulatorPtr) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (!plugin) {
+            return 0u;
+        }
+        return plugin->getAdhesionMoleculeNameVec().size();
+    }
+
+    const char *cc3d_adhesion_flex_molecule_name(void *simulatorPtr, size_t index) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (!plugin) {
+            return nullptr;
+        }
+
+        static thread_local std::vector<std::string> moleculeNames;
+        moleculeNames = plugin->getAdhesionMoleculeNameVec();
+        if (index >= moleculeNames.size()) {
+            return nullptr;
+        }
+        return moleculeNames[index].c_str();
+    }
+
+    float cc3d_adhesion_flex_get_density(void *simulatorPtr, CC3DCellHandle cellHandle, const char *moleculeName) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (!plugin || !cell || !moleculeName) {
+            return 0.0f;
+        }
+        return plugin->getAdhesionMoleculeDensity(cell, moleculeName);
+    }
+
+    float cc3d_adhesion_flex_get_density_by_index(void *simulatorPtr, CC3DCellHandle cellHandle, size_t index) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (!plugin || !cell) {
+            return 0.0f;
+        }
+        return plugin->getAdhesionMoleculeDensityByIndex(cell, static_cast<int>(index));
+    }
+
+    void cc3d_adhesion_flex_set_density(
+        void *simulatorPtr, CC3DCellHandle cellHandle, const char *moleculeName, float density
+    ) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (plugin && cell && moleculeName) {
+            plugin->setAdhesionMoleculeDensity(cell, moleculeName, density);
+        }
+    }
+
+    void cc3d_adhesion_flex_set_density_by_index(
+        void *simulatorPtr, CC3DCellHandle cellHandle, size_t index, float density
+    ) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (plugin && cell) {
+            plugin->setAdhesionMoleculeDensityByIndex(cell, static_cast<int>(index), density);
+        }
+    }
+
+    uint8_t cc3d_adhesion_flex_set_density_vector(
+        void *simulatorPtr, CC3DCellHandle cellHandle, const float *densities, size_t count
+    ) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (!plugin || !cell || !densities) {
+            return 0u;
+        }
+        if (count != plugin->getAdhesionMoleculeNameVec().size()) {
+            return 0u;
+        }
+        auto densityVector = cc3d_float_vector_from_array(densities, count);
+        plugin->setAdhesionMoleculeDensityVector(cell, densityVector);
+        return 1u;
+    }
+
+    void cc3d_adhesion_flex_assign_density_vector(
+        void *simulatorPtr, CC3DCellHandle cellHandle, const float *densities, size_t count
+    ) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
+        if (plugin && cell && densities) {
+            auto densityVector = cc3d_float_vector_from_array(densities, count);
+            plugin->assignNewAdhesionMoleculeDensityVector(cell, densityVector);
+        }
+    }
+
+    float cc3d_adhesion_flex_get_medium_density(void *simulatorPtr, const char *moleculeName) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (!plugin || !moleculeName) {
+            return 0.0f;
+        }
+        return plugin->getMediumAdhesionMoleculeDensity(moleculeName);
+    }
+
+    float cc3d_adhesion_flex_get_medium_density_by_index(void *simulatorPtr, size_t index) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        return plugin ? plugin->getMediumAdhesionMoleculeDensityByIndex(static_cast<int>(index)) : 0.0f;
+    }
+
+    void cc3d_adhesion_flex_set_medium_density(void *simulatorPtr, const char *moleculeName, float density) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (plugin && moleculeName) {
+            plugin->setMediumAdhesionMoleculeDensity(moleculeName, density);
+        }
+    }
+
+    void cc3d_adhesion_flex_set_medium_density_by_index(void *simulatorPtr, size_t index, float density) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (plugin) {
+            plugin->setMediumAdhesionMoleculeDensityByIndex(static_cast<int>(index), density);
+        }
+    }
+
+    uint8_t cc3d_adhesion_flex_set_medium_density_vector(void *simulatorPtr, const float *densities, size_t count) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (!plugin || !densities) {
+            return 0u;
+        }
+        if (count != plugin->getAdhesionMoleculeNameVec().size()) {
+            return 0u;
+        }
+        auto densityVector = cc3d_float_vector_from_array(densities, count);
+        plugin->setMediumAdhesionMoleculeDensityVector(densityVector);
+        return 1u;
+    }
+
+    void cc3d_adhesion_flex_assign_medium_density_vector(void *simulatorPtr, const float *densities, size_t count) {
+        auto *plugin = cc3d_ensure_adhesion_flex(simulatorPtr);
+        if (plugin && densities) {
+            auto densityVector = cc3d_float_vector_from_array(densities, count);
+            plugin->assignNewMediumAdhesionMoleculeDensityVector(densityVector);
+        }
     }
 
     CC3DCellViewV1 cc3d_cells_get(void *, CC3DCellIteratorHandle iterator) {
@@ -741,6 +1068,37 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.sbml.get_value_fn = &cc3d_sbml_get_value;
     context_.sbml.set_value_fn = &cc3d_sbml_set_value;
     context_.sbml.timestep_fn = &cc3d_sbml_timestep;
+    context_.adhesionFlex.userdata = nullptr;
+    context_.adhesionFlex.molecule_count_fn = &cc3d_adhesion_flex_molecule_count;
+    context_.adhesionFlex.molecule_name_fn = &cc3d_adhesion_flex_molecule_name;
+    context_.adhesionFlex.get_density_fn = &cc3d_adhesion_flex_get_density;
+    context_.adhesionFlex.get_density_by_index_fn = &cc3d_adhesion_flex_get_density_by_index;
+    context_.adhesionFlex.set_density_fn = &cc3d_adhesion_flex_set_density;
+    context_.adhesionFlex.set_density_by_index_fn = &cc3d_adhesion_flex_set_density_by_index;
+    context_.adhesionFlex.set_density_vector_fn = &cc3d_adhesion_flex_set_density_vector;
+    context_.adhesionFlex.assign_density_vector_fn = &cc3d_adhesion_flex_assign_density_vector;
+    context_.adhesionFlex.get_medium_density_fn = &cc3d_adhesion_flex_get_medium_density;
+    context_.adhesionFlex.get_medium_density_by_index_fn = &cc3d_adhesion_flex_get_medium_density_by_index;
+    context_.adhesionFlex.set_medium_density_fn = &cc3d_adhesion_flex_set_medium_density;
+    context_.adhesionFlex.set_medium_density_by_index_fn = &cc3d_adhesion_flex_set_medium_density_by_index;
+    context_.adhesionFlex.set_medium_density_vector_fn = &cc3d_adhesion_flex_set_medium_density_vector;
+    context_.adhesionFlex.assign_medium_density_vector_fn = &cc3d_adhesion_flex_assign_medium_density_vector;
+    context_.lengthConstraint.userdata = nullptr;
+    context_.lengthConstraint.set_fn = &cc3d_length_constraint_set;
+    context_.lengthConstraint.get_lambda_fn = &cc3d_length_constraint_lambda;
+    context_.lengthConstraint.get_target_fn = &cc3d_length_constraint_target;
+    context_.lengthConstraint.get_minor_target_fn = &cc3d_length_constraint_minor_target;
+    context_.focalPointPlasticity.userdata = nullptr;
+    context_.focalPointPlasticity.create_link_fn = &cc3d_fpp_create;
+    context_.focalPointPlasticity.create_internal_link_fn = &cc3d_fpp_create_internal;
+    context_.focalPointPlasticity.delete_link_fn = &cc3d_fpp_delete;
+    context_.focalPointPlasticity.delete_internal_link_fn = &cc3d_fpp_delete_internal;
+    context_.focalPointPlasticity.set_link_fn = &cc3d_fpp_set;
+    context_.focalPointPlasticity.get_lambda_fn = &cc3d_fpp_lambda;
+    context_.focalPointPlasticity.get_target_fn = &cc3d_fpp_target;
+    context_.focalPointPlasticity.create_anchor_fn = &cc3d_fpp_create_anchor;
+    context_.focalPointPlasticity.delete_anchor_fn = &cc3d_fpp_delete_anchor;
+    context_.focalPointPlasticity.set_anchor_fn = &cc3d_fpp_set_anchor;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -825,6 +1183,9 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.cellField.userdata = simulator_;
     context_.cellFactory.userdata = simulator_;
     context_.sbml.userdata = simulator_;
+    context_.adhesionFlex.userdata = simulator_;
+    context_.lengthConstraint.userdata = simulator_;
+    context_.focalPointPlasticity.userdata = simulator_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -907,4 +1268,7 @@ void CompiledSteppable::cleanup() {
     context_.cellField.userdata = nullptr;
     context_.cellFactory.userdata = nullptr;
     context_.sbml.userdata = nullptr;
+    context_.adhesionFlex.userdata = nullptr;
+    context_.lengthConstraint.userdata = nullptr;
+    context_.focalPointPlasticity.userdata = nullptr;
 }

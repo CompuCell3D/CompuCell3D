@@ -7,6 +7,9 @@ using namespace std;
 
 
 #include "LengthConstraintPlugin.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_register_length_constraint_plugin(void *, void *);
 
 LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(nullptr), potts(nullptr), changeEnergyFcnPtr(nullptr) {}
 
@@ -16,6 +19,7 @@ void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
 
     xmlData = _xmlData;
     this->simulator = simulator;
+    cc3d_register_length_constraint_plugin(simulator, this);
     potts = simulator->getPotts();
 
     bool pluginAlreadyRegisteredFlag;
