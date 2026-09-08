@@ -307,7 +307,13 @@ double FocalPointPlasticityPlugin::diffEnergyByType(float _deltaL, float _lBefor
                                                     const CellG *_cell, bool _useCluster) {
     float lambdaDistanceLocal;
     float targetDistanceLocal;
-    if (_useCluster) {
+    // Anchor links do not have a neighboring cell. Their tracker data already
+    // contains the effective parameters, so do not dereference
+    // neighborAddress for these links.
+    if (!_plasticityTrackerData.neighborAddress) {
+        lambdaDistanceLocal = _plasticityTrackerData.lambdaDistance;
+        targetDistanceLocal = _plasticityTrackerData.targetDistance;
+    } else if (_useCluster) {
         lambdaDistanceLocal = internalPlastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].lambdaDistance;
         targetDistanceLocal = internalPlastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].targetDistance;
     } else {

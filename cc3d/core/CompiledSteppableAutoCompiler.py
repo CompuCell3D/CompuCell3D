@@ -117,6 +117,7 @@ def compile_project_steppables(
     macos_toolchain: str | None = None,
     msvc_version: str | None = None,
     compiler_settings_path: Path | str | None = None,
+    build_type: str = "RelWithDebInfo",
 ) -> CompiledSteppableBuildSummary:
     project_path = Path(cc3d_project_path).expanduser().resolve()
     compiler_selection = compiler_selection_from_settings(
@@ -147,6 +148,7 @@ def compile_project_steppables(
             output_path=plan.output_path,
             macos_toolchain=resolved_macos_toolchain,
             msvc_version=resolved_msvc_version,
+            build_type=build_type,
         )
         results.append(result)
         if not result.success:

@@ -12,7 +12,7 @@ namespace {
 
     void start(CC3DKernelContext *ctx, void *statePtr) {
         using namespace std;
-        cerr<<"demo"<<endl
+
         auto seededTumor = ctx->newCell(TUMOR);
         seededTumor.targetVolume = 25.0f;
         seededTumor.lambdaVolume = 2.0f;
