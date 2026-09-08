@@ -1,0 +1,28 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="60" y="60" z="1"/>
+        <Steps>100</Steps>
+        <Temperature>10</Temperature>
+    </Potts>
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Cell" TypeId="1"/>
+    </Plugin>
+    <Plugin Name="Volume"/>
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Cell" Type2="Medium">8</Energy>
+        <Energy Type1="Cell" Type2="Cell">15</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+    <Plugin Name="PolarizationVector"/>
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="30" y="30" z="0"/>
+            <Radius>8</Radius>
+            <Gap>0</Gap>
+            <Width>5</Width>
+            <Types>Cell</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>

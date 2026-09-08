@@ -27,9 +27,13 @@ namespace {
     struct LengthConstraintRegistration { void *simulator; CC3DLengthConstraintCallbacksV1 callbacks; };
     struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
     struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
+    struct PolarizationVectorRegistration { void *simulator; CC3DPolarizationVectorCallbacksV1 callbacks; };
+    struct ChemotaxisRegistration { void *simulator; CC3DChemotaxisCallbacksV1 callbacks; };
     LengthConstraintRegistration lengthConstraintRegistration{};
     AdhesionFlexRegistration adhesionFlexRegistration{};
     FocalPointPlasticityRegistration focalPointPlasticityRegistration{};
+    PolarizationVectorRegistration polarizationVectorRegistration{};
+    ChemotaxisRegistration chemotaxisRegistration{};
 
     struct AdhesionFlexBridge {
         const CC3DAdhesionFlexCallbacksV1 *callbacks;
@@ -96,6 +100,26 @@ extern "C" const CC3DFocalPointPlasticityCallbacksV1 *cc3d_get_focal_point_plast
 }
 extern "C" void cc3d_unregister_focal_point_plasticity_callbacks(void *plugin_instance) {
     if (focalPointPlasticityRegistration.callbacks.plugin_instance == plugin_instance) focalPointPlasticityRegistration = {};
+}
+extern "C" void cc3d_register_polarization_vector_callbacks(void *simulator, const CC3DPolarizationVectorCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    polarizationVectorRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DPolarizationVectorCallbacksV1 *cc3d_get_polarization_vector_callbacks(void *simulator) {
+    return polarizationVectorRegistration.simulator == simulator ? &polarizationVectorRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_polarization_vector_callbacks(void *plugin_instance) {
+    if (polarizationVectorRegistration.callbacks.plugin_instance == plugin_instance) polarizationVectorRegistration = {};
+}
+extern "C" void cc3d_register_chemotaxis_callbacks(void *simulator, const CC3DChemotaxisCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    chemotaxisRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DChemotaxisCallbacksV1 *cc3d_get_chemotaxis_callbacks(void *simulator) {
+    return chemotaxisRegistration.simulator == simulator ? &chemotaxisRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_chemotaxis_callbacks(void *plugin_instance) {
+    if (chemotaxisRegistration.callbacks.plugin_instance == plugin_instance) chemotaxisRegistration = {};
 }
 
 namespace {
@@ -325,6 +349,59 @@ namespace {
         bridge.callbacks = cc3d_get_focal_point_plasticity_callbacks(simulatorPtr);
         return bridge.callbacks ? &bridge : nullptr;
     }
+
+    const CC3DPolarizationVectorCallbacksV1 *cc3d_ensure_polarization_vector(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("PolarizationVector", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "PolarizationVector"));
+        return cc3d_get_polarization_vector_callbacks(simulatorPtr);
+    }
+
+    void cc3d_polarization_set(void *simulatorPtr, CC3DCellHandle cell, float x, float y, float z) {
+        auto *api = cc3d_ensure_polarization_vector(simulatorPtr);
+        if (api && api->set_fn) api->set_fn(api->plugin_instance, cell, x, y, z);
+    }
+    uint8_t cc3d_polarization_get(void *simulatorPtr, CC3DCellHandle cell, float *x, float *y, float *z) {
+        auto *api = cc3d_ensure_polarization_vector(simulatorPtr);
+        return api && api->get_fn ? api->get_fn(api->plugin_instance, cell, x, y, z) : 0u;
+    }
+
+    const CC3DChemotaxisCallbacksV1 *cc3d_ensure_chemotaxis(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("Chemotaxis", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "Chemotaxis"));
+        return cc3d_get_chemotaxis_callbacks(simulatorPtr);
+    }
+    size_t cc3d_chemotaxis_field_count(void *simulatorPtr, CC3DCellHandle cell) {
+        auto *api = cc3d_ensure_chemotaxis(simulatorPtr);
+        return api && api->field_count_fn ? api->field_count_fn(api->plugin_instance, cell) : 0u;
+    }
+    const char *cc3d_chemotaxis_field_name(void *simulatorPtr, CC3DCellHandle cell, size_t index) {
+        auto *api = cc3d_ensure_chemotaxis(simulatorPtr);
+        return api && api->field_name_fn ? api->field_name_fn(api->plugin_instance, cell, index) : nullptr;
+    }
+    CC3DChemotaxisDataAPIV1 cc3d_chemotaxis_data_api(void *simulatorPtr, CC3DCellHandle cell, const char *name, bool add) {
+        CC3DChemotaxisDataAPIV1 result{};
+        auto *api = cc3d_ensure_chemotaxis(simulatorPtr);
+        if (!api || !name) return result;
+        result.userdata = add ? api->add_data_fn(api->plugin_instance, cell, name) : api->get_data_fn(api->plugin_instance, cell, name);
+        result.get_lambda_fn = api->data_get_lambda_fn;
+        result.set_lambda_fn = api->data_set_lambda_fn;
+        result.get_saturation_fn = api->data_get_saturation_fn;
+        result.set_saturation_fn = api->data_set_saturation_fn;
+        result.get_formula_name_fn = api->data_get_formula_name_fn;
+        result.set_formula_name_fn = api->data_set_formula_name_fn;
+        result.get_toward_count_fn = api->data_get_toward_count_fn;
+        result.get_toward_type_fn = api->data_get_toward_type_fn;
+        result.assign_toward_types_fn = api->data_assign_toward_types_fn;
+        return result;
+    }
+    CC3DChemotaxisDataAPIV1 cc3d_chemotaxis_add(void *simulatorPtr, CC3DCellHandle cell, const char *name) { return cc3d_chemotaxis_data_api(simulatorPtr, cell, name, true); }
+    CC3DChemotaxisDataAPIV1 cc3d_chemotaxis_get(void *simulatorPtr, CC3DCellHandle cell, const char *name) { return cc3d_chemotaxis_data_api(simulatorPtr, cell, name, false); }
 
     void cc3d_fpp_create(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, double lambda, double target, double max) {
         auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
@@ -1099,6 +1176,14 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.focalPointPlasticity.create_anchor_fn = &cc3d_fpp_create_anchor;
     context_.focalPointPlasticity.delete_anchor_fn = &cc3d_fpp_delete_anchor;
     context_.focalPointPlasticity.set_anchor_fn = &cc3d_fpp_set_anchor;
+    context_.polarizationVector.userdata = nullptr;
+    context_.polarizationVector.set_fn = &cc3d_polarization_set;
+    context_.polarizationVector.get_fn = &cc3d_polarization_get;
+    context_.chemotaxis.userdata = nullptr;
+    context_.chemotaxis.field_count_fn = &cc3d_chemotaxis_field_count;
+    context_.chemotaxis.field_name_fn = &cc3d_chemotaxis_field_name;
+    context_.chemotaxis.add_data_fn = &cc3d_chemotaxis_add;
+    context_.chemotaxis.get_data_fn = &cc3d_chemotaxis_get;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -1271,4 +1356,6 @@ void CompiledSteppable::cleanup() {
     context_.adhesionFlex.userdata = nullptr;
     context_.lengthConstraint.userdata = nullptr;
     context_.focalPointPlasticity.userdata = nullptr;
+    context_.polarizationVector.userdata = nullptr;
+    context_.chemotaxis.userdata = nullptr;
 }

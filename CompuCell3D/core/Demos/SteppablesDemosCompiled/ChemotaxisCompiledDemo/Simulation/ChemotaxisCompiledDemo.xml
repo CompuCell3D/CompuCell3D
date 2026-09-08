@@ -1,0 +1,36 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="60" y="60" z="1"/>
+        <Steps>200</Steps>
+        <Temperature>10</Temperature>
+    </Potts>
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Bacterium" TypeId="1"/>
+        <CellType TypeName="Macrophage" TypeId="2"/>
+    </Plugin>
+    <Plugin Name="Volume"/>
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Bacterium" Type2="Medium">8</Energy>
+        <Energy Type1="Macrophage" Type2="Medium">8</Energy>
+        <Energy Type1="Bacterium" Type2="Macrophage">15</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="ATTR"/>
+    </Plugin>
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>ATTR</FieldName>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DecayConstant>0.0</DecayConstant>
+            </DiffusionData>
+            <SecretionData><Secretion Type="Bacterium">20</Secretion></SecretionData>
+        </DiffusionField>
+    </Steppable>
+    <Steppable Type="BlobInitializer">
+        <Region><Center x="30" y="30" z="0"/><Radius>7</Radius><Gap>0</Gap><Width>5</Width><Types>Macrophage</Types></Region>
+    </Steppable>
+</CompuCell3D>

@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 12u
+#define CC3D_KERNEL_ABI_VERSION 13u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -14,6 +14,8 @@
 #endif
 
 #ifdef __cplusplus
+#include <string>
+#include <vector>
 namespace cc3d {
 namespace kernel {
 class Cell;
@@ -32,6 +34,9 @@ class SBMLModel;
 class AdhesionFlex;
 class LengthConstraint;
 class FocalPointPlasticity;
+class PolarizationVector;
+class Chemotaxis;
+class ChemotaxisData;
 struct Dim3;
 }
 }
@@ -251,6 +256,39 @@ typedef struct CC3DFocalPointPlasticityAPIV1 {
 #endif
 } CC3DFocalPointPlasticityAPIV1;
 
+typedef struct CC3DPolarizationVectorAPIV1 {
+    void *userdata;
+    void (*set_fn)(void *, CC3DCellHandle, float, float, float);
+    uint8_t (*get_fn)(void *, CC3DCellHandle, float *, float *, float *);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::PolarizationVector polarizationVector() const;
+#endif
+} CC3DPolarizationVectorAPIV1;
+
+typedef struct CC3DChemotaxisDataAPIV1 {
+    void *userdata;
+    float (*get_lambda_fn)(void *);
+    void (*set_lambda_fn)(void *, float);
+    float (*get_saturation_fn)(void *);
+    void (*set_saturation_fn)(void *, float);
+    const char *(*get_formula_name_fn)(void *);
+    uint8_t (*set_formula_name_fn)(void *, const char *);
+    size_t (*get_toward_count_fn)(void *);
+    int (*get_toward_type_fn)(void *, size_t);
+    void (*assign_toward_types_fn)(void *, const int *, size_t);
+} CC3DChemotaxisDataAPIV1;
+
+typedef struct CC3DChemotaxisAPIV1 {
+    void *userdata;
+    size_t (*field_count_fn)(void *, CC3DCellHandle);
+    const char *(*field_name_fn)(void *, CC3DCellHandle, size_t);
+    CC3DChemotaxisDataAPIV1 (*add_data_fn)(void *, CC3DCellHandle, const char *);
+    CC3DChemotaxisDataAPIV1 (*get_data_fn)(void *, CC3DCellHandle, const char *);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::Chemotaxis chemotaxis() const;
+#endif
+} CC3DChemotaxisAPIV1;
+
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
@@ -265,6 +303,8 @@ typedef struct CC3DKernelContext {
     CC3DAdhesionFlexAPIV1 adhesionFlex;
     CC3DLengthConstraintAPIV1 lengthConstraint;
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
+    CC3DPolarizationVectorAPIV1 polarizationVector;
+    CC3DChemotaxisAPIV1 chemotaxis;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -980,6 +1020,79 @@ public:
 private:
     const CC3DFocalPointPlasticityAPIV1 *api_;
 };
+
+class PolarizationVector {
+public:
+    explicit PolarizationVector(const CC3DPolarizationVectorAPIV1 *api) : api_(api) {}
+    void set(const Cell &cell, float x, float y, float z) const {
+        if (api_ && api_->set_fn) api_->set_fn(api_->userdata, cell.handle(), x, y, z);
+    }
+    void setPolarizationVector(const Cell &cell, float x, float y, float z) const { set(cell, x, y, z); }
+    bool get(const Cell &cell, float *x, float *y, float *z) const {
+        return api_ && api_->get_fn && x && y && z
+               ? api_->get_fn(api_->userdata, cell.handle(), x, y, z) != 0 : false;
+    }
+    std::vector<float> get(const Cell &cell) const {
+        float x = 0, y = 0, z = 0;
+        get(cell, &x, &y, &z);
+        return {x, y, z};
+    }
+    std::vector<float> getPolarizationVector(const Cell &cell) const { return get(cell); }
+private:
+    const CC3DPolarizationVectorAPIV1 *api_;
+};
+
+class ChemotaxisData {
+public:
+    ChemotaxisData() : api_{} {}
+    explicit ChemotaxisData(const CC3DChemotaxisDataAPIV1 &api) : api_(api) {}
+    explicit operator bool() const { return api_.userdata != nullptr; }
+    float lambda() const { return api_.userdata && api_.get_lambda_fn ? api_.get_lambda_fn(api_.userdata) : 0.0f; }
+    void setLambda(float value) const { if (api_.userdata && api_.set_lambda_fn) api_.set_lambda_fn(api_.userdata, value); }
+    float saturationCoef() const { return api_.userdata && api_.get_saturation_fn ? api_.get_saturation_fn(api_.userdata) : 0.0f; }
+    void setSaturationCoef(float value) const { if (api_.userdata && api_.set_saturation_fn) api_.set_saturation_fn(api_.userdata, value); }
+    const char *formulaName() const { return api_.userdata && api_.get_formula_name_fn ? api_.get_formula_name_fn(api_.userdata) : nullptr; }
+    bool setFormulaName(const char *name) const { return api_.userdata && api_.set_formula_name_fn && name ? api_.set_formula_name_fn(api_.userdata, name) != 0 : false; }
+    std::vector<int> chemotactTowardsTypes() const {
+        std::vector<int> result;
+        if (!api_.userdata || !api_.get_toward_count_fn || !api_.get_toward_type_fn) return result;
+        for (size_t i = 0; i < api_.get_toward_count_fn(api_.userdata); ++i) result.push_back(api_.get_toward_type_fn(api_.userdata, i));
+        return result;
+    }
+    void assignChemotactTowardsTypes(const std::vector<int> &types) const {
+        if (api_.userdata && api_.assign_toward_types_fn) api_.assign_toward_types_fn(api_.userdata, types.data(), types.size());
+    }
+    void assignChemotactTowardsVectorTypes(const std::vector<int> &types) const { assignChemotactTowardsTypes(types); }
+    std::vector<int> getChemotactTowardsVectorTypes() const { return chemotactTowardsTypes(); }
+    void setChemotaxisFormulaByName(const char *name) const { setFormulaName(name); }
+private:
+    CC3DChemotaxisDataAPIV1 api_;
+};
+
+class Chemotaxis {
+public:
+    explicit Chemotaxis(const CC3DChemotaxisAPIV1 *api) : api_(api) {}
+    std::vector<std::string> fieldNames(const Cell &cell) const {
+        std::vector<std::string> result;
+        if (!api_ || !api_->field_count_fn || !api_->field_name_fn) return result;
+        for (size_t i = 0; i < api_->field_count_fn(api_->userdata, cell.handle()); ++i) {
+            const char *name = api_->field_name_fn(api_->userdata, cell.handle(), i);
+            if (name) result.emplace_back(name);
+        }
+        return result;
+    }
+    std::vector<std::string> getFieldNamesWithChemotaxisData(const Cell &cell) const { return fieldNames(cell); }
+    ChemotaxisData add(const Cell &cell, const char *fieldName) const {
+        return api_ && api_->add_data_fn && fieldName ? ChemotaxisData(api_->add_data_fn(api_->userdata, cell.handle(), fieldName)) : ChemotaxisData(CC3DChemotaxisDataAPIV1{});
+    }
+    ChemotaxisData addChemotaxisData(const Cell &cell, const char *fieldName) const { return add(cell, fieldName); }
+    ChemotaxisData get(const Cell &cell, const char *fieldName) const {
+        return api_ && api_->get_data_fn && fieldName ? ChemotaxisData(api_->get_data_fn(api_->userdata, cell.handle(), fieldName)) : ChemotaxisData(CC3DChemotaxisDataAPIV1{});
+    }
+    ChemotaxisData getChemotaxisData(const Cell &cell, const char *fieldName) const { return get(cell, fieldName); }
+private:
+    const CC3DChemotaxisAPIV1 *api_;
+};
 } // namespace kernel
 } // namespace cc3d
 
@@ -1070,6 +1183,12 @@ inline ::cc3d::kernel::LengthConstraint CC3DLengthConstraintAPIV1::lengthConstra
 
 inline ::cc3d::kernel::FocalPointPlasticity CC3DFocalPointPlasticityAPIV1::focalPointPlasticity() const {
     return ::cc3d::kernel::FocalPointPlasticity(this);
+}
+inline ::cc3d::kernel::PolarizationVector CC3DPolarizationVectorAPIV1::polarizationVector() const {
+    return ::cc3d::kernel::PolarizationVector(this);
+}
+inline ::cc3d::kernel::Chemotaxis CC3DChemotaxisAPIV1::chemotaxis() const {
+    return ::cc3d::kernel::Chemotaxis(this);
 }
 
 inline ::cc3d::kernel::Cell CC3DKernelContext::newCell(unsigned char cell_type) const {

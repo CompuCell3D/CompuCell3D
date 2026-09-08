@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+    <XMLScript Type="XMLScript">Simulation/PolarizationVectorCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/PolarizationVectorCompiledDemo.py</PythonScript>
+    <Resource Type="Cpp">Native/PolarizationVectorCompiledSteppable.cpp</Resource>
+</Simulation>

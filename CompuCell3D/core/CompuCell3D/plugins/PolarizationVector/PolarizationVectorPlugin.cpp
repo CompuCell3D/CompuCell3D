@@ -10,9 +10,12 @@ using namespace std;
 
 #include "PolarizationVectorPlugin.h"
 
+extern "C" void cc3d_register_polarization_vector_plugin(void *, void *);
+extern "C" void cc3d_unregister_polarization_vector_callbacks(void *);
+
 PolarizationVectorPlugin::PolarizationVectorPlugin() {}
 
-PolarizationVectorPlugin::~PolarizationVectorPlugin() {}
+PolarizationVectorPlugin::~PolarizationVectorPlugin() { cc3d_unregister_polarization_vector_callbacks(this); }
 
 void PolarizationVectorPlugin::setPolarizationVector(CellG *_cell, float _x, float _y, float _z) {
     polarizationVectorAccessor.get(_cell->extraAttribPtr)->x = _x;
@@ -29,6 +32,7 @@ vector<float> PolarizationVectorPlugin::getPolarizationVector(CellG *_cell) {
 }
 
 void PolarizationVectorPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+    cc3d_register_polarization_vector_plugin(simulator, this);
     Potts3D *potts = simulator->getPotts();
     potts->getCellFactoryGroupPtr()->registerClass(&polarizationVectorAccessor); //register new class with the factory
 }
