@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 14u
+#define CC3D_KERNEL_ABI_VERSION 15u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -35,6 +35,7 @@ class AdhesionFlex;
 class LengthConstraint;
 class FocalPointPlasticity;
 class PolarizationVector;
+class CellOrientation;
 class Chemotaxis;
 class ChemotaxisData;
 class FieldSecretor;
@@ -266,6 +267,15 @@ typedef struct CC3DPolarizationVectorAPIV1 {
 #endif
 } CC3DPolarizationVectorAPIV1;
 
+typedef struct CC3DCellOrientationAPIV1 {
+    void *userdata;
+    void (*set_lambda_fn)(void *, CC3DCellHandle, double);
+    double (*get_lambda_fn)(void *, CC3DCellHandle);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::CellOrientation cellOrientation() const;
+#endif
+} CC3DCellOrientationAPIV1;
+
 typedef struct CC3DChemotaxisDataAPIV1 {
     void *userdata;
     float (*get_lambda_fn)(void *);
@@ -346,6 +356,7 @@ typedef struct CC3DKernelContext {
     CC3DLengthConstraintAPIV1 lengthConstraint;
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
     CC3DPolarizationVectorAPIV1 polarizationVector;
+    CC3DCellOrientationAPIV1 cellOrientation;
     CC3DChemotaxisAPIV1 chemotaxis;
     CC3DSecretionAPIV1 secretion;
 #ifdef __cplusplus
@@ -1085,6 +1096,20 @@ private:
     const CC3DPolarizationVectorAPIV1 *api_;
 };
 
+class CellOrientation {
+public:
+    explicit CellOrientation(const CC3DCellOrientationAPIV1 *api) : api_(api) {}
+    void setLambda(const Cell &cell, double value) const {
+        if (api_ && api_->set_lambda_fn) api_->set_lambda_fn(api_->userdata, cell.handle(), value);
+    }
+    double lambda(const Cell &cell) const {
+        return api_ && api_->get_lambda_fn ? api_->get_lambda_fn(api_->userdata, cell.handle()) : 0.0;
+    }
+    double getLambda(const Cell &cell) const { return lambda(cell); }
+private:
+    const CC3DCellOrientationAPIV1 *api_;
+};
+
 class ChemotaxisData {
 public:
     ChemotaxisData() : api_{} {}
@@ -1295,6 +1320,9 @@ inline ::cc3d::kernel::FocalPointPlasticity CC3DFocalPointPlasticityAPIV1::focal
 }
 inline ::cc3d::kernel::PolarizationVector CC3DPolarizationVectorAPIV1::polarizationVector() const {
     return ::cc3d::kernel::PolarizationVector(this);
+}
+inline ::cc3d::kernel::CellOrientation CC3DCellOrientationAPIV1::cellOrientation() const {
+    return ::cc3d::kernel::CellOrientation(this);
 }
 inline ::cc3d::kernel::Chemotaxis CC3DChemotaxisAPIV1::chemotaxis() const {
     return ::cc3d::kernel::Chemotaxis(this);

@@ -59,6 +59,12 @@ typedef struct CC3DPolarizationVectorCallbacksV1 {
     uint8_t (*get_fn)(void *, CC3DPluginCellHandle, float *, float *, float *);
 } CC3DPolarizationVectorCallbacksV1;
 
+typedef struct CC3DCellOrientationCallbacksV1 {
+    void *plugin_instance;
+    void (*set_lambda_fn)(void *, CC3DPluginCellHandle, double);
+    double (*get_lambda_fn)(void *, CC3DPluginCellHandle);
+} CC3DCellOrientationCallbacksV1;
+
 typedef struct CC3DChemotaxisCallbacksV1 {
     void *plugin_instance;
     size_t (*field_count_fn)(void *, CC3DPluginCellHandle);
@@ -127,6 +133,9 @@ CC3D_PLUGIN_API_EXPORT void cc3d_unregister_focal_point_plasticity_callbacks(voi
 CC3D_PLUGIN_API_EXPORT void cc3d_register_polarization_vector_callbacks(CC3DPluginSimulatorHandle, const CC3DPolarizationVectorCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DPolarizationVectorCallbacksV1 *cc3d_get_polarization_vector_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_polarization_vector_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_cell_orientation_callbacks(CC3DPluginSimulatorHandle, const CC3DCellOrientationCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DCellOrientationCallbacksV1 *cc3d_get_cell_orientation_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cell_orientation_callbacks(void *plugin_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_chemotaxis_callbacks(CC3DPluginSimulatorHandle, const CC3DChemotaxisCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DChemotaxisCallbacksV1 *cc3d_get_chemotaxis_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_chemotaxis_callbacks(void *plugin_instance);

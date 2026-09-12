@@ -28,12 +28,14 @@ namespace {
     struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
     struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
     struct PolarizationVectorRegistration { void *simulator; CC3DPolarizationVectorCallbacksV1 callbacks; };
+    struct CellOrientationRegistration { void *simulator; CC3DCellOrientationCallbacksV1 callbacks; };
     struct ChemotaxisRegistration { void *simulator; CC3DChemotaxisCallbacksV1 callbacks; };
     struct SecretionRegistration { void *simulator; CC3DSecretionCallbacksV1 callbacks; };
     LengthConstraintRegistration lengthConstraintRegistration{};
     AdhesionFlexRegistration adhesionFlexRegistration{};
     FocalPointPlasticityRegistration focalPointPlasticityRegistration{};
     PolarizationVectorRegistration polarizationVectorRegistration{};
+    CellOrientationRegistration cellOrientationRegistration{};
     ChemotaxisRegistration chemotaxisRegistration{};
     SecretionRegistration secretionRegistration{};
 
@@ -112,6 +114,16 @@ extern "C" const CC3DPolarizationVectorCallbacksV1 *cc3d_get_polarization_vector
 }
 extern "C" void cc3d_unregister_polarization_vector_callbacks(void *plugin_instance) {
     if (polarizationVectorRegistration.callbacks.plugin_instance == plugin_instance) polarizationVectorRegistration = {};
+}
+extern "C" void cc3d_register_cell_orientation_callbacks(void *simulator, const CC3DCellOrientationCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    cellOrientationRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DCellOrientationCallbacksV1 *cc3d_get_cell_orientation_callbacks(void *simulator) {
+    return cellOrientationRegistration.simulator == simulator ? &cellOrientationRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_cell_orientation_callbacks(void *plugin_instance) {
+    if (cellOrientationRegistration.callbacks.plugin_instance == plugin_instance) cellOrientationRegistration = {};
 }
 extern "C" void cc3d_register_chemotaxis_callbacks(void *simulator, const CC3DChemotaxisCallbacksV1 *callbacks) {
     if (!simulator || !callbacks) return;
@@ -369,6 +381,24 @@ namespace {
         auto *plugin = CompuCell3D::Simulator::pluginManager.get("PolarizationVector", &alreadyRegistered);
         if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "PolarizationVector"));
         return cc3d_get_polarization_vector_callbacks(simulatorPtr);
+    }
+
+    const CC3DCellOrientationCallbacksV1 *cc3d_ensure_cell_orientation(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("CellOrientation", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "CellOrientation"));
+        return cc3d_get_cell_orientation_callbacks(simulatorPtr);
+    }
+
+    void cc3d_cell_orientation_set_lambda(void *simulatorPtr, CC3DCellHandle cell, double value) {
+        auto *api = cc3d_ensure_cell_orientation(simulatorPtr);
+        if (api && api->set_lambda_fn) api->set_lambda_fn(api->plugin_instance, cell, value);
+    }
+    double cc3d_cell_orientation_get_lambda(void *simulatorPtr, CC3DCellHandle cell) {
+        auto *api = cc3d_ensure_cell_orientation(simulatorPtr);
+        return api && api->get_lambda_fn ? api->get_lambda_fn(api->plugin_instance, cell) : 0.0;
     }
 
     void cc3d_polarization_set(void *simulatorPtr, CC3DCellHandle cell, float x, float y, float z) {
@@ -1237,6 +1267,9 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.polarizationVector.userdata = nullptr;
     context_.polarizationVector.set_fn = &cc3d_polarization_set;
     context_.polarizationVector.get_fn = &cc3d_polarization_get;
+    context_.cellOrientation.userdata = nullptr;
+    context_.cellOrientation.set_lambda_fn = &cc3d_cell_orientation_set_lambda;
+    context_.cellOrientation.get_lambda_fn = &cc3d_cell_orientation_get_lambda;
     context_.chemotaxis.userdata = nullptr;
     context_.chemotaxis.field_count_fn = &cc3d_chemotaxis_field_count;
     context_.chemotaxis.field_name_fn = &cc3d_chemotaxis_field_name;
@@ -1356,6 +1389,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.lengthConstraint.userdata = simulator_;
     context_.focalPointPlasticity.userdata = simulator_;
     context_.polarizationVector.userdata = simulator_;
+    context_.cellOrientation.userdata = simulator_;
     context_.chemotaxis.userdata = simulator_;
     context_.secretion.userdata = simulator_;
     currentStep = simulator_->getStep();
@@ -1444,6 +1478,7 @@ void CompiledSteppable::cleanup() {
     context_.lengthConstraint.userdata = nullptr;
     context_.focalPointPlasticity.userdata = nullptr;
     context_.polarizationVector.userdata = nullptr;
+    context_.cellOrientation.userdata = nullptr;
     context_.chemotaxis.userdata = nullptr;
     context_.secretion.userdata = nullptr;
 }

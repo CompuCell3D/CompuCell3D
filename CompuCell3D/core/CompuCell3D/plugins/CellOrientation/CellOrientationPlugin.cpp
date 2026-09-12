@@ -9,6 +9,9 @@ using namespace std;
 
 #include "CellOrientationPlugin.h"
 
+extern "C" void cc3d_register_cell_orientation_plugin(void *, void *);
+extern "C" void cc3d_unregister_cell_orientation_callbacks(void *);
+
 
 CellOrientationPlugin::CellOrientationPlugin() : potts(0),
                                                  simulator(0),
@@ -30,10 +33,11 @@ double CellOrientationPlugin::getLambdaCellOrientation(CellG *_cell) {
 
 
 CellOrientationPlugin::~CellOrientationPlugin() {
-
+    cc3d_unregister_cell_orientation_callbacks(this);
 }
 
 void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+	cc3d_register_cell_orientation_plugin(simulator, this);
 	CC3D_Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
 	potts = simulator->getPotts();
 	//    potts->getCellFactoryGroupPtr()->registerClass(&CellOrientationVectorAccessor); //register new class with the factory

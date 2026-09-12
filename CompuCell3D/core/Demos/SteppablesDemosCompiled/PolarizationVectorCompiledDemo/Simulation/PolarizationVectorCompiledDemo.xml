@@ -1,7 +1,7 @@
 <CompuCell3D>
     <Potts>
         <Dimensions x="60" y="60" z="1"/>
-        <Steps>100</Steps>
+        <Steps>1000</Steps>
         <Temperature>10</Temperature>
     </Potts>
     <Plugin Name="CellType">
@@ -16,6 +16,11 @@
         <NeighborOrder>2</NeighborOrder>
     </Plugin>
     <Plugin Name="PolarizationVector"/>
+
+    <Plugin Name="CellOrientation">
+        <!-- <Algorithm>CenterOfMassBased</Algorithm> -->
+    </Plugin>
+
     <Steppable Type="BlobInitializer">
         <Region>
             <Center x="30" y="30" z="0"/>
