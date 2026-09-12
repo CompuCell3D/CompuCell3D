@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 13u
+#define CC3D_KERNEL_ABI_VERSION 14u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -37,6 +37,7 @@ class FocalPointPlasticity;
 class PolarizationVector;
 class Chemotaxis;
 class ChemotaxisData;
+class FieldSecretor;
 struct Dim3;
 }
 }
@@ -289,6 +290,47 @@ typedef struct CC3DChemotaxisAPIV1 {
 #endif
 } CC3DChemotaxisAPIV1;
 
+#ifndef CC3D_FIELD_SECRETOR_RESULT_V1_DEFINED
+#define CC3D_FIELD_SECRETOR_RESULT_V1_DEFINED
+typedef struct CC3DFieldSecretorResultV1 {
+    uint8_t success;
+    float total_amount;
+} CC3DFieldSecretorResultV1;
+#endif
+
+typedef struct CC3DSecretionAPIV1 {
+    void *userdata;
+    uint8_t (*secrete_inside_fn)(void *, CC3DCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_total_fn)(void *, CC3DCellHandle, const char *, float);
+    uint8_t (*secrete_inside_constant_fn)(void *, CC3DCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_constant_total_fn)(void *, CC3DCellHandle, const char *, float);
+    uint8_t (*secrete_inside_boundary_fn)(void *, CC3DCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_boundary_total_fn)(void *, CC3DCellHandle, const char *, float);
+    uint8_t (*secrete_inside_boundary_contact_fn)(void *, CC3DCellHandle, const char *, float, const unsigned char *, size_t);
+    CC3DFieldSecretorResultV1 (*secrete_inside_boundary_contact_total_fn)(void *, CC3DCellHandle, const char *, float, const unsigned char *, size_t);
+    uint8_t (*secrete_outside_boundary_fn)(void *, CC3DCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_outside_boundary_total_fn)(void *, CC3DCellHandle, const char *, float);
+    uint8_t (*secrete_outside_boundary_contact_fn)(void *, CC3DCellHandle, const char *, float, const unsigned char *, size_t);
+    CC3DFieldSecretorResultV1 (*secrete_outside_boundary_contact_total_fn)(void *, CC3DCellHandle, const char *, float, const unsigned char *, size_t);
+    uint8_t (*secrete_com_fn)(void *, CC3DCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_com_total_fn)(void *, CC3DCellHandle, const char *, float);
+    uint8_t (*uptake_inside_fn)(void *, CC3DCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_inside_total_fn)(void *, CC3DCellHandle, const char *, float, float);
+    uint8_t (*uptake_boundary_fn)(void *, CC3DCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_boundary_total_fn)(void *, CC3DCellHandle, const char *, float, float);
+    uint8_t (*uptake_outside_boundary_fn)(void *, CC3DCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_outside_boundary_total_fn)(void *, CC3DCellHandle, const char *, float, float);
+    float (*amount_seen_fn)(void *, CC3DCellHandle, const char *);
+    float (*field_integral_fn)(void *, const char *);
+    void (*secrete_single_field_fn)(void *, size_t);
+    void (*secrete_contact_single_field_fn)(void *, size_t);
+    void (*secrete_constant_single_field_fn)(void *, size_t);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::FieldSecretor fieldSecretor() const;
+    inline ::cc3d::kernel::FieldSecretor fieldSecretor(const char *field) const;
+#endif
+} CC3DSecretionAPIV1;
+
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
@@ -305,6 +347,7 @@ typedef struct CC3DKernelContext {
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
     CC3DPolarizationVectorAPIV1 polarizationVector;
     CC3DChemotaxisAPIV1 chemotaxis;
+    CC3DSecretionAPIV1 secretion;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -1093,6 +1136,72 @@ public:
 private:
     const CC3DChemotaxisAPIV1 *api_;
 };
+
+struct FieldSecretorResult {
+    bool success;
+    float totalAmount;
+};
+
+class FieldSecretor {
+public:
+    explicit FieldSecretor(const CC3DSecretionAPIV1 *api, const char *field = nullptr) : api_(api), field_(field ? field : "") {}
+    bool secreteInsideCell(const Cell &cell, const char *field, float amount) const { return call(api_ ? api_->secrete_inside_fn : nullptr, cell, field, amount); }
+    FieldSecretorResult secreteInsideCellTotalCount(const Cell &cell, const char *field, float amount) const { return total(api_ ? api_->secrete_inside_total_fn : nullptr, cell, field, amount); }
+    bool secreteInsideCellConstantConcentration(const Cell &cell, const char *field, float amount) const { return call(api_ ? api_->secrete_inside_constant_fn : nullptr, cell, field, amount); }
+    bool secreteInsideCellAtBoundary(const Cell &cell, const char *field, float amount) const { return call(api_ ? api_->secrete_inside_boundary_fn : nullptr, cell, field, amount); }
+    FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(const Cell &cell, const char *field, float amount) const { return total(api_ ? api_->secrete_inside_boundary_total_fn : nullptr, cell, field, amount); }
+    bool secreteInsideCellAtBoundaryOnContactWith(const Cell &cell, const char *field, float amount, const std::vector<unsigned char> &types) const { return api_ && api_->secrete_inside_boundary_contact_fn ? api_->secrete_inside_boundary_contact_fn(api_->userdata, cell.handle(), field, amount, types.data(), types.size()) != 0 : false; }
+    FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(const Cell &cell, const char *field, float amount, const std::vector<unsigned char> &types) const { return api_ && api_->secrete_inside_boundary_contact_total_fn ? result(api_->secrete_inside_boundary_contact_total_fn(api_->userdata, cell.handle(), field, amount, types.data(), types.size())) : FieldSecretorResult{false, 0}; }
+    bool secreteOutsideCellAtBoundary(const Cell &cell, const char *field, float amount) const { return call(api_ ? api_->secrete_outside_boundary_fn : nullptr, cell, field, amount); }
+    FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(const Cell &cell, const char *field, float amount) const { return total(api_ ? api_->secrete_outside_boundary_total_fn : nullptr, cell, field, amount); }
+    bool secreteOutsideCellAtBoundaryOnContactWith(const Cell &cell, const char *field, float amount, const std::vector<unsigned char> &types) const { return api_ && api_->secrete_outside_boundary_contact_fn ? api_->secrete_outside_boundary_contact_fn(api_->userdata, cell.handle(), field, amount, types.data(), types.size()) != 0 : false; }
+    FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(const Cell &cell, const char *field, float amount, const std::vector<unsigned char> &types) const { return api_ && api_->secrete_outside_boundary_contact_total_fn ? result(api_->secrete_outside_boundary_contact_total_fn(api_->userdata, cell.handle(), field, amount, types.data(), types.size())) : FieldSecretorResult{false, 0}; }
+    bool secreteInsideCellAtCOM(const Cell &cell, const char *field, float amount) const { return call(api_ ? api_->secrete_com_fn : nullptr, cell, field, amount); }
+    FieldSecretorResult secreteInsideCellAtCOMTotalCount(const Cell &cell, const char *field, float amount) const { return total(api_ ? api_->secrete_com_total_fn : nullptr, cell, field, amount); }
+    bool uptakeInsideCell(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_inside_fn ? api_->uptake_inside_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake) != 0 : false; }
+    FieldSecretorResult uptakeInsideCellTotalCount(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_inside_total_fn ? result(api_->uptake_inside_total_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake)) : FieldSecretorResult{false, 0}; }
+    bool uptakeInsideCellAtBoundary(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_boundary_fn ? api_->uptake_boundary_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake) != 0 : false; }
+    FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_boundary_total_fn ? result(api_->uptake_boundary_total_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake)) : FieldSecretorResult{false, 0}; }
+    bool uptakeOutsideCellAtBoundary(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_outside_boundary_fn ? api_->uptake_outside_boundary_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake) != 0 : false; }
+    FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(const Cell &cell, const char *field, float maxUptake, float relativeUptake) const { return api_ && api_->uptake_outside_boundary_total_fn ? result(api_->uptake_outside_boundary_total_fn(api_->userdata, cell.handle(), field, maxUptake, relativeUptake)) : FieldSecretorResult{false, 0}; }
+    float amountSeenByCell(const Cell &cell, const char *field) const { return api_ && api_->amount_seen_fn ? api_->amount_seen_fn(api_->userdata, cell.handle(), field) : 0.0f; }
+    float totalFieldIntegral(const char *field) const { return api_ && api_->field_integral_fn ? api_->field_integral_fn(api_->userdata, field) : 0.0f; }
+    // Field-bound overloads mirror Python's get_field_secretor(field_name). The
+    // overloads taking an explicit field remain available for source compatibility.
+    bool secreteInsideCell(const Cell &cell, float amount) const { return secreteInsideCell(cell, field_.c_str(), amount); }
+    FieldSecretorResult secreteInsideCellTotalCount(const Cell &cell, float amount) const { return secreteInsideCellTotalCount(cell, field_.c_str(), amount); }
+    bool secreteInsideCellConstantConcentration(const Cell &cell, float amount) const { return secreteInsideCellConstantConcentration(cell, field_.c_str(), amount); }
+    FieldSecretorResult secreteInsideCellConstantConcentrationTotalCount(const Cell &cell, float amount) const { return total(api_ ? api_->secrete_inside_constant_total_fn : nullptr, cell, field_.c_str(), amount); }
+    bool secreteInsideCellAtBoundary(const Cell &cell, float amount) const { return secreteInsideCellAtBoundary(cell, field_.c_str(), amount); }
+    FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(const Cell &cell, float amount) const { return secreteInsideCellAtBoundaryTotalCount(cell, field_.c_str(), amount); }
+    bool secreteInsideCellAtBoundaryOnContactWith(const Cell &cell, float amount, const std::vector<unsigned char> &types) const { return secreteInsideCellAtBoundaryOnContactWith(cell, field_.c_str(), amount, types); }
+    FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(const Cell &cell, float amount, const std::vector<unsigned char> &types) const { return secreteInsideCellAtBoundaryOnContactWithTotalCount(cell, field_.c_str(), amount, types); }
+    bool secreteOutsideCellAtBoundary(const Cell &cell, float amount) const { return secreteOutsideCellAtBoundary(cell, field_.c_str(), amount); }
+    FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(const Cell &cell, float amount) const { return secreteOutsideCellAtBoundaryTotalCount(cell, field_.c_str(), amount); }
+    bool secreteOutsideCellAtBoundaryOnContactWith(const Cell &cell, float amount, const std::vector<unsigned char> &types) const { return secreteOutsideCellAtBoundaryOnContactWith(cell, field_.c_str(), amount, types); }
+    FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(const Cell &cell, float amount, const std::vector<unsigned char> &types) const { return secreteOutsideCellAtBoundaryOnContactWithTotalCount(cell, field_.c_str(), amount, types); }
+    bool secreteInsideCellAtCOM(const Cell &cell, float amount) const { return secreteInsideCellAtCOM(cell, field_.c_str(), amount); }
+    FieldSecretorResult secreteInsideCellAtCOMTotalCount(const Cell &cell, float amount) const { return secreteInsideCellAtCOMTotalCount(cell, field_.c_str(), amount); }
+    bool uptakeInsideCell(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeInsideCell(cell, field_.c_str(), maxUptake, relativeUptake); }
+    FieldSecretorResult uptakeInsideCellTotalCount(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeInsideCellTotalCount(cell, field_.c_str(), maxUptake, relativeUptake); }
+    bool uptakeInsideCellAtBoundary(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeInsideCellAtBoundary(cell, field_.c_str(), maxUptake, relativeUptake); }
+    FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeInsideCellAtBoundaryTotalCount(cell, field_.c_str(), maxUptake, relativeUptake); }
+    bool uptakeOutsideCellAtBoundary(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeOutsideCellAtBoundary(cell, field_.c_str(), maxUptake, relativeUptake); }
+    FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(const Cell &cell, float maxUptake, float relativeUptake) const { return uptakeOutsideCellAtBoundaryTotalCount(cell, field_.c_str(), maxUptake, relativeUptake); }
+    float amountSeenByCell(const Cell &cell) const { return amountSeenByCell(cell, field_.c_str()); }
+    float totalFieldIntegral() const { return totalFieldIntegral(field_.c_str()); }
+    void secreteSingleField(size_t index) const { if (api_ && api_->secrete_single_field_fn) api_->secrete_single_field_fn(api_->userdata, index); }
+    void secreteOnContactSingleField(size_t index) const { if (api_ && api_->secrete_contact_single_field_fn) api_->secrete_contact_single_field_fn(api_->userdata, index); }
+    void secreteConstantConcentrationSingleField(size_t index) const { if (api_ && api_->secrete_constant_single_field_fn) api_->secrete_constant_single_field_fn(api_->userdata, index); }
+private:
+    using Call = uint8_t (*)(void *, CC3DCellHandle, const char *, float);
+    using TotalCall = CC3DFieldSecretorResultV1 (*)(void *, CC3DCellHandle, const char *, float);
+    bool call(Call fn, const Cell &cell, const char *field, float amount) const { return api_ && fn && field ? fn(api_->userdata, cell.handle(), field, amount) != 0 : false; }
+    FieldSecretorResult total(TotalCall fn, const Cell &cell, const char *field, float amount) const { return api_ && fn && field ? result(fn(api_->userdata, cell.handle(), field, amount)) : FieldSecretorResult{false, 0}; }
+    static FieldSecretorResult result(CC3DFieldSecretorResultV1 value) { return {value.success != 0, value.total_amount}; }
+    const CC3DSecretionAPIV1 *api_;
+    std::string field_;
+};
 } // namespace kernel
 } // namespace cc3d
 
@@ -1189,6 +1298,13 @@ inline ::cc3d::kernel::PolarizationVector CC3DPolarizationVectorAPIV1::polarizat
 }
 inline ::cc3d::kernel::Chemotaxis CC3DChemotaxisAPIV1::chemotaxis() const {
     return ::cc3d::kernel::Chemotaxis(this);
+}
+inline ::cc3d::kernel::FieldSecretor CC3DSecretionAPIV1::fieldSecretor() const {
+    return ::cc3d::kernel::FieldSecretor(this);
+}
+
+inline ::cc3d::kernel::FieldSecretor CC3DSecretionAPIV1::fieldSecretor(const char *field) const {
+    return ::cc3d::kernel::FieldSecretor(this, field);
 }
 
 inline ::cc3d::kernel::Cell CC3DKernelContext::newCell(unsigned char cell_type) const {

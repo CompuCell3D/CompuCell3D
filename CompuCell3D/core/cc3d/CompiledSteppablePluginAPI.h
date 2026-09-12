@@ -75,6 +75,43 @@ typedef struct CC3DChemotaxisCallbacksV1 {
     int (*data_get_toward_type_fn)(void *, size_t);
     void (*data_assign_toward_types_fn)(void *, const int *, size_t);
 } CC3DChemotaxisCallbacksV1;
+
+#ifndef CC3D_FIELD_SECRETOR_RESULT_V1_DEFINED
+#define CC3D_FIELD_SECRETOR_RESULT_V1_DEFINED
+typedef struct CC3DFieldSecretorResultV1 {
+    uint8_t success;
+    float total_amount;
+} CC3DFieldSecretorResultV1;
+#endif
+
+typedef struct CC3DSecretionCallbacksV1 {
+    void *plugin_instance;
+    uint8_t (*secrete_inside_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_total_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    uint8_t (*secrete_inside_constant_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_constant_total_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    uint8_t (*secrete_inside_boundary_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_inside_boundary_total_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    uint8_t (*secrete_inside_boundary_contact_fn)(void *, CC3DPluginCellHandle, const char *, float, const unsigned char *, size_t);
+    CC3DFieldSecretorResultV1 (*secrete_inside_boundary_contact_total_fn)(void *, CC3DPluginCellHandle, const char *, float, const unsigned char *, size_t);
+    uint8_t (*secrete_outside_boundary_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_outside_boundary_total_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    uint8_t (*secrete_outside_boundary_contact_fn)(void *, CC3DPluginCellHandle, const char *, float, const unsigned char *, size_t);
+    CC3DFieldSecretorResultV1 (*secrete_outside_boundary_contact_total_fn)(void *, CC3DPluginCellHandle, const char *, float, const unsigned char *, size_t);
+    uint8_t (*secrete_com_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    CC3DFieldSecretorResultV1 (*secrete_com_total_fn)(void *, CC3DPluginCellHandle, const char *, float);
+    uint8_t (*uptake_inside_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_inside_total_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    uint8_t (*uptake_boundary_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_boundary_total_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    uint8_t (*uptake_outside_boundary_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    CC3DFieldSecretorResultV1 (*uptake_outside_boundary_total_fn)(void *, CC3DPluginCellHandle, const char *, float, float);
+    float (*amount_seen_fn)(void *, CC3DPluginCellHandle, const char *);
+    float (*field_integral_fn)(void *, const char *);
+    void (*secrete_single_field_fn)(void *, size_t);
+    void (*secrete_contact_single_field_fn)(void *, size_t);
+    void (*secrete_constant_single_field_fn)(void *, size_t);
+} CC3DSecretionCallbacksV1;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -93,6 +130,9 @@ CC3D_PLUGIN_API_EXPORT void cc3d_unregister_polarization_vector_callbacks(void *
 CC3D_PLUGIN_API_EXPORT void cc3d_register_chemotaxis_callbacks(CC3DPluginSimulatorHandle, const CC3DChemotaxisCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DChemotaxisCallbacksV1 *cc3d_get_chemotaxis_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_chemotaxis_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_secretion_callbacks(CC3DPluginSimulatorHandle, const CC3DSecretionCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DSecretionCallbacksV1 *cc3d_get_secretion_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_secretion_callbacks(void *plugin_instance);
 #ifdef __cplusplus
 }
 #endif

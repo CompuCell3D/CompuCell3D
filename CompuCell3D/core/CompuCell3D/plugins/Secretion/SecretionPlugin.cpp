@@ -13,6 +13,9 @@ using namespace std;
 #include "SecretionPlugin.h"
 #include "FieldSecretor.h"
 
+extern "C" void cc3d_register_secretion_plugin(void *, void *);
+extern "C" void cc3d_unregister_secretion_callbacks(void *);
+
 SecretionPlugin::SecretionPlugin() :
         sim(0),
         potts(0),
@@ -29,10 +32,13 @@ SecretionPlugin::SecretionPlugin() :
         disableBoundaryPixelTracker(false) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SecretionPlugin::~SecretionPlugin() {}
+SecretionPlugin::~SecretionPlugin() {
+    cc3d_unregister_secretion_callbacks(this);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SecretionPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+	cc3d_register_secretion_plugin(simulator, this);
 
     // IMPORTANT: listing secretion data inside secretion plugin will cause big slowdown of the program. The slowdown is even worse with multiple processors. This has to do
     // with necessity to synchronize between threads when executing secretion i.e. we have to make sure that only one thread executes secretion and

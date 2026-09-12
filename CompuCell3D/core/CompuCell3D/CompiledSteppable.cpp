@@ -29,11 +29,13 @@ namespace {
     struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
     struct PolarizationVectorRegistration { void *simulator; CC3DPolarizationVectorCallbacksV1 callbacks; };
     struct ChemotaxisRegistration { void *simulator; CC3DChemotaxisCallbacksV1 callbacks; };
+    struct SecretionRegistration { void *simulator; CC3DSecretionCallbacksV1 callbacks; };
     LengthConstraintRegistration lengthConstraintRegistration{};
     AdhesionFlexRegistration adhesionFlexRegistration{};
     FocalPointPlasticityRegistration focalPointPlasticityRegistration{};
     PolarizationVectorRegistration polarizationVectorRegistration{};
     ChemotaxisRegistration chemotaxisRegistration{};
+    SecretionRegistration secretionRegistration{};
 
     struct AdhesionFlexBridge {
         const CC3DAdhesionFlexCallbacksV1 *callbacks;
@@ -120,6 +122,16 @@ extern "C" const CC3DChemotaxisCallbacksV1 *cc3d_get_chemotaxis_callbacks(void *
 }
 extern "C" void cc3d_unregister_chemotaxis_callbacks(void *plugin_instance) {
     if (chemotaxisRegistration.callbacks.plugin_instance == plugin_instance) chemotaxisRegistration = {};
+}
+extern "C" void cc3d_register_secretion_callbacks(void *simulator, const CC3DSecretionCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    secretionRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DSecretionCallbacksV1 *cc3d_get_secretion_callbacks(void *simulator) {
+    return secretionRegistration.simulator == simulator ? &secretionRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_secretion_callbacks(void *plugin_instance) {
+    if (secretionRegistration.callbacks.plugin_instance == plugin_instance) secretionRegistration = {};
 }
 
 namespace {
@@ -402,6 +414,52 @@ namespace {
     }
     CC3DChemotaxisDataAPIV1 cc3d_chemotaxis_add(void *simulatorPtr, CC3DCellHandle cell, const char *name) { return cc3d_chemotaxis_data_api(simulatorPtr, cell, name, true); }
     CC3DChemotaxisDataAPIV1 cc3d_chemotaxis_get(void *simulatorPtr, CC3DCellHandle cell, const char *name) { return cc3d_chemotaxis_data_api(simulatorPtr, cell, name, false); }
+
+    const CC3DSecretionCallbacksV1 *cc3d_ensure_secretion(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("Secretion", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "Secretion"));
+        return cc3d_get_secretion_callbacks(simulatorPtr);
+    }
+#define CC3D_SECRETE_BOOL(name, member) \
+    uint8_t name(void *s, CC3DCellHandle c, const char *f, float a) { auto *p = cc3d_ensure_secretion(s); return p && p->member ? p->member(p->plugin_instance, c, f, a) : 0u; }
+#define CC3D_SECRETE_TOTAL(name, member) \
+    CC3DFieldSecretorResultV1 name(void *s, CC3DCellHandle c, const char *f, float a) { auto *p = cc3d_ensure_secretion(s); return p && p->member ? p->member(p->plugin_instance, c, f, a) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    CC3D_SECRETE_BOOL(cc3d_secrete_inside, secrete_inside_fn)
+    CC3D_SECRETE_TOTAL(cc3d_secrete_inside_total, secrete_inside_total_fn)
+    CC3D_SECRETE_BOOL(cc3d_secrete_inside_constant, secrete_inside_constant_fn)
+    CC3D_SECRETE_TOTAL(cc3d_secrete_inside_constant_total, secrete_inside_constant_total_fn)
+    CC3D_SECRETE_BOOL(cc3d_secrete_inside_boundary, secrete_inside_boundary_fn)
+    CC3D_SECRETE_TOTAL(cc3d_secrete_inside_boundary_total, secrete_inside_boundary_total_fn)
+    uint8_t cc3d_secrete_inside_boundary_contact(void *s, CC3DCellHandle c, const char *f, float a, const unsigned char *t, size_t n) { auto *p = cc3d_ensure_secretion(s); return p && p->secrete_inside_boundary_contact_fn ? p->secrete_inside_boundary_contact_fn(p->plugin_instance, c, f, a, t, n) : 0u; }
+    CC3DFieldSecretorResultV1 cc3d_secrete_inside_boundary_contact_total(void *s, CC3DCellHandle c, const char *f, float a, const unsigned char *t, size_t n) { auto *p = cc3d_ensure_secretion(s); return p && p->secrete_inside_boundary_contact_total_fn ? p->secrete_inside_boundary_contact_total_fn(p->plugin_instance, c, f, a, t, n) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    CC3D_SECRETE_BOOL(cc3d_secrete_outside_boundary, secrete_outside_boundary_fn)
+    CC3D_SECRETE_TOTAL(cc3d_secrete_outside_boundary_total, secrete_outside_boundary_total_fn)
+    uint8_t cc3d_secrete_outside_boundary_contact(void *s, CC3DCellHandle c, const char *f, float a, const unsigned char *t, size_t n) { auto *p = cc3d_ensure_secretion(s); return p && p->secrete_outside_boundary_contact_fn ? p->secrete_outside_boundary_contact_fn(p->plugin_instance, c, f, a, t, n) : 0u; }
+    CC3DFieldSecretorResultV1 cc3d_secrete_outside_boundary_contact_total(void *s, CC3DCellHandle c, const char *f, float a, const unsigned char *t, size_t n) { auto *p = cc3d_ensure_secretion(s); return p && p->secrete_outside_boundary_contact_total_fn ? p->secrete_outside_boundary_contact_total_fn(p->plugin_instance, c, f, a, t, n) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    CC3D_SECRETE_BOOL(cc3d_secrete_com, secrete_com_fn)
+    CC3D_SECRETE_TOTAL(cc3d_secrete_com_total, secrete_com_total_fn)
+#define CC3D_UPTAKE_BOOL(name, member) \
+    uint8_t name(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->member ? p->member(p->plugin_instance, c, f, max, rel) : 0u; }
+#define CC3D_UPTAKE_TOTAL(name, member) \
+    CC3DFieldSecretorResultV1 name(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->member ? p->member(p->plugin_instance, c, f, max, rel) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    CC3D_UPTAKE_BOOL(cc3d_uptake_inside, uptake_inside_fn)
+    CC3D_UPTAKE_TOTAL(cc3d_uptake_inside_total, uptake_inside_total_fn)
+    uint8_t cc3d_uptake_boundary(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->uptake_boundary_fn ? p->uptake_boundary_fn(p->plugin_instance, c, f, max, rel) : 0u; }
+    CC3DFieldSecretorResultV1 cc3d_uptake_boundary_total(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->uptake_boundary_total_fn ? p->uptake_boundary_total_fn(p->plugin_instance, c, f, max, rel) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    uint8_t cc3d_uptake_outside_boundary(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->uptake_outside_boundary_fn ? p->uptake_outside_boundary_fn(p->plugin_instance, c, f, max, rel) : 0u; }
+    CC3DFieldSecretorResultV1 cc3d_uptake_outside_boundary_total(void *s, CC3DCellHandle c, const char *f, float max, float rel) { auto *p = cc3d_ensure_secretion(s); return p && p->uptake_outside_boundary_total_fn ? p->uptake_outside_boundary_total_fn(p->plugin_instance, c, f, max, rel) : CC3DFieldSecretorResultV1{0, 0.0f}; }
+    float cc3d_secretion_amount_seen(void *s, CC3DCellHandle c, const char *f) { auto *p = cc3d_ensure_secretion(s); return p && p->amount_seen_fn ? p->amount_seen_fn(p->plugin_instance, c, f) : 0.0f; }
+    float cc3d_secretion_field_integral(void *s, const char *f) { auto *p = cc3d_ensure_secretion(s); return p && p->field_integral_fn ? p->field_integral_fn(p->plugin_instance, f) : 0.0f; }
+    void cc3d_secretion_single(void *s, size_t i) { auto *p = cc3d_ensure_secretion(s); if (p && p->secrete_single_field_fn) p->secrete_single_field_fn(p->plugin_instance, i); }
+    void cc3d_secretion_contact_single(void *s, size_t i) { auto *p = cc3d_ensure_secretion(s); if (p && p->secrete_contact_single_field_fn) p->secrete_contact_single_field_fn(p->plugin_instance, i); }
+    void cc3d_secretion_constant_single(void *s, size_t i) { auto *p = cc3d_ensure_secretion(s); if (p && p->secrete_constant_single_field_fn) p->secrete_constant_single_field_fn(p->plugin_instance, i); }
+#undef CC3D_SECRETE_BOOL
+#undef CC3D_SECRETE_TOTAL
+#undef CC3D_UPTAKE_BOOL
+#undef CC3D_UPTAKE_TOTAL
 
     void cc3d_fpp_create(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, double lambda, double target, double max) {
         auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
@@ -1184,6 +1242,32 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.chemotaxis.field_name_fn = &cc3d_chemotaxis_field_name;
     context_.chemotaxis.add_data_fn = &cc3d_chemotaxis_add;
     context_.chemotaxis.get_data_fn = &cc3d_chemotaxis_get;
+    context_.secretion.userdata = nullptr;
+    context_.secretion.secrete_inside_fn = &cc3d_secrete_inside;
+    context_.secretion.secrete_inside_total_fn = &cc3d_secrete_inside_total;
+    context_.secretion.secrete_inside_constant_fn = &cc3d_secrete_inside_constant;
+    context_.secretion.secrete_inside_constant_total_fn = &cc3d_secrete_inside_constant_total;
+    context_.secretion.secrete_inside_boundary_fn = &cc3d_secrete_inside_boundary;
+    context_.secretion.secrete_inside_boundary_total_fn = &cc3d_secrete_inside_boundary_total;
+    context_.secretion.secrete_inside_boundary_contact_fn = &cc3d_secrete_inside_boundary_contact;
+    context_.secretion.secrete_inside_boundary_contact_total_fn = &cc3d_secrete_inside_boundary_contact_total;
+    context_.secretion.secrete_outside_boundary_fn = &cc3d_secrete_outside_boundary;
+    context_.secretion.secrete_outside_boundary_total_fn = &cc3d_secrete_outside_boundary_total;
+    context_.secretion.secrete_outside_boundary_contact_fn = &cc3d_secrete_outside_boundary_contact;
+    context_.secretion.secrete_outside_boundary_contact_total_fn = &cc3d_secrete_outside_boundary_contact_total;
+    context_.secretion.secrete_com_fn = &cc3d_secrete_com;
+    context_.secretion.secrete_com_total_fn = &cc3d_secrete_com_total;
+    context_.secretion.uptake_inside_fn = &cc3d_uptake_inside;
+    context_.secretion.uptake_inside_total_fn = &cc3d_uptake_inside_total;
+    context_.secretion.uptake_boundary_fn = &cc3d_uptake_boundary;
+    context_.secretion.uptake_boundary_total_fn = &cc3d_uptake_boundary_total;
+    context_.secretion.uptake_outside_boundary_fn = &cc3d_uptake_outside_boundary;
+    context_.secretion.uptake_outside_boundary_total_fn = &cc3d_uptake_outside_boundary_total;
+    context_.secretion.amount_seen_fn = &cc3d_secretion_amount_seen;
+    context_.secretion.field_integral_fn = &cc3d_secretion_field_integral;
+    context_.secretion.secrete_single_field_fn = &cc3d_secretion_single;
+    context_.secretion.secrete_contact_single_field_fn = &cc3d_secretion_contact_single;
+    context_.secretion.secrete_constant_single_field_fn = &cc3d_secretion_constant_single;
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -1271,6 +1355,9 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.adhesionFlex.userdata = simulator_;
     context_.lengthConstraint.userdata = simulator_;
     context_.focalPointPlasticity.userdata = simulator_;
+    context_.polarizationVector.userdata = simulator_;
+    context_.chemotaxis.userdata = simulator_;
+    context_.secretion.userdata = simulator_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 }
@@ -1358,4 +1445,5 @@ void CompiledSteppable::cleanup() {
     context_.focalPointPlasticity.userdata = nullptr;
     context_.polarizationVector.userdata = nullptr;
     context_.chemotaxis.userdata = nullptr;
+    context_.secretion.userdata = nullptr;
 }
