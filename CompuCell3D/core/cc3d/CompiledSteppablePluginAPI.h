@@ -32,6 +32,22 @@ typedef struct CC3DClusterSurfaceTrackerCallbacksV1 {
     void (*update_cluster_surface_fn)(void *, long);
 } CC3DClusterSurfaceTrackerCallbacksV1;
 
+typedef struct CC3DMitosisCallbacksV1 {
+    void *steppable_instance;
+    void (*set_parent_child_position_fn)(void *, int);
+    int (*get_parent_child_position_fn)(void *);
+    uint8_t (*divide_random_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*divide_orientation_fn)(void *, CC3DPluginCellHandle, double, double, double);
+    uint8_t (*divide_major_axis_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*divide_minor_axis_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*divide_cluster_random_fn)(void *, long);
+    uint8_t (*divide_cluster_orientation_fn)(void *, long, double, double, double);
+    uint8_t (*divide_cluster_major_axis_fn)(void *, long);
+    uint8_t (*divide_cluster_minor_axis_fn)(void *, long);
+    CC3DPluginCellHandle (*parent_cell_fn)(void *);
+    CC3DPluginCellHandle (*child_cell_fn)(void *);
+} CC3DMitosisCallbacksV1;
+
 typedef struct CC3DOrientedGrowthCallbacksV1 {
     void *plugin_instance;
     void (*set_constraint_width_fn)(void *, CC3DPluginCellHandle, float);
@@ -160,6 +176,9 @@ CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cluster_surface_callbacks(void *plug
 CC3D_PLUGIN_API_EXPORT void cc3d_register_cluster_surface_tracker_callbacks(CC3DPluginSimulatorHandle, const CC3DClusterSurfaceTrackerCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DClusterSurfaceTrackerCallbacksV1 *cc3d_get_cluster_surface_tracker_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cluster_surface_tracker_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_mitosis_callbacks(CC3DPluginSimulatorHandle, const CC3DMitosisCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DMitosisCallbacksV1 *cc3d_get_mitosis_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_mitosis_callbacks(void *steppable_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_oriented_growth_callbacks(CC3DPluginSimulatorHandle, const CC3DOrientedGrowthCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DOrientedGrowthCallbacksV1 *cc3d_get_oriented_growth_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_oriented_growth_callbacks(void *plugin_instance);

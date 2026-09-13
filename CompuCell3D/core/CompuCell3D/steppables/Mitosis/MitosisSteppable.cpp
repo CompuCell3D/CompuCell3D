@@ -15,6 +15,9 @@ using namespace std;
 #include "CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTracker.h"
 #include <Logger/CC3DLogger.h>
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_register_mitosis_plugin(void *, void *);
 
 MitosisSteppable::MitosisSteppable() {
     parentChildPositionFlag = 0;
@@ -25,6 +28,7 @@ MitosisSteppable::MitosisSteppable() {
 }
 
 MitosisSteppable::~MitosisSteppable() {
+    cc3d_unregister_mitosis_callbacks(this);
     if (randGen) {
         delete randGen;
         randGen = nullptr;
@@ -34,6 +38,7 @@ MitosisSteppable::~MitosisSteppable() {
 void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
     sim = simulator;
+    cc3d_register_mitosis_plugin(simulator, this);
     potts = simulator->getPotts();
     bool pluginAlreadyRegisteredFlag;
     //this will load VolumeTracker plugin if it is not already loaded

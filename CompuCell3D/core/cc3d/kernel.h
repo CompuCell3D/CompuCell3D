@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 18u
+#define CC3D_KERNEL_ABI_VERSION 19u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -36,6 +36,7 @@ class AdhesionFlex;
 class LengthConstraint;
 class ClusterSurface;
 class ClusterSurfaceTracker;
+class Mitosis;
 class OrientedGrowth;
 class MomentOfInertia;
 class FocalPointPlasticity;
@@ -65,7 +66,7 @@ typedef struct CC3DCellViewV1 {
     const long *volume;
     const double *surface;
     const double *clusterSurface;
-    const unsigned char *type;
+    unsigned char *type;
     unsigned char *subtype;
     float *targetVolume;
     float *lambdaVolume;
@@ -261,6 +262,26 @@ typedef struct CC3DClusterSurfaceTrackerAPIV1 {
 #endif
 } CC3DClusterSurfaceTrackerAPIV1;
 
+typedef struct CC3DMitosisAPIV1 {
+    void *userdata;
+    void (*set_parent_child_position_fn)(void *, int);
+    int (*get_parent_child_position_fn)(void *);
+    uint8_t (*divide_random_fn)(void *, CC3DCellHandle);
+    uint8_t (*divide_orientation_fn)(void *, CC3DCellHandle, double, double, double);
+    uint8_t (*divide_major_axis_fn)(void *, CC3DCellHandle);
+    uint8_t (*divide_minor_axis_fn)(void *, CC3DCellHandle);
+    uint8_t (*divide_cluster_random_fn)(void *, long);
+    uint8_t (*divide_cluster_orientation_fn)(void *, long, double, double, double);
+    uint8_t (*divide_cluster_major_axis_fn)(void *, long);
+    uint8_t (*divide_cluster_minor_axis_fn)(void *, long);
+    CC3DCellViewV1 (*parent_cell_fn)(void *);
+    CC3DCellViewV1 (*child_cell_fn)(void *);
+    void (*clone_attributes_fn)(void *, CC3DCellHandle, CC3DCellHandle);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::Mitosis mitosis() const;
+#endif
+} CC3DMitosisAPIV1;
+
 typedef struct CC3DOrientedGrowthAPIV1 {
     void *userdata;
     void (*set_constraint_width_fn)(void *, CC3DCellHandle, float);
@@ -406,6 +427,7 @@ typedef struct CC3DKernelContext {
     CC3DLengthConstraintAPIV1 lengthConstraint;
     CC3DClusterSurfaceAPIV1 clusterSurface;
     CC3DClusterSurfaceTrackerAPIV1 clusterSurfaceTracker;
+    CC3DMitosisAPIV1 mitosis;
     CC3DOrientedGrowthAPIV1 orientedGrowth;
     CC3DMomentOfInertiaAPIV1 momentOfInertia;
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
@@ -548,7 +570,7 @@ public:
     ReadOnlyProperty<long> volume;
     ReadOnlyProperty<double> surface;
     ReadOnlyProperty<double> clusterSurface;
-    ReadOnlyProperty<unsigned char> type;
+    Property<unsigned char> type;
     Property<unsigned char> subtype;
     Property<float> targetVolume;
     Property<float> lambdaVolume;
@@ -1172,6 +1194,40 @@ private:
     const CC3DClusterSurfaceTrackerAPIV1 *api_;
 };
 
+class Mitosis {
+public:
+    explicit Mitosis(const CC3DMitosisAPIV1 *api) : api_(api) {}
+
+    void setParentChildPositionFlag(int flag) const {
+        if (api_ && api_->set_parent_child_position_fn) api_->set_parent_child_position_fn(api_->userdata, flag);
+    }
+    int parentChildPositionFlag() const {
+        return api_ && api_->get_parent_child_position_fn ? api_->get_parent_child_position_fn(api_->userdata) : 0;
+    }
+    bool divideRandom(const Cell &cell) const { return divide(api_ ? api_->divide_random_fn : nullptr, cell); }
+    bool divideOrientation(const Cell &cell, double nx, double ny, double nz) const {
+        return api_ && api_->divide_orientation_fn ? api_->divide_orientation_fn(api_->userdata, cell.handle(), nx, ny, nz) != 0 : false;
+    }
+    bool divideAlongMajorAxis(const Cell &cell) const { return divide(api_ ? api_->divide_major_axis_fn : nullptr, cell); }
+    bool divideAlongMinorAxis(const Cell &cell) const { return divide(api_ ? api_->divide_minor_axis_fn : nullptr, cell); }
+    bool divideClusterRandom(long cluster_id) const { return api_ && api_->divide_cluster_random_fn ? api_->divide_cluster_random_fn(api_->userdata, cluster_id) != 0 : false; }
+    bool divideClusterOrientation(long cluster_id, double nx, double ny, double nz) const {
+        return api_ && api_->divide_cluster_orientation_fn ? api_->divide_cluster_orientation_fn(api_->userdata, cluster_id, nx, ny, nz) != 0 : false;
+    }
+    bool divideClusterAlongMajorAxis(long cluster_id) const { return api_ && api_->divide_cluster_major_axis_fn ? api_->divide_cluster_major_axis_fn(api_->userdata, cluster_id) != 0 : false; }
+    bool divideClusterAlongMinorAxis(long cluster_id) const { return api_ && api_->divide_cluster_minor_axis_fn ? api_->divide_cluster_minor_axis_fn(api_->userdata, cluster_id) != 0 : false; }
+    Cell parentCell() const { return api_ && api_->parent_cell_fn ? Cell(api_->parent_cell_fn(api_->userdata)) : Cell(CC3DCellViewV1{}); }
+    Cell childCell() const { return api_ && api_->child_cell_fn ? Cell(api_->child_cell_fn(api_->userdata)) : Cell(CC3DCellViewV1{}); }
+    void cloneAttributes(const Cell &source, const Cell &target) const {
+        if (api_ && api_->clone_attributes_fn) api_->clone_attributes_fn(api_->userdata, source.handle(), target.handle());
+    }
+
+private:
+    typedef uint8_t (*DivideFn)(void *, CC3DCellHandle);
+    bool divide(DivideFn fn, const Cell &cell) const { return api_ && fn ? fn(api_->userdata, cell.handle()) != 0 : false; }
+    const CC3DMitosisAPIV1 *api_;
+};
+
 class OrientedGrowth {
 public:
     explicit OrientedGrowth(const CC3DOrientedGrowthAPIV1 *api) : api_(api) {}
@@ -1473,6 +1529,10 @@ inline ::cc3d::kernel::ClusterSurface CC3DClusterSurfaceAPIV1::clusterSurface() 
 
 inline ::cc3d::kernel::ClusterSurfaceTracker CC3DClusterSurfaceTrackerAPIV1::clusterSurfaceTracker() const {
     return ::cc3d::kernel::ClusterSurfaceTracker(this);
+}
+
+inline ::cc3d::kernel::Mitosis CC3DMitosisAPIV1::mitosis() const {
+    return ::cc3d::kernel::Mitosis(this);
 }
 
 inline ::cc3d::kernel::OrientedGrowth CC3DOrientedGrowthAPIV1::orientedGrowth() const {

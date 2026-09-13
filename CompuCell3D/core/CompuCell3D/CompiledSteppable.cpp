@@ -28,6 +28,7 @@ namespace {
     struct LengthConstraintRegistration { void *simulator; CC3DLengthConstraintCallbacksV1 callbacks; };
     struct ClusterSurfaceRegistration { void *simulator; CC3DClusterSurfaceCallbacksV1 callbacks; };
     struct ClusterSurfaceTrackerRegistration { void *simulator; CC3DClusterSurfaceTrackerCallbacksV1 callbacks; };
+    struct MitosisRegistration { void *simulator; CC3DMitosisCallbacksV1 callbacks; };
     struct OrientedGrowthRegistration { void *simulator; CC3DOrientedGrowthCallbacksV1 callbacks; };
     struct MomentOfInertiaRegistration { void *simulator; CC3DMomentOfInertiaCallbacksV1 callbacks; };
     struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
@@ -39,6 +40,7 @@ namespace {
     LengthConstraintRegistration lengthConstraintRegistration{};
     ClusterSurfaceRegistration clusterSurfaceRegistration{};
     ClusterSurfaceTrackerRegistration clusterSurfaceTrackerRegistration{};
+    MitosisRegistration mitosisRegistration{};
     OrientedGrowthRegistration orientedGrowthRegistration{};
     MomentOfInertiaRegistration momentOfInertiaRegistration{};
     AdhesionFlexRegistration adhesionFlexRegistration{};
@@ -79,6 +81,11 @@ namespace {
         void deleteAnchor(CompuCell3D::CellG *c, int id) { callbacks->delete_anchor_fn(callbacks->plugin_instance, c, id); }
         void setAnchorParameters(CompuCell3D::CellG *c, int id, double l, double t, double m, float x, float y, float z) { callbacks->set_anchor_fn(callbacks->plugin_instance, c, id, l, t, m, x, y, z); }
     };
+    AdhesionFlexBridge *cc3d_ensure_adhesion_flex(void *);
+    const CC3DLengthConstraintCallbacksV1 *cc3d_ensure_length_constraint(void *);
+    const CC3DPolarizationVectorCallbacksV1 *cc3d_ensure_polarization_vector(void *);
+    const CC3DCellOrientationCallbacksV1 *cc3d_ensure_cell_orientation(void *);
+    const CC3DChemotaxisCallbacksV1 *cc3d_ensure_chemotaxis(void *);
 }
 
 extern "C" void cc3d_register_length_constraint_callbacks(void *simulator, const CC3DLengthConstraintCallbacksV1 *callbacks) {
@@ -114,6 +121,17 @@ extern "C" const CC3DClusterSurfaceTrackerCallbacksV1 *cc3d_get_cluster_surface_
 }
 extern "C" void cc3d_unregister_cluster_surface_tracker_callbacks(void *plugin_instance) {
     if (clusterSurfaceTrackerRegistration.callbacks.plugin_instance == plugin_instance) clusterSurfaceTrackerRegistration = {};
+}
+
+extern "C" void cc3d_register_mitosis_callbacks(void *simulator, const CC3DMitosisCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    mitosisRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DMitosisCallbacksV1 *cc3d_get_mitosis_callbacks(void *simulator) {
+    return mitosisRegistration.simulator == simulator ? &mitosisRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_mitosis_callbacks(void *steppable_instance) {
+    if (mitosisRegistration.callbacks.steppable_instance == steppable_instance) mitosisRegistration = {};
 }
 
 extern "C" void cc3d_register_oriented_growth_callbacks(void *simulator, const CC3DOrientedGrowthCallbacksV1 *callbacks) {
@@ -483,6 +501,139 @@ namespace {
         cc3d_cluster_surface_tracker_update(simulatorPtr, oldClusterId);
         cc3d_cluster_surface_tracker_update(simulatorPtr, clusterId);
         return reassigned ? 1u : 0u;
+    }
+
+    const CC3DMitosisCallbacksV1 *cc3d_ensure_mitosis(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *steppable = CompuCell3D::Simulator::steppableManager.get("Mitosis", &alreadyRegistered);
+        if (!alreadyRegistered) steppable->init(simulator);
+        return cc3d_get_mitosis_callbacks(simulatorPtr);
+    }
+
+    void cc3d_mitosis_set_position_flag(void *simulatorPtr, int flag) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        if (callbacks && callbacks->set_parent_child_position_fn) callbacks->set_parent_child_position_fn(callbacks->steppable_instance, flag);
+    }
+    int cc3d_mitosis_get_position_flag(void *simulatorPtr) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        return callbacks && callbacks->get_parent_child_position_fn ? callbacks->get_parent_child_position_fn(callbacks->steppable_instance) : 0;
+    }
+#define CC3D_MITOSIS_CELL_CALL(name, member) \
+    uint8_t name(void *simulatorPtr, CC3DCellHandle cell) { auto *callbacks = cc3d_ensure_mitosis(simulatorPtr); return callbacks && callbacks->member && cell ? callbacks->member(callbacks->steppable_instance, cell) : 0u; }
+    CC3D_MITOSIS_CELL_CALL(cc3d_mitosis_divide_random, divide_random_fn)
+    CC3D_MITOSIS_CELL_CALL(cc3d_mitosis_divide_major, divide_major_axis_fn)
+    CC3D_MITOSIS_CELL_CALL(cc3d_mitosis_divide_minor, divide_minor_axis_fn)
+#undef CC3D_MITOSIS_CELL_CALL
+    uint8_t cc3d_mitosis_divide_orientation(void *simulatorPtr, CC3DCellHandle cell, double nx, double ny, double nz) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        return callbacks && callbacks->divide_orientation_fn && cell ? callbacks->divide_orientation_fn(callbacks->steppable_instance, cell, nx, ny, nz) : 0u;
+    }
+#define CC3D_MITOSIS_CLUSTER_CALL(name, member) \
+    uint8_t name(void *simulatorPtr, long clusterId) { auto *callbacks = cc3d_ensure_mitosis(simulatorPtr); return callbacks && callbacks->member ? callbacks->member(callbacks->steppable_instance, clusterId) : 0u; }
+    CC3D_MITOSIS_CLUSTER_CALL(cc3d_mitosis_divide_cluster_random, divide_cluster_random_fn)
+    CC3D_MITOSIS_CLUSTER_CALL(cc3d_mitosis_divide_cluster_major, divide_cluster_major_axis_fn)
+    CC3D_MITOSIS_CLUSTER_CALL(cc3d_mitosis_divide_cluster_minor, divide_cluster_minor_axis_fn)
+#undef CC3D_MITOSIS_CLUSTER_CALL
+    uint8_t cc3d_mitosis_divide_cluster_orientation(void *simulatorPtr, long clusterId, double nx, double ny, double nz) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        return callbacks && callbacks->divide_cluster_orientation_fn ? callbacks->divide_cluster_orientation_fn(callbacks->steppable_instance, clusterId, nx, ny, nz) : 0u;
+    }
+    CC3DCellViewV1 cc3d_mitosis_parent(void *simulatorPtr) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        return callbacks && callbacks->parent_cell_fn ? cc3d_cell_view_from_cell(static_cast<CompuCell3D::CellG *>(callbacks->parent_cell_fn(callbacks->steppable_instance))) : CC3DCellViewV1{};
+    }
+    CC3DCellViewV1 cc3d_mitosis_child(void *simulatorPtr) {
+        auto *callbacks = cc3d_ensure_mitosis(simulatorPtr);
+        return callbacks && callbacks->child_cell_fn ? cc3d_cell_view_from_cell(static_cast<CompuCell3D::CellG *>(callbacks->child_cell_fn(callbacks->steppable_instance))) : CC3DCellViewV1{};
+    }
+
+    void cc3d_mitosis_clone_attributes(void *simulatorPtr, CC3DCellHandle sourceHandle, CC3DCellHandle targetHandle) {
+        auto *source = static_cast<CompuCell3D::CellG *>(sourceHandle);
+        auto *target = static_cast<CompuCell3D::CellG *>(targetHandle);
+        if (!source || !target) return;
+
+        // Keep this list synchronized with SteppableBasePy.clonable_attribute_names.
+        target->lambdaVolume = source->lambdaVolume;
+        target->targetVolume = source->targetVolume;
+        target->targetSurface = source->targetSurface;
+        target->lambdaSurface = source->lambdaSurface;
+        target->targetClusterSurface = source->targetClusterSurface;
+        target->lambdaClusterSurface = source->lambdaClusterSurface;
+        target->type = source->type;
+        target->lambdaVecX = source->lambdaVecX;
+        target->lambdaVecY = source->lambdaVecY;
+        target->lambdaVecZ = source->lambdaVecZ;
+        target->fluctAmpl = source->fluctAmpl;
+
+        // Copy plugin state currently covered by the C ABI.
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (simulator && CompuCell3D::Simulator::pluginManager.isLoaded("AdhesionFlex")) {
+            auto *adhesion = cc3d_ensure_adhesion_flex(simulatorPtr);
+            if (adhesion) {
+            std::vector<float> values;
+            const size_t count = adhesion->getAdhesionMoleculeNameVecSize();
+            values.reserve(count);
+            for (size_t i = 0; i < count; ++i) values.push_back(adhesion->getAdhesionMoleculeDensityByIndex(source, static_cast<int>(i)));
+            adhesion->assignNewAdhesionMoleculeDensityVector(target, values);
+            }
+        }
+        if (simulator && CompuCell3D::Simulator::pluginManager.isLoaded("PolarizationVector")) {
+            auto *polarization = cc3d_ensure_polarization_vector(simulatorPtr);
+            if (polarization) {
+            float x = 0.0f, y = 0.0f, z = 0.0f;
+            if (polarization->get_fn && polarization->get_fn(polarization->plugin_instance, source, &x, &y, &z) && polarization->set_fn) {
+                polarization->set_fn(polarization->plugin_instance, target, x, y, z);
+            }
+            }
+        }
+        if (simulator && CompuCell3D::Simulator::pluginManager.isLoaded("CellOrientation")) {
+            auto *orientation = cc3d_ensure_cell_orientation(simulatorPtr);
+            if (orientation) {
+            if (orientation->get_lambda_fn && orientation->set_lambda_fn) {
+                orientation->set_lambda_fn(orientation->plugin_instance, target,
+                                           orientation->get_lambda_fn(orientation->plugin_instance, source));
+            }
+            }
+        }
+        if (simulator && CompuCell3D::Simulator::pluginManager.isLoaded("LengthConstraint")) {
+            auto *length = cc3d_ensure_length_constraint(simulatorPtr);
+            if (length) {
+            if (length->get_lambda_fn && length->get_target_fn && length->get_minor_target_fn && length->set_fn) {
+                length->set_fn(length->plugin_instance, target,
+                               length->get_lambda_fn(length->plugin_instance, source),
+                               length->get_target_fn(length->plugin_instance, source),
+                               length->get_minor_target_fn(length->plugin_instance, source));
+            }
+            }
+        }
+        if (simulator && CompuCell3D::Simulator::pluginManager.isLoaded("Chemotaxis")) {
+            auto *chemotaxis = cc3d_ensure_chemotaxis(simulatorPtr);
+            if (chemotaxis) {
+            if (chemotaxis->field_count_fn && chemotaxis->field_name_fn && chemotaxis->get_data_fn && chemotaxis->add_data_fn) {
+                for (size_t i = 0; i < chemotaxis->field_count_fn(chemotaxis->plugin_instance, source); ++i) {
+                    const char *field = chemotaxis->field_name_fn(chemotaxis->plugin_instance, source, i);
+                    void *sourceData = chemotaxis->get_data_fn(chemotaxis->plugin_instance, source, field);
+                    void *targetData = chemotaxis->add_data_fn(chemotaxis->plugin_instance, target, field);
+                    if (!sourceData || !targetData) continue;
+                    if (chemotaxis->data_get_lambda_fn && chemotaxis->data_set_lambda_fn) chemotaxis->data_set_lambda_fn(targetData, chemotaxis->data_get_lambda_fn(sourceData));
+                    if (chemotaxis->data_get_saturation_fn && chemotaxis->data_set_saturation_fn) chemotaxis->data_set_saturation_fn(targetData, chemotaxis->data_get_saturation_fn(sourceData));
+                    if (chemotaxis->data_get_formula_name_fn && chemotaxis->data_set_formula_name_fn) chemotaxis->data_set_formula_name_fn(targetData, chemotaxis->data_get_formula_name_fn(sourceData));
+                    if (chemotaxis->data_get_toward_count_fn && chemotaxis->data_get_toward_type_fn && chemotaxis->data_assign_toward_types_fn) {
+                        std::vector<int> toward;
+                        for (size_t j = 0; j < chemotaxis->data_get_toward_count_fn(sourceData); ++j) toward.push_back(chemotaxis->data_get_toward_type_fn(sourceData, j));
+                        chemotaxis->data_assign_toward_types_fn(targetData, toward.data(), toward.size());
+                    }
+                }
+            }
+            }
+        }
+
+        // The following Python clone sections are deliberately excluded from this ABI:
+        // ContactOrientation, ContactLocalProduct, Polarization23,
+        // ConnectivityGlobal/LocalFlex, SBML/dict state, MaBoSS state, and
+        // FocalPointPlasticity links remain intentionally unsupported here.
     }
 
     const CC3DOrientedGrowthCallbacksV1 *cc3d_ensure_oriented_growth(void *simulatorPtr) {
@@ -1434,6 +1585,20 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.clusterSurfaceTracker.userdata = nullptr;
     context_.clusterSurfaceTracker.update_cluster_surface_fn = &cc3d_cluster_surface_tracker_update;
     context_.clusterSurfaceTracker.reassign_cluster_id_fn = &cc3d_reassign_cluster_id;
+    context_.mitosis.userdata = nullptr;
+    context_.mitosis.set_parent_child_position_fn = &cc3d_mitosis_set_position_flag;
+    context_.mitosis.get_parent_child_position_fn = &cc3d_mitosis_get_position_flag;
+    context_.mitosis.divide_random_fn = &cc3d_mitosis_divide_random;
+    context_.mitosis.divide_orientation_fn = &cc3d_mitosis_divide_orientation;
+    context_.mitosis.divide_major_axis_fn = &cc3d_mitosis_divide_major;
+    context_.mitosis.divide_minor_axis_fn = &cc3d_mitosis_divide_minor;
+    context_.mitosis.divide_cluster_random_fn = &cc3d_mitosis_divide_cluster_random;
+    context_.mitosis.divide_cluster_orientation_fn = &cc3d_mitosis_divide_cluster_orientation;
+    context_.mitosis.divide_cluster_major_axis_fn = &cc3d_mitosis_divide_cluster_major;
+    context_.mitosis.divide_cluster_minor_axis_fn = &cc3d_mitosis_divide_cluster_minor;
+    context_.mitosis.parent_cell_fn = &cc3d_mitosis_parent;
+    context_.mitosis.child_cell_fn = &cc3d_mitosis_child;
+    context_.mitosis.clone_attributes_fn = &cc3d_mitosis_clone_attributes;
     context_.orientedGrowth.userdata = nullptr;
     context_.orientedGrowth.set_constraint_width_fn = &cc3d_oriented_growth_set_constraint_width;
     context_.orientedGrowth.set_elongation_axis_fn = &cc3d_oriented_growth_set_axis;
@@ -1583,6 +1748,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.lengthConstraint.userdata = simulator_;
     context_.clusterSurface.userdata = simulator_;
     context_.clusterSurfaceTracker.userdata = simulator_;
+    context_.mitosis.userdata = simulator_;
     context_.orientedGrowth.userdata = simulator_;
     context_.momentOfInertia.userdata = simulator_;
     context_.focalPointPlasticity.userdata = simulator_;
@@ -1676,6 +1842,7 @@ void CompiledSteppable::cleanup() {
     context_.lengthConstraint.userdata = nullptr;
     context_.clusterSurface.userdata = nullptr;
     context_.clusterSurfaceTracker.userdata = nullptr;
+    context_.mitosis.userdata = nullptr;
     context_.orientedGrowth.userdata = nullptr;
     context_.momentOfInertia.userdata = nullptr;
     context_.focalPointPlasticity.userdata = nullptr;
