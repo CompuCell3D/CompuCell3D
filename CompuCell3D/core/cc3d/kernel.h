@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 19u
+#define CC3D_KERNEL_ABI_VERSION 20u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -22,6 +22,10 @@ namespace kernel {
 class Cell;
 class CellIterator;
 struct CellSentinel;
+class ClusterIterator;
+class ClusterRange;
+class ClusterCellIterator;
+class ClusterCellRange;
 class CellNeighbor;
 class CellNeighborIterator;
 class CellNeighborRange;
@@ -53,6 +57,7 @@ extern "C" {
 #endif
 
 typedef void *CC3DCellIteratorHandle;
+typedef void *CC3DClusterIteratorHandle;
 typedef void *CC3DCellNeighborIteratorHandle;
 typedef void *CC3DPixelIteratorHandle;
 typedef void *CC3DFieldHandle;
@@ -107,6 +112,24 @@ typedef struct CC3DCellViewV1 {
     bool *connectivityOn;
 } CC3DCellViewV1;
 
+typedef struct CC3DClusterCellsAPIV1 {
+    void *userdata;
+    CC3DClusterIteratorHandle (*clusters_begin_fn)(void *userdata);
+    uint8_t (*clusters_valid_fn)(void *userdata, CC3DClusterIteratorHandle iterator);
+    long (*clusters_get_id_fn)(void *userdata, CC3DClusterIteratorHandle iterator);
+    void (*clusters_next_fn)(void *userdata, CC3DClusterIteratorHandle iterator);
+    void (*clusters_destroy_fn)(void *userdata, CC3DClusterIteratorHandle iterator);
+    CC3DCellIteratorHandle (*cells_begin_fn)(void *userdata, long cluster_id);
+    uint8_t (*cells_valid_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+    CC3DCellViewV1 (*cells_get_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+    void (*cells_next_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+    void (*cells_destroy_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::ClusterRange clusters() const;
+    inline ::cc3d::kernel::ClusterCellRange cells(long cluster_id) const;
+#endif
+} CC3DClusterCellsAPIV1;
+
 typedef struct CC3DCellsAPIV1 {
     void *userdata;
     CC3DCellIteratorHandle (*begin_fn)(void *userdata);
@@ -114,9 +137,12 @@ typedef struct CC3DCellsAPIV1 {
     CC3DCellViewV1 (*get_fn)(void *userdata, CC3DCellIteratorHandle iterator);
     void (*next_fn)(void *userdata, CC3DCellIteratorHandle iterator);
     void (*destroy_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+    CC3DClusterCellsAPIV1 clusterApi;
 #ifdef __cplusplus
     inline ::cc3d::kernel::CellIterator begin() const;
     inline ::cc3d::kernel::CellSentinel end() const;
+    inline ::cc3d::kernel::ClusterRange clusters() const;
+    inline ::cc3d::kernel::ClusterCellRange clusterCells(long cluster_id) const;
 #endif
 } CC3DCellsAPIV1;
 
@@ -449,6 +475,7 @@ typedef struct CC3DSteppableV1 {
     void (*destroy_fn)(void *state);
 } CC3DSteppableV1;
 
+
 typedef const CC3DSteppableV1 *(*CC3DGetSteppableV1Fn)();
 
 #ifdef __cplusplus
@@ -700,6 +727,159 @@ private:
 
     const CC3DCellsAPIV1 *api_;
     CC3DCellIteratorHandle handle_;
+};
+
+class ClusterCellIterator {
+public:
+    ClusterCellIterator() : api_(nullptr), handle_(nullptr) {}
+
+    ClusterCellIterator(const CC3DClusterCellsAPIV1 *api, CC3DCellIteratorHandle handle)
+        : api_(api), handle_(handle) {}
+
+    ClusterCellIterator(const ClusterCellIterator &) = delete;
+    ClusterCellIterator &operator=(const ClusterCellIterator &) = delete;
+
+    ClusterCellIterator(ClusterCellIterator &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    ClusterCellIterator &operator=(ClusterCellIterator &&other) noexcept {
+        if (this != &other) {
+            cleanup();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~ClusterCellIterator() { cleanup(); }
+
+    Cell operator*() const { return Cell(api_->cells_get_fn(api_->userdata, handle_)); }
+
+    ClusterCellIterator &operator++() {
+        api_->cells_next_fn(api_->userdata, handle_);
+        return *this;
+    }
+
+    bool operator!=(CellSentinel) const {
+        return api_ && handle_ && api_->cells_valid_fn(api_->userdata, handle_) != 0;
+    }
+
+private:
+    void cleanup() {
+        if (api_ && handle_ && api_->cells_destroy_fn) api_->cells_destroy_fn(api_->userdata, handle_);
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DClusterCellsAPIV1 *api_;
+    CC3DCellIteratorHandle handle_;
+};
+
+class ClusterCellRange {
+public:
+    ClusterCellRange() : api_(nullptr), cluster_id_(0) {}
+
+    ClusterCellRange(const CC3DClusterCellsAPIV1 *api, long cluster_id)
+        : api_(api), cluster_id_(cluster_id) {}
+
+    ClusterCellIterator begin() const {
+        if (!api_ || !api_->cells_begin_fn) return ClusterCellIterator();
+        return ClusterCellIterator(api_, api_->cells_begin_fn(api_->userdata, cluster_id_));
+    }
+
+    CellSentinel end() const { return CellSentinel(); }
+
+private:
+    const CC3DClusterCellsAPIV1 *api_;
+    long cluster_id_;
+};
+
+class Cluster {
+public:
+    Cluster() : api_(nullptr), cluster_id_(0) {}
+
+    Cluster(const CC3DClusterCellsAPIV1 *api, long cluster_id)
+        : api_(api), cluster_id_(cluster_id) {}
+
+    long id() const { return cluster_id_; }
+    ClusterCellRange cells() const { return ClusterCellRange(api_, cluster_id_); }
+
+private:
+    const CC3DClusterCellsAPIV1 *api_;
+    long cluster_id_;
+};
+
+class ClusterIterator {
+public:
+    ClusterIterator() : api_(nullptr), handle_(nullptr) {}
+
+    ClusterIterator(const CC3DClusterCellsAPIV1 *api, CC3DClusterIteratorHandle handle)
+        : api_(api), handle_(handle) {}
+
+    ClusterIterator(const ClusterIterator &) = delete;
+    ClusterIterator &operator=(const ClusterIterator &) = delete;
+
+    ClusterIterator(ClusterIterator &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    ClusterIterator &operator=(ClusterIterator &&other) noexcept {
+        if (this != &other) {
+            cleanup();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~ClusterIterator() { cleanup(); }
+
+    Cluster operator*() const {
+        return Cluster(api_, api_->clusters_get_id_fn(api_->userdata, handle_));
+    }
+
+    ClusterIterator &operator++() {
+        api_->clusters_next_fn(api_->userdata, handle_);
+        return *this;
+    }
+
+    bool operator!=(CellSentinel) const {
+        return api_ && handle_ && api_->clusters_valid_fn(api_->userdata, handle_) != 0;
+    }
+
+private:
+    void cleanup() {
+        if (api_ && handle_ && api_->clusters_destroy_fn) api_->clusters_destroy_fn(api_->userdata, handle_);
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DClusterCellsAPIV1 *api_;
+    CC3DClusterIteratorHandle handle_;
+};
+
+class ClusterRange {
+public:
+    explicit ClusterRange(const CC3DClusterCellsAPIV1 *api = nullptr) : api_(api) {}
+
+    ClusterIterator begin() const {
+        if (!api_ || !api_->clusters_begin_fn) return ClusterIterator();
+        return ClusterIterator(api_, api_->clusters_begin_fn(api_->userdata));
+    }
+
+    CellSentinel end() const { return CellSentinel(); }
+
+private:
+    const CC3DClusterCellsAPIV1 *api_;
 };
 
 class CellNeighborIterator {
@@ -1447,6 +1627,22 @@ inline ::cc3d::kernel::CellIterator CC3DCellsAPIV1::begin() const {
 
 inline ::cc3d::kernel::CellSentinel CC3DCellsAPIV1::end() const {
     return ::cc3d::kernel::CellSentinel();
+}
+
+inline ::cc3d::kernel::ClusterRange CC3DCellsAPIV1::clusters() const {
+    return clusterApi.clusters();
+}
+
+inline ::cc3d::kernel::ClusterCellRange CC3DCellsAPIV1::clusterCells(long cluster_id) const {
+    return clusterApi.cells(cluster_id);
+}
+
+inline ::cc3d::kernel::ClusterRange CC3DClusterCellsAPIV1::clusters() const {
+    return ::cc3d::kernel::ClusterRange(this);
+}
+
+inline ::cc3d::kernel::ClusterCellRange CC3DClusterCellsAPIV1::cells(long cluster_id) const {
+    return ::cc3d::kernel::ClusterCellRange(this, cluster_id);
 }
 
 inline ::cc3d::kernel::CellNeighborRange CC3DCellNeighborsAPIV1::forCell(

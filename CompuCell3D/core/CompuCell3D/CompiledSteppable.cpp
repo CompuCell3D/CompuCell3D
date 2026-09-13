@@ -217,8 +217,7 @@ extern "C" void cc3d_unregister_secretion_callbacks(void *plugin_instance) {
     if (secretionRegistration.callbacks.plugin_instance == plugin_instance) secretionRegistration = {};
 }
 
-namespace {
-    CC3DCellViewV1 cc3d_cell_view_from_cell(CompuCell3D::CellG *cell) {
+CC3DCellViewV1 cc3d_cell_view_from_cell(CompuCell3D::CellG *cell) {
         CC3DCellViewV1 view{};
 
         if (!cell) {
@@ -273,6 +272,7 @@ namespace {
         return view;
     }
 
+namespace {
     struct CellIteratorState {
         CompuCell3D::CellInventory::cellInventoryIterator current;
         CompuCell3D::CellInventory::cellInventoryIterator end;
@@ -443,7 +443,7 @@ namespace {
         static FocalPointPlasticityBridge bridge{};
         bridge.callbacks = cc3d_get_focal_point_plasticity_callbacks(simulatorPtr);
         return bridge.callbacks ? &bridge : nullptr;
-    }
+}
 
     const CC3DClusterSurfaceCallbacksV1 *cc3d_ensure_cluster_surface(void *simulatorPtr) {
         auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
@@ -1440,6 +1440,82 @@ namespace {
     }
 }
 
+namespace {
+    struct ClusterIteratorState {
+        CompuCell3D::CompartmentInventory::compartmentInventoryIterator current;
+        CompuCell3D::CompartmentInventory::compartmentInventoryIterator end;
+    };
+
+    struct ClusterCellIteratorState {
+        CompuCell3D::CC3DCellList cells;
+        size_t current = 0;
+    };
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT CC3DClusterIteratorHandle
+cc3d_clusters_begin(void *cellInventoryPtr) {
+    auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
+    if (!inventory) return nullptr;
+    auto &clusters = inventory->getClusterInventory().getContainer();
+    return new ClusterIteratorState{clusters.begin(), clusters.end()};
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT uint8_t
+cc3d_clusters_valid(void *, CC3DClusterIteratorHandle iterator) {
+    auto *state = static_cast<ClusterIteratorState *>(iterator);
+    return state && state->current != state->end ? 1u : 0u;
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT long
+cc3d_clusters_get_id(void *, CC3DClusterIteratorHandle iterator) {
+    auto *state = static_cast<ClusterIteratorState *>(iterator);
+    return state && state->current != state->end ? state->current->first : -1;
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT void
+cc3d_clusters_next(void *, CC3DClusterIteratorHandle iterator) {
+    auto *state = static_cast<ClusterIteratorState *>(iterator);
+    if (state && state->current != state->end) ++state->current;
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT void
+cc3d_clusters_destroy(void *, CC3DClusterIteratorHandle iterator) {
+    delete static_cast<ClusterIteratorState *>(iterator);
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT CC3DCellIteratorHandle
+cc3d_cluster_cells_begin(void *cellInventoryPtr, long clusterId) {
+    auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
+    if (!inventory) return nullptr;
+    auto *state = new ClusterCellIteratorState;
+    state->cells = inventory->getClusterCells(clusterId);
+    return static_cast<CC3DCellIteratorHandle>(state);
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT uint8_t
+cc3d_cluster_cells_valid(void *, CC3DCellIteratorHandle iterator) {
+    auto *state = static_cast<ClusterCellIteratorState *>(iterator);
+    return state && state->current < state->cells.size() ? 1u : 0u;
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT CC3DCellViewV1
+cc3d_cluster_cells_get(void *, CC3DCellIteratorHandle iterator) {
+    auto *state = static_cast<ClusterCellIteratorState *>(iterator);
+    if (!state || state->current >= state->cells.size()) return CC3DCellViewV1{};
+    return cc3d_cell_view_from_cell(state->cells[state->current]);
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT void
+cc3d_cluster_cells_next(void *, CC3DCellIteratorHandle iterator) {
+    auto *state = static_cast<ClusterCellIteratorState *>(iterator);
+    if (state && state->current < state->cells.size()) ++state->current;
+}
+
+extern "C" CC3D_STEPPABLE_EXPORT void
+cc3d_cluster_cells_destroy(void *, CC3DCellIteratorHandle iterator) {
+    delete static_cast<ClusterCellIteratorState *>(iterator);
+}
+
 class CompuCell3D::CompiledSteppable::DynamicLibrary {
 public:
     explicit DynamicLibrary(const std::string &path) : path_(path), handle_(nullptr) {
@@ -1523,6 +1599,17 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.cells.get_fn = &cc3d_cells_get;
     context_.cells.next_fn = &cc3d_cells_next;
     context_.cells.destroy_fn = &cc3d_cells_destroy;
+    context_.cells.clusterApi.userdata = nullptr;
+    context_.cells.clusterApi.clusters_begin_fn = &cc3d_clusters_begin;
+    context_.cells.clusterApi.clusters_valid_fn = &cc3d_clusters_valid;
+    context_.cells.clusterApi.clusters_get_id_fn = &cc3d_clusters_get_id;
+    context_.cells.clusterApi.clusters_next_fn = &cc3d_clusters_next;
+    context_.cells.clusterApi.clusters_destroy_fn = &cc3d_clusters_destroy;
+    context_.cells.clusterApi.cells_begin_fn = &cc3d_cluster_cells_begin;
+    context_.cells.clusterApi.cells_valid_fn = &cc3d_cluster_cells_valid;
+    context_.cells.clusterApi.cells_get_fn = &cc3d_cluster_cells_get;
+    context_.cells.clusterApi.cells_next_fn = &cc3d_cluster_cells_next;
+    context_.cells.clusterApi.cells_destroy_fn = &cc3d_cluster_cells_destroy;
     context_.neighbors.userdata = nullptr;
     context_.neighbors.begin_fn = &cc3d_cell_neighbors_begin;
     context_.neighbors.valid_fn = &cc3d_cell_neighbors_valid;
@@ -1737,6 +1824,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
 
     simulator_ = simulator;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
+    context_.cells.clusterApi.userdata = context_.cells.userdata;
     context_.neighbors.userdata = simulator_;
     context_.pixels.userdata = simulator_;
     context_.boundaryPixels.userdata = simulator_;
@@ -1831,6 +1919,7 @@ void CompiledSteppable::cleanup() {
     library_.reset();
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
+    context_.cells.clusterApi.userdata = nullptr;
     context_.neighbors.userdata = nullptr;
     context_.pixels.userdata = nullptr;
     context_.boundaryPixels.userdata = nullptr;
