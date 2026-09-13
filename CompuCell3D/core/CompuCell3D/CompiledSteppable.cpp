@@ -25,6 +25,9 @@ using namespace CompuCell3D;
 
 namespace {
     struct LengthConstraintRegistration { void *simulator; CC3DLengthConstraintCallbacksV1 callbacks; };
+    struct ClusterSurfaceRegistration { void *simulator; CC3DClusterSurfaceCallbacksV1 callbacks; };
+    struct OrientedGrowthRegistration { void *simulator; CC3DOrientedGrowthCallbacksV1 callbacks; };
+    struct MomentOfInertiaRegistration { void *simulator; CC3DMomentOfInertiaCallbacksV1 callbacks; };
     struct AdhesionFlexRegistration { void *simulator; CC3DAdhesionFlexCallbacksV1 callbacks; };
     struct FocalPointPlasticityRegistration { void *simulator; CC3DFocalPointPlasticityCallbacksV1 callbacks; };
     struct PolarizationVectorRegistration { void *simulator; CC3DPolarizationVectorCallbacksV1 callbacks; };
@@ -32,6 +35,9 @@ namespace {
     struct ChemotaxisRegistration { void *simulator; CC3DChemotaxisCallbacksV1 callbacks; };
     struct SecretionRegistration { void *simulator; CC3DSecretionCallbacksV1 callbacks; };
     LengthConstraintRegistration lengthConstraintRegistration{};
+    ClusterSurfaceRegistration clusterSurfaceRegistration{};
+    OrientedGrowthRegistration orientedGrowthRegistration{};
+    MomentOfInertiaRegistration momentOfInertiaRegistration{};
     AdhesionFlexRegistration adhesionFlexRegistration{};
     FocalPointPlasticityRegistration focalPointPlasticityRegistration{};
     PolarizationVectorRegistration polarizationVectorRegistration{};
@@ -83,6 +89,39 @@ extern "C" const CC3DLengthConstraintCallbacksV1 *cc3d_get_length_constraint_cal
 
 extern "C" void cc3d_unregister_length_constraint_callbacks(void *plugin_instance) {
     if (lengthConstraintRegistration.callbacks.plugin_instance == plugin_instance) lengthConstraintRegistration = {};
+}
+
+extern "C" void cc3d_register_cluster_surface_callbacks(void *simulator, const CC3DClusterSurfaceCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    clusterSurfaceRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DClusterSurfaceCallbacksV1 *cc3d_get_cluster_surface_callbacks(void *simulator) {
+    return clusterSurfaceRegistration.simulator == simulator ? &clusterSurfaceRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_cluster_surface_callbacks(void *plugin_instance) {
+    if (clusterSurfaceRegistration.callbacks.plugin_instance == plugin_instance) clusterSurfaceRegistration = {};
+}
+
+extern "C" void cc3d_register_oriented_growth_callbacks(void *simulator, const CC3DOrientedGrowthCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    orientedGrowthRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DOrientedGrowthCallbacksV1 *cc3d_get_oriented_growth_callbacks(void *simulator) {
+    return orientedGrowthRegistration.simulator == simulator ? &orientedGrowthRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_oriented_growth_callbacks(void *plugin_instance) {
+    if (orientedGrowthRegistration.callbacks.plugin_instance == plugin_instance) orientedGrowthRegistration = {};
+}
+
+extern "C" void cc3d_register_moment_of_inertia_callbacks(void *simulator, const CC3DMomentOfInertiaCallbacksV1 *callbacks) {
+    if (!simulator || !callbacks) return;
+    momentOfInertiaRegistration = {simulator, *callbacks};
+}
+extern "C" const CC3DMomentOfInertiaCallbacksV1 *cc3d_get_moment_of_inertia_callbacks(void *simulator) {
+    return momentOfInertiaRegistration.simulator == simulator ? &momentOfInertiaRegistration.callbacks : nullptr;
+}
+extern "C" void cc3d_unregister_moment_of_inertia_callbacks(void *plugin_instance) {
+    if (momentOfInertiaRegistration.callbacks.plugin_instance == plugin_instance) momentOfInertiaRegistration = {};
 }
 
 extern "C" void cc3d_register_adhesion_flex_callbacks(void *simulator, const CC3DAdhesionFlexCallbacksV1 *callbacks) {
@@ -372,6 +411,98 @@ namespace {
         static FocalPointPlasticityBridge bridge{};
         bridge.callbacks = cc3d_get_focal_point_plasticity_callbacks(simulatorPtr);
         return bridge.callbacks ? &bridge : nullptr;
+    }
+
+    const CC3DClusterSurfaceCallbacksV1 *cc3d_ensure_cluster_surface(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("ClusterSurface", &alreadyRegistered);
+        if (!alreadyRegistered) {
+            plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "ClusterSurface"));
+        }
+        return cc3d_get_cluster_surface_callbacks(simulatorPtr);
+    }
+
+    void cc3d_cluster_surface_set(void *simulatorPtr, CC3DCellHandle cellHandle,
+                                  float targetClusterSurface, float lambdaClusterSurface) {
+        auto *callbacks = cc3d_ensure_cluster_surface(simulatorPtr);
+        if (callbacks && callbacks->set_fn && cellHandle) {
+            callbacks->set_fn(callbacks->plugin_instance, cellHandle, targetClusterSurface, lambdaClusterSurface);
+        }
+    }
+
+    void cc3d_cluster_surface_get(void *simulatorPtr, CC3DCellHandle cellHandle,
+                                  float *targetClusterSurface, float *lambdaClusterSurface) {
+        if (!targetClusterSurface || !lambdaClusterSurface || !cellHandle) return;
+        auto *callbacks = cc3d_ensure_cluster_surface(simulatorPtr);
+        if (callbacks && callbacks->get_fn) {
+            callbacks->get_fn(callbacks->plugin_instance, cellHandle, targetClusterSurface, lambdaClusterSurface);
+        }
+    }
+
+    const CC3DOrientedGrowthCallbacksV1 *cc3d_ensure_oriented_growth(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("OrientedGrowth", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "OrientedGrowth"));
+        return cc3d_get_oriented_growth_callbacks(simulatorPtr);
+    }
+
+    void cc3d_oriented_growth_set_constraint_width(void *simulatorPtr, CC3DCellHandle cell, float value) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        if (callbacks && callbacks->set_constraint_width_fn && cell) callbacks->set_constraint_width_fn(callbacks->plugin_instance, cell, value);
+    }
+    void cc3d_oriented_growth_set_axis(void *simulatorPtr, CC3DCellHandle cell, float x, float y) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        if (callbacks && callbacks->set_elongation_axis_fn && cell) callbacks->set_elongation_axis_fn(callbacks->plugin_instance, cell, x, y);
+    }
+    void cc3d_oriented_growth_set_enabled(void *simulatorPtr, CC3DCellHandle cell, uint8_t enabled) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        if (callbacks && callbacks->set_elongation_enabled_fn && cell) callbacks->set_elongation_enabled_fn(callbacks->plugin_instance, cell, enabled);
+    }
+    float cc3d_oriented_growth_get_axis_x(void *simulatorPtr, CC3DCellHandle cell) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        return callbacks && callbacks->get_elongation_axis_x_fn && cell ? callbacks->get_elongation_axis_x_fn(callbacks->plugin_instance, cell) : 0.0f;
+    }
+    float cc3d_oriented_growth_get_axis_y(void *simulatorPtr, CC3DCellHandle cell) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        return callbacks && callbacks->get_elongation_axis_y_fn && cell ? callbacks->get_elongation_axis_y_fn(callbacks->plugin_instance, cell) : 0.0f;
+    }
+    uint8_t cc3d_oriented_growth_get_enabled(void *simulatorPtr, CC3DCellHandle cell) {
+        auto *callbacks = cc3d_ensure_oriented_growth(simulatorPtr);
+        return callbacks && callbacks->get_elongation_enabled_fn && cell ? callbacks->get_elongation_enabled_fn(callbacks->plugin_instance, cell) : 0u;
+    }
+
+    const CC3DMomentOfInertiaCallbacksV1 *cc3d_ensure_moment_of_inertia(void *simulatorPtr) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator) return nullptr;
+        bool alreadyRegistered = false;
+        auto *plugin = CompuCell3D::Simulator::pluginManager.get("MomentOfInertia", &alreadyRegistered);
+        if (!alreadyRegistered) plugin->init(simulator, simulator->getCC3DModuleData("Plugin", "MomentOfInertia"));
+        return cc3d_get_moment_of_inertia_callbacks(simulatorPtr);
+    }
+
+    size_t cc3d_moment_of_inertia_get_semiaxes(void *s, CC3DCellHandle c, double *v, size_t n) {
+        auto *callbacks = cc3d_ensure_moment_of_inertia(s);
+        return callbacks && callbacks->get_semiaxes_fn && c && v ? callbacks->get_semiaxes_fn(callbacks->plugin_instance, c, v, n) : 0u;
+    }
+    size_t cc3d_moment_of_inertia_get_semiaxes_xy(void *s, CC3DCellHandle c, double *v, size_t n) {
+        auto *callbacks = cc3d_ensure_moment_of_inertia(s);
+        return callbacks && callbacks->get_semiaxes_xy_fn && c && v ? callbacks->get_semiaxes_xy_fn(callbacks->plugin_instance, c, v, n) : 0u;
+    }
+    size_t cc3d_moment_of_inertia_get_semiaxes_xz(void *s, CC3DCellHandle c, double *v, size_t n) {
+        auto *callbacks = cc3d_ensure_moment_of_inertia(s);
+        return callbacks && callbacks->get_semiaxes_xz_fn && c && v ? callbacks->get_semiaxes_xz_fn(callbacks->plugin_instance, c, v, n) : 0u;
+    }
+    size_t cc3d_moment_of_inertia_get_semiaxes_yz(void *s, CC3DCellHandle c, double *v, size_t n) {
+        auto *callbacks = cc3d_ensure_moment_of_inertia(s);
+        return callbacks && callbacks->get_semiaxes_yz_fn && c && v ? callbacks->get_semiaxes_yz_fn(callbacks->plugin_instance, c, v, n) : 0u;
+    }
+    size_t cc3d_moment_of_inertia_get_semiaxes_3d(void *s, CC3DCellHandle c, double *v, size_t n) {
+        auto *callbacks = cc3d_ensure_moment_of_inertia(s);
+        return callbacks && callbacks->get_semiaxes_3d_fn && c && v ? callbacks->get_semiaxes_3d_fn(callbacks->plugin_instance, c, v, n) : 0u;
     }
 
     const CC3DPolarizationVectorCallbacksV1 *cc3d_ensure_polarization_vector(void *simulatorPtr) {
@@ -1253,6 +1384,22 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.lengthConstraint.get_lambda_fn = &cc3d_length_constraint_lambda;
     context_.lengthConstraint.get_target_fn = &cc3d_length_constraint_target;
     context_.lengthConstraint.get_minor_target_fn = &cc3d_length_constraint_minor_target;
+    context_.clusterSurface.userdata = nullptr;
+    context_.clusterSurface.set_fn = &cc3d_cluster_surface_set;
+    context_.clusterSurface.get_fn = &cc3d_cluster_surface_get;
+    context_.orientedGrowth.userdata = nullptr;
+    context_.orientedGrowth.set_constraint_width_fn = &cc3d_oriented_growth_set_constraint_width;
+    context_.orientedGrowth.set_elongation_axis_fn = &cc3d_oriented_growth_set_axis;
+    context_.orientedGrowth.set_elongation_enabled_fn = &cc3d_oriented_growth_set_enabled;
+    context_.orientedGrowth.get_elongation_axis_x_fn = &cc3d_oriented_growth_get_axis_x;
+    context_.orientedGrowth.get_elongation_axis_y_fn = &cc3d_oriented_growth_get_axis_y;
+    context_.orientedGrowth.get_elongation_enabled_fn = &cc3d_oriented_growth_get_enabled;
+    context_.momentOfInertia.userdata = nullptr;
+    context_.momentOfInertia.get_semiaxes_fn = &cc3d_moment_of_inertia_get_semiaxes;
+    context_.momentOfInertia.get_semiaxes_xy_fn = &cc3d_moment_of_inertia_get_semiaxes_xy;
+    context_.momentOfInertia.get_semiaxes_xz_fn = &cc3d_moment_of_inertia_get_semiaxes_xz;
+    context_.momentOfInertia.get_semiaxes_yz_fn = &cc3d_moment_of_inertia_get_semiaxes_yz;
+    context_.momentOfInertia.get_semiaxes_3d_fn = &cc3d_moment_of_inertia_get_semiaxes_3d;
     context_.focalPointPlasticity.userdata = nullptr;
     context_.focalPointPlasticity.create_link_fn = &cc3d_fpp_create;
     context_.focalPointPlasticity.create_internal_link_fn = &cc3d_fpp_create_internal;
@@ -1387,6 +1534,9 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.sbml.userdata = simulator_;
     context_.adhesionFlex.userdata = simulator_;
     context_.lengthConstraint.userdata = simulator_;
+    context_.clusterSurface.userdata = simulator_;
+    context_.orientedGrowth.userdata = simulator_;
+    context_.momentOfInertia.userdata = simulator_;
     context_.focalPointPlasticity.userdata = simulator_;
     context_.polarizationVector.userdata = simulator_;
     context_.cellOrientation.userdata = simulator_;
@@ -1476,6 +1626,9 @@ void CompiledSteppable::cleanup() {
     context_.sbml.userdata = nullptr;
     context_.adhesionFlex.userdata = nullptr;
     context_.lengthConstraint.userdata = nullptr;
+    context_.clusterSurface.userdata = nullptr;
+    context_.orientedGrowth.userdata = nullptr;
+    context_.momentOfInertia.userdata = nullptr;
     context_.focalPointPlasticity.userdata = nullptr;
     context_.polarizationVector.userdata = nullptr;
     context_.cellOrientation.userdata = nullptr;

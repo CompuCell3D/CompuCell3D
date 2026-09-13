@@ -85,6 +85,9 @@ namespace CompuCell3D {
         std::pair<float, float>
         getTargetAndLambdaVolume(const CellG *_cell) const; //(targetClusterSurface,lambdaClusterSurface)
 
+        std::pair<float, float>
+        getTargetAndLambdaClusterSurface(const CellG *_cell) const;
+
         std::pair<double, double>
         getNewOldClusterSurfaceDiffs(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 

@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript>Simulation/MomentOfInertiaCompiledDemo.xml</XMLScript>
+   <PythonScript>Simulation/MomentOfInertiaCompiledDemo.py</PythonScript>
+   <Resource Type="Cpp">Native/MomentOfInertiaCompiledSteppable.cpp</Resource>
+</Simulation>

@@ -21,6 +21,31 @@ typedef struct CC3DLengthConstraintCallbacksV1 {
     double (*get_minor_target_fn)(void *, CC3DPluginCellHandle);
 } CC3DLengthConstraintCallbacksV1;
 
+typedef struct CC3DClusterSurfaceCallbacksV1 {
+    void *plugin_instance;
+    void (*set_fn)(void *, CC3DPluginCellHandle, float, float);
+    void (*get_fn)(void *, CC3DPluginCellHandle, float *, float *);
+} CC3DClusterSurfaceCallbacksV1;
+
+typedef struct CC3DOrientedGrowthCallbacksV1 {
+    void *plugin_instance;
+    void (*set_constraint_width_fn)(void *, CC3DPluginCellHandle, float);
+    void (*set_elongation_axis_fn)(void *, CC3DPluginCellHandle, float, float);
+    void (*set_elongation_enabled_fn)(void *, CC3DPluginCellHandle, uint8_t);
+    float (*get_elongation_axis_x_fn)(void *, CC3DPluginCellHandle);
+    float (*get_elongation_axis_y_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*get_elongation_enabled_fn)(void *, CC3DPluginCellHandle);
+} CC3DOrientedGrowthCallbacksV1;
+
+typedef struct CC3DMomentOfInertiaCallbacksV1 {
+    void *plugin_instance;
+    size_t (*get_semiaxes_fn)(void *, CC3DPluginCellHandle, double *, size_t);
+    size_t (*get_semiaxes_xy_fn)(void *, CC3DPluginCellHandle, double *, size_t);
+    size_t (*get_semiaxes_xz_fn)(void *, CC3DPluginCellHandle, double *, size_t);
+    size_t (*get_semiaxes_yz_fn)(void *, CC3DPluginCellHandle, double *, size_t);
+    size_t (*get_semiaxes_3d_fn)(void *, CC3DPluginCellHandle, double *, size_t);
+} CC3DMomentOfInertiaCallbacksV1;
+
 typedef struct CC3DAdhesionFlexCallbacksV1 {
     void *plugin_instance;
     size_t (*molecule_count_fn)(void *);
@@ -124,6 +149,15 @@ extern "C" {
 CC3D_PLUGIN_API_EXPORT void cc3d_register_length_constraint_callbacks(CC3DPluginSimulatorHandle, const CC3DLengthConstraintCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DLengthConstraintCallbacksV1 *cc3d_get_length_constraint_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_length_constraint_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_cluster_surface_callbacks(CC3DPluginSimulatorHandle, const CC3DClusterSurfaceCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DClusterSurfaceCallbacksV1 *cc3d_get_cluster_surface_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cluster_surface_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_oriented_growth_callbacks(CC3DPluginSimulatorHandle, const CC3DOrientedGrowthCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DOrientedGrowthCallbacksV1 *cc3d_get_oriented_growth_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_oriented_growth_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_moment_of_inertia_callbacks(CC3DPluginSimulatorHandle, const CC3DMomentOfInertiaCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DMomentOfInertiaCallbacksV1 *cc3d_get_moment_of_inertia_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_moment_of_inertia_callbacks(void *plugin_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_adhesion_flex_callbacks(CC3DPluginSimulatorHandle, const CC3DAdhesionFlexCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DAdhesionFlexCallbacksV1 *cc3d_get_adhesion_flex_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_adhesion_flex_callbacks(void *plugin_instance);

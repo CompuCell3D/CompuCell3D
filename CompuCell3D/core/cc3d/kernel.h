@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 15u
+#define CC3D_KERNEL_ABI_VERSION 17u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -15,6 +15,7 @@
 
 #ifdef __cplusplus
 #include <string>
+#include <utility>
 #include <vector>
 namespace cc3d {
 namespace kernel {
@@ -33,6 +34,9 @@ class ScalarField;
 class SBMLModel;
 class AdhesionFlex;
 class LengthConstraint;
+class ClusterSurface;
+class OrientedGrowth;
+class MomentOfInertia;
 class FocalPointPlasticity;
 class PolarizationVector;
 class CellOrientation;
@@ -236,6 +240,42 @@ typedef struct CC3DLengthConstraintAPIV1 {
 #endif
 } CC3DLengthConstraintAPIV1;
 
+typedef struct CC3DClusterSurfaceAPIV1 {
+    void *userdata;
+    void (*set_fn)(void *userdata, CC3DCellHandle cell, float target_cluster_surface,
+                   float lambda_cluster_surface);
+    void (*get_fn)(void *userdata, CC3DCellHandle cell, float *target_cluster_surface,
+                   float *lambda_cluster_surface);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::ClusterSurface clusterSurface() const;
+#endif
+} CC3DClusterSurfaceAPIV1;
+
+typedef struct CC3DOrientedGrowthAPIV1 {
+    void *userdata;
+    void (*set_constraint_width_fn)(void *, CC3DCellHandle, float);
+    void (*set_elongation_axis_fn)(void *, CC3DCellHandle, float, float);
+    void (*set_elongation_enabled_fn)(void *, CC3DCellHandle, uint8_t);
+    float (*get_elongation_axis_x_fn)(void *, CC3DCellHandle);
+    float (*get_elongation_axis_y_fn)(void *, CC3DCellHandle);
+    uint8_t (*get_elongation_enabled_fn)(void *, CC3DCellHandle);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::OrientedGrowth orientedGrowth() const;
+#endif
+} CC3DOrientedGrowthAPIV1;
+
+typedef struct CC3DMomentOfInertiaAPIV1 {
+    void *userdata;
+    size_t (*get_semiaxes_fn)(void *, CC3DCellHandle, double *, size_t);
+    size_t (*get_semiaxes_xy_fn)(void *, CC3DCellHandle, double *, size_t);
+    size_t (*get_semiaxes_xz_fn)(void *, CC3DCellHandle, double *, size_t);
+    size_t (*get_semiaxes_yz_fn)(void *, CC3DCellHandle, double *, size_t);
+    size_t (*get_semiaxes_3d_fn)(void *, CC3DCellHandle, double *, size_t);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::MomentOfInertia momentOfInertia() const;
+#endif
+} CC3DMomentOfInertiaAPIV1;
+
 typedef struct CC3DFocalPointPlasticityAPIV1 {
     void *userdata;
     void (*create_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2,
@@ -354,6 +394,9 @@ typedef struct CC3DKernelContext {
     CC3DSBMLAPIV1 sbml;
     CC3DAdhesionFlexAPIV1 adhesionFlex;
     CC3DLengthConstraintAPIV1 lengthConstraint;
+    CC3DClusterSurfaceAPIV1 clusterSurface;
+    CC3DOrientedGrowthAPIV1 orientedGrowth;
+    CC3DMomentOfInertiaAPIV1 momentOfInertia;
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
     CC3DPolarizationVectorAPIV1 polarizationVector;
     CC3DCellOrientationAPIV1 cellOrientation;
@@ -1075,6 +1118,84 @@ private:
     const CC3DFocalPointPlasticityAPIV1 *api_;
 };
 
+class ClusterSurface {
+public:
+    explicit ClusterSurface(const CC3DClusterSurfaceAPIV1 *api) : api_(api) {}
+
+    void setTargetAndLambdaClusterSurface(const Cell &cell, float target_cluster_surface,
+                                          float lambda_cluster_surface) const {
+        if (api_ && api_->set_fn) {
+            api_->set_fn(api_->userdata, cell.handle(), target_cluster_surface, lambda_cluster_surface);
+        }
+    }
+
+    std::pair<float, float> getTargetAndLambdaClusterSurface(const Cell &cell) const {
+        std::pair<float, float> values{0.0f, 0.0f};
+        if (api_ && api_->get_fn) {
+            api_->get_fn(api_->userdata, cell.handle(), &values.first, &values.second);
+        }
+        return values;
+    }
+
+private:
+    const CC3DClusterSurfaceAPIV1 *api_;
+};
+
+class OrientedGrowth {
+public:
+    explicit OrientedGrowth(const CC3DOrientedGrowthAPIV1 *api) : api_(api) {}
+
+    void setConstraintWidth(const Cell &cell, float constraint) const {
+        if (api_ && api_->set_constraint_width_fn) api_->set_constraint_width_fn(api_->userdata, cell.handle(), constraint);
+    }
+    void setElongationAxis(const Cell &cell, float x, float y) const {
+        if (api_ && api_->set_elongation_axis_fn) api_->set_elongation_axis_fn(api_->userdata, cell.handle(), x, y);
+    }
+    void setElongationEnabled(const Cell &cell, bool enabled) const {
+        if (api_ && api_->set_elongation_enabled_fn) api_->set_elongation_enabled_fn(api_->userdata, cell.handle(), enabled ? 1u : 0u);
+    }
+    float getElongationAxis_X(const Cell &cell) const {
+        return api_ && api_->get_elongation_axis_x_fn ? api_->get_elongation_axis_x_fn(api_->userdata, cell.handle()) : 0.0f;
+    }
+    float getElongationAxis_Y(const Cell &cell) const {
+        return api_ && api_->get_elongation_axis_y_fn ? api_->get_elongation_axis_y_fn(api_->userdata, cell.handle()) : 0.0f;
+    }
+    bool getElongationEnabled(const Cell &cell) const {
+        return api_ && api_->get_elongation_enabled_fn && api_->get_elongation_enabled_fn(api_->userdata, cell.handle()) != 0;
+    }
+
+    float elongationAxisX(const Cell &cell) const { return getElongationAxis_X(cell); }
+    float elongationAxisY(const Cell &cell) const { return getElongationAxis_Y(cell); }
+    bool elongationEnabled(const Cell &cell) const { return getElongationEnabled(cell); }
+
+private:
+    const CC3DOrientedGrowthAPIV1 *api_;
+};
+
+class MomentOfInertia {
+public:
+    explicit MomentOfInertia(const CC3DMomentOfInertiaAPIV1 *api) : api_(api) {}
+
+    std::vector<double> getSemiaxes(const Cell &cell) const { return get(cell, api_ ? api_->get_semiaxes_fn : nullptr); }
+    std::vector<double> getSemiaxesXY(const Cell &cell) const { return get(cell, api_ ? api_->get_semiaxes_xy_fn : nullptr); }
+    std::vector<double> getSemiaxesXZ(const Cell &cell) const { return get(cell, api_ ? api_->get_semiaxes_xz_fn : nullptr); }
+    std::vector<double> getSemiaxesYZ(const Cell &cell) const { return get(cell, api_ ? api_->get_semiaxes_yz_fn : nullptr); }
+    std::vector<double> getSemiaxes3D(const Cell &cell) const { return get(cell, api_ ? api_->get_semiaxes_3d_fn : nullptr); }
+
+private:
+    using Getter = size_t (*)(void *, CC3DCellHandle, double *, size_t);
+
+    std::vector<double> get(const Cell &cell, Getter getter) const {
+        if (!api_ || !getter) return {};
+        std::vector<double> values(3, 0.0);
+        const size_t count = getter(api_->userdata, cell.handle(), values.data(), values.size());
+        values.resize(count > values.size() ? values.size() : count);
+        return values;
+    }
+
+    const CC3DMomentOfInertiaAPIV1 *api_;
+};
+
 class PolarizationVector {
 public:
     explicit PolarizationVector(const CC3DPolarizationVectorAPIV1 *api) : api_(api) {}
@@ -1313,6 +1434,18 @@ inline ::cc3d::kernel::AdhesionFlex CC3DAdhesionFlexAPIV1::adhesionFlex() const 
 
 inline ::cc3d::kernel::LengthConstraint CC3DLengthConstraintAPIV1::lengthConstraint() const {
     return ::cc3d::kernel::LengthConstraint(this);
+}
+
+inline ::cc3d::kernel::ClusterSurface CC3DClusterSurfaceAPIV1::clusterSurface() const {
+    return ::cc3d::kernel::ClusterSurface(this);
+}
+
+inline ::cc3d::kernel::OrientedGrowth CC3DOrientedGrowthAPIV1::orientedGrowth() const {
+    return ::cc3d::kernel::OrientedGrowth(this);
+}
+
+inline ::cc3d::kernel::MomentOfInertia CC3DMomentOfInertiaAPIV1::momentOfInertia() const {
+    return ::cc3d::kernel::MomentOfInertia(this);
 }
 
 inline ::cc3d::kernel::FocalPointPlasticity CC3DFocalPointPlasticityAPIV1::focalPointPlasticity() const {

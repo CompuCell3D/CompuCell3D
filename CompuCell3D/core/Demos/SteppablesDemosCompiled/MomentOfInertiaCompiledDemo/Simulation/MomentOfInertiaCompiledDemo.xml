@@ -1,0 +1,26 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="60" y="60" z="60"/>
+        <Steps>200</Steps>
+        <Temperature>10</Temperature>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+    <Plugin Name="VolumeTracker"/>
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1"/>
+    </Plugin>
+    <Plugin Name="CenterOfMass"/>
+    <Plugin Name="MomentOfInertia"/>
+
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="20" y="20" z="20"/>
+            <BoxMax x="40" y="40" z="40"/>
+            <Gap>0</Gap>
+            <Width>1</Width>
+            <Types>Condensing</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>
