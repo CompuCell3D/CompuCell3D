@@ -6,6 +6,9 @@ using namespace CompuCell3D;
 #include "ClusterSurfaceTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTracker.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_register_cluster_surface_tracker_plugin(void *, void *);
 
 
 ClusterSurfaceTrackerPlugin::ClusterSurfaceTrackerPlugin() :
@@ -16,6 +19,7 @@ ClusterSurfaceTrackerPlugin::ClusterSurfaceTrackerPlugin() :
         maxNeighborIndex(0) {}
 
 ClusterSurfaceTrackerPlugin::~ClusterSurfaceTrackerPlugin() {
+    cc3d_unregister_cluster_surface_tracker_callbacks(this);
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr = 0;
@@ -24,6 +28,7 @@ ClusterSurfaceTrackerPlugin::~ClusterSurfaceTrackerPlugin() {
 void ClusterSurfaceTrackerPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     sim = simulator;
+    cc3d_register_cluster_surface_tracker_plugin(simulator, this);
     potts = simulator->getPotts();
     cellFieldG = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();

@@ -2759,7 +2759,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
 
                 # FocalPointPLasticityPlugin - this plugin has to be handled manually -
-                # there is no good way to figure out which links shuold be copied from parent to child cell
+                # there is no good way to figure out which links should be copied from parent to child cell
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):

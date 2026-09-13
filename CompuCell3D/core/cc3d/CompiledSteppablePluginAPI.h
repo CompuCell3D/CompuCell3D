@@ -27,6 +27,11 @@ typedef struct CC3DClusterSurfaceCallbacksV1 {
     void (*get_fn)(void *, CC3DPluginCellHandle, float *, float *);
 } CC3DClusterSurfaceCallbacksV1;
 
+typedef struct CC3DClusterSurfaceTrackerCallbacksV1 {
+    void *plugin_instance;
+    void (*update_cluster_surface_fn)(void *, long);
+} CC3DClusterSurfaceTrackerCallbacksV1;
+
 typedef struct CC3DOrientedGrowthCallbacksV1 {
     void *plugin_instance;
     void (*set_constraint_width_fn)(void *, CC3DPluginCellHandle, float);
@@ -152,6 +157,9 @@ CC3D_PLUGIN_API_EXPORT void cc3d_unregister_length_constraint_callbacks(void *pl
 CC3D_PLUGIN_API_EXPORT void cc3d_register_cluster_surface_callbacks(CC3DPluginSimulatorHandle, const CC3DClusterSurfaceCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DClusterSurfaceCallbacksV1 *cc3d_get_cluster_surface_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cluster_surface_callbacks(void *plugin_instance);
+CC3D_PLUGIN_API_EXPORT void cc3d_register_cluster_surface_tracker_callbacks(CC3DPluginSimulatorHandle, const CC3DClusterSurfaceTrackerCallbacksV1 *);
+CC3D_PLUGIN_API_EXPORT const CC3DClusterSurfaceTrackerCallbacksV1 *cc3d_get_cluster_surface_tracker_callbacks(CC3DPluginSimulatorHandle);
+CC3D_PLUGIN_API_EXPORT void cc3d_unregister_cluster_surface_tracker_callbacks(void *plugin_instance);
 CC3D_PLUGIN_API_EXPORT void cc3d_register_oriented_growth_callbacks(CC3DPluginSimulatorHandle, const CC3DOrientedGrowthCallbacksV1 *);
 CC3D_PLUGIN_API_EXPORT const CC3DOrientedGrowthCallbacksV1 *cc3d_get_oriented_growth_callbacks(CC3DPluginSimulatorHandle);
 CC3D_PLUGIN_API_EXPORT void cc3d_unregister_oriented_growth_callbacks(void *plugin_instance);

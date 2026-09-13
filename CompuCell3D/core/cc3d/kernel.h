@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 17u
+#define CC3D_KERNEL_ABI_VERSION 18u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -35,6 +35,7 @@ class SBMLModel;
 class AdhesionFlex;
 class LengthConstraint;
 class ClusterSurface;
+class ClusterSurfaceTracker;
 class OrientedGrowth;
 class MomentOfInertia;
 class FocalPointPlasticity;
@@ -251,6 +252,15 @@ typedef struct CC3DClusterSurfaceAPIV1 {
 #endif
 } CC3DClusterSurfaceAPIV1;
 
+typedef struct CC3DClusterSurfaceTrackerAPIV1 {
+    void *userdata;
+    void (*update_cluster_surface_fn)(void *userdata, long cluster_id);
+    uint8_t (*reassign_cluster_id_fn)(void *userdata, CC3DCellHandle cell, long cluster_id);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::ClusterSurfaceTracker clusterSurfaceTracker() const;
+#endif
+} CC3DClusterSurfaceTrackerAPIV1;
+
 typedef struct CC3DOrientedGrowthAPIV1 {
     void *userdata;
     void (*set_constraint_width_fn)(void *, CC3DCellHandle, float);
@@ -395,6 +405,7 @@ typedef struct CC3DKernelContext {
     CC3DAdhesionFlexAPIV1 adhesionFlex;
     CC3DLengthConstraintAPIV1 lengthConstraint;
     CC3DClusterSurfaceAPIV1 clusterSurface;
+    CC3DClusterSurfaceTrackerAPIV1 clusterSurfaceTracker;
     CC3DOrientedGrowthAPIV1 orientedGrowth;
     CC3DMomentOfInertiaAPIV1 momentOfInertia;
     CC3DFocalPointPlasticityAPIV1 focalPointPlasticity;
@@ -1141,6 +1152,26 @@ private:
     const CC3DClusterSurfaceAPIV1 *api_;
 };
 
+class ClusterSurfaceTracker {
+public:
+    explicit ClusterSurfaceTracker(const CC3DClusterSurfaceTrackerAPIV1 *api) : api_(api) {}
+
+    void updateClusterSurface(long cluster_id) const {
+        if (api_ && api_->update_cluster_surface_fn) {
+            api_->update_cluster_surface_fn(api_->userdata, cluster_id);
+        }
+    }
+
+    bool reassignClusterId(const Cell &cell, long cluster_id) const {
+        return api_ && api_->reassign_cluster_id_fn
+            ? api_->reassign_cluster_id_fn(api_->userdata, cell.handle(), cluster_id) != 0
+            : false;
+    }
+
+private:
+    const CC3DClusterSurfaceTrackerAPIV1 *api_;
+};
+
 class OrientedGrowth {
 public:
     explicit OrientedGrowth(const CC3DOrientedGrowthAPIV1 *api) : api_(api) {}
@@ -1438,6 +1469,10 @@ inline ::cc3d::kernel::LengthConstraint CC3DLengthConstraintAPIV1::lengthConstra
 
 inline ::cc3d::kernel::ClusterSurface CC3DClusterSurfaceAPIV1::clusterSurface() const {
     return ::cc3d::kernel::ClusterSurface(this);
+}
+
+inline ::cc3d::kernel::ClusterSurfaceTracker CC3DClusterSurfaceTrackerAPIV1::clusterSurfaceTracker() const {
+    return ::cc3d::kernel::ClusterSurfaceTracker(this);
 }
 
 inline ::cc3d::kernel::OrientedGrowth CC3DOrientedGrowthAPIV1::orientedGrowth() const {
