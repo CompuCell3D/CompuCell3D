@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 20u
+#define CC3D_KERNEL_ABI_VERSION 21u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -15,6 +15,7 @@
 
 #ifdef __cplusplus
 #include <string>
+#include <initializer_list>
 #include <utility>
 #include <vector>
 namespace cc3d {
@@ -23,6 +24,8 @@ class Cell;
 class CellAttributes;
 class SharedData;
 class CellIterator;
+class CellTypeRange;
+class CellTypes;
 struct CellSentinel;
 class ClusterIterator;
 class ClusterRange;
@@ -114,6 +117,19 @@ typedef struct CC3DCellViewV1 {
     bool *connectivityOn;
 } CC3DCellViewV1;
 
+typedef struct CC3DCellTypesAPIV1 {
+    void *userdata;
+    uint8_t (*get_fn)(void *userdata, const char *type_name, unsigned char *type_id);
+    size_t (*name_fn)(void *userdata, unsigned char type_id, char *buffer, size_t capacity);
+#ifdef __cplusplus
+    inline int get(const char *type_name) const;
+    inline bool tryGet(const char *type_name, unsigned char &type_id) const;
+    inline std::string name(unsigned char type_id) const;
+    inline std::string name(const ::cc3d::kernel::Cell &cell) const;
+    inline ::cc3d::kernel::CellTypes cellTypes() const;
+#endif
+} CC3DCellTypesAPIV1;
+
 typedef struct CC3DPythonDictionaryAPIV1 {
     void *userdata;
     uint8_t (*contains_fn)(void *userdata, CC3DCellHandle cell, const char *key);
@@ -162,10 +178,21 @@ typedef struct CC3DCellsAPIV1 {
     CC3DCellViewV1 (*get_fn)(void *userdata, CC3DCellIteratorHandle iterator);
     void (*next_fn)(void *userdata, CC3DCellIteratorHandle iterator);
     void (*destroy_fn)(void *userdata, CC3DCellIteratorHandle iterator);
+    CC3DCellIteratorHandle (*by_type_begin_fn)(void *userdata, const unsigned char *type_ids, size_t type_count);
+    CC3DCellViewV1 (*fetch_by_id_fn)(void *userdata, long cell_id);
     CC3DClusterCellsAPIV1 clusterApi;
 #ifdef __cplusplus
     inline ::cc3d::kernel::CellIterator begin() const;
     inline ::cc3d::kernel::CellSentinel end() const;
+    inline ::cc3d::kernel::CellTypeRange byType(unsigned char type_id) const;
+    inline ::cc3d::kernel::CellTypeRange byType(const std::vector<unsigned char> &type_ids) const;
+    inline ::cc3d::kernel::CellTypeRange byType(std::initializer_list<unsigned char> type_ids) const;
+    inline ::cc3d::kernel::OptionalCell fetchCellById(long cell_id) const;
+    inline ::cc3d::kernel::OptionalCell fetch_cell_by_id(long cell_id) const;
+    inline ::cc3d::kernel::CellTypeRange cellListByType(unsigned char type_id) const;
+    inline ::cc3d::kernel::CellTypeRange cell_list_by_type(unsigned char type_id) const;
+    inline ::cc3d::kernel::CellTypeRange cellListByType(const std::vector<unsigned char> &type_ids) const;
+    inline ::cc3d::kernel::CellTypeRange cell_list_by_type(const std::vector<unsigned char> &type_ids) const;
     inline ::cc3d::kernel::ClusterRange clusters() const;
     inline ::cc3d::kernel::ClusterCellRange clusterCells(long cluster_id) const;
 #endif
@@ -466,6 +493,7 @@ typedef struct CC3DSecretionAPIV1 {
 typedef struct CC3DKernelContext {
     uint32_t abiVersion;
     uint64_t mcs;
+    CC3DCellTypesAPIV1 cellTypes;
     CC3DCellsAPIV1 cells;
     CC3DCellNeighborsAPIV1 neighbors;
     CC3DCellPixelsAPIV1 pixels;
@@ -668,6 +696,38 @@ private:
     CC3DCellHandle handle_;
 };
 
+class CellTypes {
+public:
+    CellTypes() : api_(nullptr) {}
+    explicit CellTypes(const CC3DCellTypesAPIV1 *api) : api_(api) {}
+
+    // Returns -1 when the name is unknown or the CellType plugin is unavailable.
+    int get(const char *type_name) const {
+        unsigned char type_id = 0;
+        return tryGet(type_name, type_id) ? static_cast<int>(type_id) : -1;
+    }
+
+    bool tryGet(const char *type_name, unsigned char &type_id) const {
+        return api_ && api_->get_fn && type_name &&
+               api_->get_fn(api_->userdata, type_name, &type_id) != 0;
+    }
+
+    std::string name(unsigned char type_id) const {
+        if (!api_ || !api_->name_fn) return {};
+        const size_t size = api_->name_fn(api_->userdata, type_id, nullptr, 0);
+        std::string result(size, '\0');
+        if (size) api_->name_fn(api_->userdata, type_id, &result[0], size + 1);
+        return result;
+    }
+
+    std::string name(const Cell &cell) const {
+        return name(static_cast<unsigned char>(cell.type));
+    }
+
+private:
+    const CC3DCellTypesAPIV1 *api_;
+};
+
 class PythonDictionary {
 public:
     PythonDictionary() : api_(nullptr), cell_(nullptr) {}
@@ -827,6 +887,28 @@ private:
 
     const CC3DCellsAPIV1 *api_;
     CC3DCellIteratorHandle handle_;
+};
+
+class CellTypeRange {
+public:
+    CellTypeRange() : api_(nullptr) {}
+
+    CellTypeRange(const CC3DCellsAPIV1 *api, unsigned char type_id)
+        : api_(api), type_ids_(1, type_id) {}
+
+    CellTypeRange(const CC3DCellsAPIV1 *api, const std::vector<unsigned char> &type_ids)
+        : api_(api), type_ids_(type_ids) {}
+
+    CellIterator begin() const {
+        if (!api_ || !api_->by_type_begin_fn) return CellIterator();
+        return CellIterator(api_, api_->by_type_begin_fn(api_->userdata, type_ids_.data(), type_ids_.size()));
+    }
+
+    CellSentinel end() const { return CellSentinel(); }
+
+private:
+    const CC3DCellsAPIV1 *api_;
+    std::vector<unsigned char> type_ids_;
 };
 
 class ClusterCellIterator {
@@ -1727,6 +1809,75 @@ inline ::cc3d::kernel::CellIterator CC3DCellsAPIV1::begin() const {
 
 inline ::cc3d::kernel::CellSentinel CC3DCellsAPIV1::end() const {
     return ::cc3d::kernel::CellSentinel();
+}
+
+inline ::cc3d::kernel::CellTypes CC3DCellTypesAPIV1::cellTypes() const {
+    return ::cc3d::kernel::CellTypes(this);
+}
+
+inline bool CC3DCellTypesAPIV1::tryGet(const char *type_name, unsigned char &type_id) const {
+    return cellTypes().tryGet(type_name, type_id);
+}
+
+inline int CC3DCellTypesAPIV1::get(const char *type_name) const {
+    return cellTypes().get(type_name);
+}
+
+inline std::string CC3DCellTypesAPIV1::name(unsigned char type_id) const {
+    return cellTypes().name(type_id);
+}
+
+inline std::string CC3DCellTypesAPIV1::name(const ::cc3d::kernel::Cell &cell) const {
+    return cellTypes().name(cell);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::byType(unsigned char type_id) const {
+    return ::cc3d::kernel::CellTypeRange(this, type_id);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::byType(
+    const std::vector<unsigned char> &type_ids
+) const {
+    return ::cc3d::kernel::CellTypeRange(this, type_ids);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::byType(
+    std::initializer_list<unsigned char> type_ids
+) const {
+    return ::cc3d::kernel::CellTypeRange(this, std::vector<unsigned char>(type_ids));
+}
+
+inline ::cc3d::kernel::OptionalCell CC3DCellsAPIV1::fetchCellById(long cell_id) const {
+    if (!fetch_by_id_fn) return ::cc3d::kernel::OptionalCell();
+    const CC3DCellViewV1 view = fetch_by_id_fn(userdata, cell_id);
+    CC3DOptionalCellViewV1 optionalView{};
+    optionalView.hasCell = view.handle ? 1u : 0u;
+    optionalView.cell = view;
+    return ::cc3d::kernel::OptionalCell(optionalView);
+}
+
+inline ::cc3d::kernel::OptionalCell CC3DCellsAPIV1::fetch_cell_by_id(long cell_id) const {
+    return fetchCellById(cell_id);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cellListByType(unsigned char type_id) const {
+    return byType(type_id);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cell_list_by_type(unsigned char type_id) const {
+    return byType(type_id);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cellListByType(
+    const std::vector<unsigned char> &type_ids
+) const {
+    return byType(type_ids);
+}
+
+inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cell_list_by_type(
+    const std::vector<unsigned char> &type_ids
+) const {
+    return byType(type_ids);
 }
 
 inline ::cc3d::kernel::SharedData CC3DPythonDictionaryAPIV1::sharedData() const {

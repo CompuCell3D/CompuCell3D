@@ -13,6 +13,20 @@ namespace {
         shared.setString("cpp_status", "started");
         shared.setInt("cpp_step_count", 0);
 
+        const int cellType = ctx->cellTypes.get("Cell");
+        if (cellType >= 0) {
+            for (auto cell : ctx->cells.byType(static_cast<unsigned char>(cellType))) {
+                auto attributes = ctx->cellAttributes.forCell(cell);
+                attributes.setString("cpp_named_type", ctx->cellTypes.name(cell).c_str());
+            }
+        }
+
+        auto firstCell = ctx->cells.fetch_cell_by_id(1);
+        if (firstCell) {
+            auto attributes = ctx->cellAttributes.forCell(firstCell.value());
+            attributes.setBool("cpp_lookup_by_id", true);
+        }
+
         for (auto cell : ctx->cells) {
             cell.targetVolume=25.;
             cell.lambdaVolume=2.;

@@ -10,6 +10,7 @@
 #include <Python.h>
 
 #include "CC3DExceptions.h"
+#include "Automaton/Automaton.h"
 #include "Field3D/Field3D.h"
 #include "PluginManager.h"
 #include "plugins/AdhesionFlex/AdhesionFlexPlugin.h"
@@ -396,7 +397,7 @@ namespace {
         const char *value = item && PyUnicode_Check(item) ? PyUnicode_AsUTF8(item) : nullptr;
         const size_t size = value ? strlen(value) : 0u;
         if (value && buffer && capacity) {
-            const size_t copySize = std::min(size, capacity - 1);
+            const size_t copySize = size < capacity - 1 ? size : capacity - 1;
             memcpy(buffer, value, copySize);
             buffer[copySize] = '\0';
         }
@@ -413,7 +414,7 @@ namespace {
         const bool valid = item && PyTuple_Check(item);
         const size_t size = valid ? PyTuple_Size(item) : 0u;
         if (valid && buffer) {
-            const size_t copySize = std::min(size, capacity);
+            const size_t copySize = size < capacity ? size : capacity;
             for (size_t i = 0; i < copySize; ++i) buffer[i] = PyFloat_AsDouble(PyTuple_GetItem(item, i));
         }
         PyErr_Clear();
@@ -467,6 +468,7 @@ namespace {
     struct CellIteratorState {
         CompuCell3D::CellInventory::cellInventoryIterator current;
         CompuCell3D::CellInventory::cellInventoryIterator end;
+        std::vector<unsigned char> typeIds;
     };
 
     struct CellNeighborIteratorState {
@@ -491,9 +493,44 @@ namespace {
         return static_cast<CC3DCellIteratorHandle>(state);
     }
 
+    bool cc3d_cell_type_matches(const CellIteratorState *state) {
+        if (!state || state->current == state->end) return false;
+        if (state->typeIds.empty()) return true;
+
+        const unsigned char cellType = state->current->second->type;
+        return std::find(state->typeIds.begin(), state->typeIds.end(), cellType) != state->typeIds.end();
+    }
+
+    void cc3d_cells_advance_to_matching_type(CellIteratorState *state) {
+        while (state && state->current != state->end && !cc3d_cell_type_matches(state)) {
+            ++state->current;
+        }
+    }
+
+    CC3DCellIteratorHandle cc3d_cells_by_type_begin(
+        void *cellInventoryPtr, const unsigned char *typeIds, size_t typeCount
+    ) {
+        auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
+        std::vector<unsigned char> requestedTypes;
+        if (typeIds && typeCount) requestedTypes.assign(typeIds, typeIds + typeCount);
+
+        auto *state = new CellIteratorState{
+            inventory->cellInventoryBegin(), inventory->cellInventoryEnd(), std::move(requestedTypes)
+        };
+        cc3d_cells_advance_to_matching_type(state);
+        return static_cast<CC3DCellIteratorHandle>(state);
+    }
+
+    CC3DCellViewV1 cc3d_cells_fetch_by_id(void *cellInventoryPtr, long cellId) {
+        auto *inventory = static_cast<CompuCell3D::CellInventory *>(cellInventoryPtr);
+        if (!inventory || inventory->getCellInventorySize() == 0u) return CC3DCellViewV1{};
+        auto *cell = inventory->attemptFetchingCellById(cellId);
+        return cell ? cc3d_cell_view_from_cell(cell) : CC3DCellViewV1{};
+    }
+
     uint8_t cc3d_cells_valid(void *, CC3DCellIteratorHandle iterator) {
         auto *state = static_cast<CellIteratorState *>(iterator);
-        return state && state->current != state->end ? 1u : 0u;
+        return cc3d_cell_type_matches(state) ? 1u : 0u;
     }
 
     Point3D cc3d_point3d(int x, int y, int z) {
@@ -507,6 +544,44 @@ namespace {
     CompuCell3D::Potts3D *cc3d_potts_from_simulator(void *simulatorPtr) {
         auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
         return simulator ? simulator->getPotts() : nullptr;
+    }
+
+    uint8_t cc3d_cell_types_get(void *simulatorPtr, const char *typeName, unsigned char *typeId) {
+        if (!typeName || !typeId) return 0u;
+
+        auto *potts = cc3d_potts_from_simulator(simulatorPtr);
+        auto *automaton = potts ? potts->getAutomaton() : nullptr;
+        if (!automaton) return 0u;
+
+        try {
+            *typeId = automaton->getTypeId(typeName);
+            return 1u;
+        } catch (...) {
+            return 0u;
+        }
+    }
+
+    size_t cc3d_cell_types_name(
+        void *simulatorPtr, unsigned char typeId, char *buffer, size_t capacity
+    ) {
+        auto *potts = cc3d_potts_from_simulator(simulatorPtr);
+        auto *automaton = potts ? potts->getAutomaton() : nullptr;
+        if (!automaton) return 0u;
+
+        std::string typeName;
+        try {
+            typeName = automaton->getTypeName(static_cast<char>(typeId));
+        } catch (...) {
+            return 0u;
+        }
+
+        const size_t size = typeName.size();
+        if (buffer && capacity) {
+            const size_t copySize = size < capacity - 1u ? size : capacity - 1u;
+            std::memcpy(buffer, typeName.data(), copySize);
+            buffer[copySize] = '\0';
+        }
+        return size;
     }
 
     CompuCell3D::Field3D<CompuCell3D::CellG *> *cc3d_cell_field_from_simulator(void *simulatorPtr) {
@@ -1205,6 +1280,7 @@ namespace {
         auto *state = static_cast<CellIteratorState *>(iterator);
         if (state && state->current != state->end) {
             ++state->current;
+            cc3d_cells_advance_to_matching_type(state);
         }
     }
 
@@ -1785,12 +1861,17 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
       finished_(false) {
     context_.abiVersion = CC3D_KERNEL_ABI_VERSION;
     context_.mcs = 0;
+    context_.cellTypes.userdata = nullptr;
+    context_.cellTypes.get_fn = &cc3d_cell_types_get;
+    context_.cellTypes.name_fn = &cc3d_cell_types_name;
     context_.cells.userdata = nullptr;
     context_.cells.begin_fn = &cc3d_cells_begin;
     context_.cells.valid_fn = &cc3d_cells_valid;
     context_.cells.get_fn = &cc3d_cells_get;
     context_.cells.next_fn = &cc3d_cells_next;
     context_.cells.destroy_fn = &cc3d_cells_destroy;
+    context_.cells.by_type_begin_fn = &cc3d_cells_by_type_begin;
+    context_.cells.fetch_by_id_fn = &cc3d_cells_fetch_by_id;
     context_.cells.clusterApi.userdata = nullptr;
     context_.cells.clusterApi.clusters_begin_fn = &cc3d_clusters_begin;
     context_.cells.clusterApi.clusters_valid_fn = &cc3d_clusters_valid;
@@ -2017,6 +2098,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     finished_ = false;
 
     simulator_ = simulator;
+    context_.cellTypes.userdata = simulator_;
     context_.cells.userdata = &simulator_->getPotts()->getCellInventory();
     context_.cells.clusterApi.userdata = context_.cells.userdata;
     context_.neighbors.userdata = simulator_;
@@ -2115,6 +2197,7 @@ void CompiledSteppable::cleanup() {
     library_.reset();
     simulator_ = nullptr;
     context_.cells.userdata = nullptr;
+    context_.cellTypes.userdata = nullptr;
     context_.cells.clusterApi.userdata = nullptr;
     context_.sharedData.userdata = nullptr;
     cc3d_release_python_object(sharedSteppableVars_);
