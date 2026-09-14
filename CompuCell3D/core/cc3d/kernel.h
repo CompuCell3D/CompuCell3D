@@ -123,6 +123,7 @@ typedef struct CC3DCellTypesAPIV1 {
     size_t (*name_fn)(void *userdata, unsigned char type_id, char *buffer, size_t capacity);
 #ifdef __cplusplus
     inline int get(const char *type_name) const;
+    inline int operator[](const char *type_name) const;
     inline bool tryGet(const char *type_name, unsigned char &type_id) const;
     inline std::string name(unsigned char type_id) const;
     inline std::string name(const ::cc3d::kernel::Cell &cell) const;
@@ -1821,6 +1822,10 @@ inline bool CC3DCellTypesAPIV1::tryGet(const char *type_name, unsigned char &typ
 
 inline int CC3DCellTypesAPIV1::get(const char *type_name) const {
     return cellTypes().get(type_name);
+}
+
+inline int CC3DCellTypesAPIV1::operator[](const char *type_name) const {
+    return get(type_name);
 }
 
 inline std::string CC3DCellTypesAPIV1::name(unsigned char type_id) const {

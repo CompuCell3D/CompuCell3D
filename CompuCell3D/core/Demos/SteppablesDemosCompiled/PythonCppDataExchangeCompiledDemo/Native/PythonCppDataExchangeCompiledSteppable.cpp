@@ -13,7 +13,7 @@ namespace {
         shared.setString("cpp_status", "started");
         shared.setInt("cpp_step_count", 0);
 
-        const int cellType = ctx->cellTypes.get("Cell");
+        const int cellType = ctx->cellTypes["Cell"];
         if (cellType >= 0) {
             for (auto cell : ctx->cells.byType(static_cast<unsigned char>(cellType))) {
                 auto attributes = ctx->cellAttributes.forCell(cell);
