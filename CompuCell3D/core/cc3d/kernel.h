@@ -20,6 +20,8 @@
 namespace cc3d {
 namespace kernel {
 class Cell;
+class CellAttributes;
+class SharedData;
 class CellIterator;
 struct CellSentinel;
 class ClusterIterator;
@@ -111,6 +113,29 @@ typedef struct CC3DCellViewV1 {
     double *biasVecZ;
     bool *connectivityOn;
 } CC3DCellViewV1;
+
+typedef struct CC3DPythonDictionaryAPIV1 {
+    void *userdata;
+    uint8_t (*contains_fn)(void *userdata, CC3DCellHandle cell, const char *key);
+    void (*erase_fn)(void *userdata, CC3DCellHandle cell, const char *key);
+    uint8_t (*set_bool_fn)(void *userdata, CC3DCellHandle cell, const char *key, uint8_t value);
+    uint8_t (*set_int_fn)(void *userdata, CC3DCellHandle cell, const char *key, int64_t value);
+    uint8_t (*set_double_fn)(void *userdata, CC3DCellHandle cell, const char *key, double value);
+    uint8_t (*set_string_fn)(void *userdata, CC3DCellHandle cell, const char *key, const char *value);
+    uint8_t (*set_tuple_fn)(void *userdata, CC3DCellHandle cell, const char *key,
+                            const double *values, size_t count);
+    uint8_t (*get_bool_fn)(void *userdata, CC3DCellHandle cell, const char *key, uint8_t *value);
+    uint8_t (*get_int_fn)(void *userdata, CC3DCellHandle cell, const char *key, int64_t *value);
+    uint8_t (*get_double_fn)(void *userdata, CC3DCellHandle cell, const char *key, double *value);
+    size_t (*get_string_fn)(void *userdata, CC3DCellHandle cell, const char *key,
+                            char *buffer, size_t capacity);
+    size_t (*get_tuple_fn)(void *userdata, CC3DCellHandle cell, const char *key,
+                           double *buffer, size_t capacity);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::SharedData sharedData() const;
+    inline ::cc3d::kernel::CellAttributes forCell(const ::cc3d::kernel::Cell &cell) const;
+#endif
+} CC3DPythonDictionaryAPIV1;
 
 typedef struct CC3DClusterCellsAPIV1 {
     void *userdata;
@@ -461,6 +486,8 @@ typedef struct CC3DKernelContext {
     CC3DCellOrientationAPIV1 cellOrientation;
     CC3DChemotaxisAPIV1 chemotaxis;
     CC3DSecretionAPIV1 secretion;
+    CC3DPythonDictionaryAPIV1 cellAttributes;
+    CC3DPythonDictionaryAPIV1 sharedData;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -639,6 +666,79 @@ public:
 
 private:
     CC3DCellHandle handle_;
+};
+
+class PythonDictionary {
+public:
+    PythonDictionary() : api_(nullptr), cell_(nullptr) {}
+    PythonDictionary(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell)
+        : api_(api), cell_(cell) {}
+
+    bool contains(const char *key) const {
+        return api_ && api_->contains_fn && key && api_->contains_fn(api_->userdata, cell_, key) != 0;
+    }
+    void erase(const char *key) const {
+        if (api_ && api_->erase_fn && key) api_->erase_fn(api_->userdata, cell_, key);
+    }
+    bool setBool(const char *key, bool value) const {
+        return api_ && api_->set_bool_fn && key && api_->set_bool_fn(api_->userdata, cell_, key, value ? 1u : 0u) != 0;
+    }
+    bool setInt(const char *key, int64_t value) const {
+        return api_ && api_->set_int_fn && key && api_->set_int_fn(api_->userdata, cell_, key, value) != 0;
+    }
+    bool setDouble(const char *key, double value) const {
+        return api_ && api_->set_double_fn && key && api_->set_double_fn(api_->userdata, cell_, key, value) != 0;
+    }
+    bool setString(const char *key, const char *value) const {
+        return api_ && api_->set_string_fn && key && value && api_->set_string_fn(api_->userdata, cell_, key, value) != 0;
+    }
+    bool setTuple(const char *key, const std::vector<double> &values) const {
+        return api_ && api_->set_tuple_fn && key && api_->set_tuple_fn(api_->userdata, cell_, key, values.data(), values.size()) != 0;
+    }
+    bool getBool(const char *key, bool &value) const {
+        uint8_t result = 0;
+        if (!api_ || !api_->get_bool_fn || !key || !api_->get_bool_fn(api_->userdata, cell_, key, &result)) return false;
+        value = result != 0;
+        return true;
+    }
+    bool getInt(const char *key, int64_t &value) const {
+        return api_ && api_->get_int_fn && key && api_->get_int_fn(api_->userdata, cell_, key, &value) != 0;
+    }
+    bool getDouble(const char *key, double &value) const {
+        return api_ && api_->get_double_fn && key && api_->get_double_fn(api_->userdata, cell_, key, &value) != 0;
+    }
+    std::string getString(const char *key) const {
+        if (!api_ || !api_->get_string_fn || !key) return {};
+        const size_t size = api_->get_string_fn(api_->userdata, cell_, key, nullptr, 0);
+        std::string result(size, '\0');
+        if (size) api_->get_string_fn(api_->userdata, cell_, key, &result[0], size + 1);
+        return result;
+    }
+    std::vector<double> getTuple(const char *key) const {
+        if (!api_ || !api_->get_tuple_fn || !key) return {};
+        const size_t size = api_->get_tuple_fn(api_->userdata, cell_, key, nullptr, 0);
+        std::vector<double> result(size);
+        if (size) api_->get_tuple_fn(api_->userdata, cell_, key, result.data(), size);
+        return result;
+    }
+
+protected:
+    const CC3DPythonDictionaryAPIV1 *api_;
+    CC3DCellHandle cell_;
+};
+
+class CellAttributes : public PythonDictionary {
+public:
+    CellAttributes() = default;
+    CellAttributes(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell)
+        : PythonDictionary(api, cell) {}
+};
+
+class SharedData : public PythonDictionary {
+public:
+    SharedData() = default;
+    explicit SharedData(const CC3DPythonDictionaryAPIV1 *api)
+        : PythonDictionary(api, nullptr) {}
 };
 
 class CellNeighbor {
@@ -1627,6 +1727,16 @@ inline ::cc3d::kernel::CellIterator CC3DCellsAPIV1::begin() const {
 
 inline ::cc3d::kernel::CellSentinel CC3DCellsAPIV1::end() const {
     return ::cc3d::kernel::CellSentinel();
+}
+
+inline ::cc3d::kernel::SharedData CC3DPythonDictionaryAPIV1::sharedData() const {
+    return ::cc3d::kernel::SharedData(this);
+}
+
+inline ::cc3d::kernel::CellAttributes CC3DPythonDictionaryAPIV1::forCell(
+    const ::cc3d::kernel::Cell &cell
+) const {
+    return ::cc3d::kernel::CellAttributes(this, cell.handle());
 }
 
 inline ::cc3d::kernel::ClusterRange CC3DCellsAPIV1::clusters() const {

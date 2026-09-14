@@ -45,6 +45,7 @@ namespace CompuCell3D {
         CC3DKernelContext context_;
         void *state_;
         Simulator *simulator_;
+        void *sharedSteppableVars_;
         bool finished_;
     };
 }
