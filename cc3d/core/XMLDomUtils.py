@@ -62,6 +62,23 @@ class XMLElemAdapter:
         # self.__setattr__ = self.__attr_setter
         self.attribs_initialized = True
 
+    def refresh_from_reference(self, clear_dirty=False):
+        """Refresh cached values after the underlying C++ XML element changes."""
+        if self.__reference_elem is None:
+            return
+
+        attributes = self.__reference_elem.getAttributes()
+        self.__dict__['cdata'] = self.__reference_elem.cdata
+
+        for attr_key in self.__allowed_assignment_properties:
+            if attr_key == 'cdata':
+                continue
+            if attr_key in attributes:
+                self.__dict__[attr_key] = attributes[attr_key]
+
+        if clear_dirty:
+            self.__dict__['_dirty_flag'] = False
+
     def set_dirty(self, flag=True):
         self._dirty_flag = flag
 
@@ -118,6 +135,8 @@ class XMLIdLocator:
 
     def reset(self):
         self._recently_accessed_elems = {}
+        for elem_adapter in self.id_elements_dict.values():
+            elem_adapter.refresh_from_reference(clear_dirty=True)
 
     @property
     def recently_accessed_elems(self):
@@ -213,6 +232,7 @@ class XMLIdLocator:
         # this dictionary is reset after each MCS
         try:
             elem = self.id_elements_dict[tag]
+            elem.refresh_from_reference()
             self._recently_accessed_elems[tag] = elem
             return elem
         except KeyError:

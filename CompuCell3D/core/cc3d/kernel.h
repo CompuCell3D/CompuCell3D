@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 21u
+#define CC3D_KERNEL_ABI_VERSION 23u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -26,6 +26,7 @@ class SharedData;
 class CellIterator;
 class CellTypeRange;
 class CellTypes;
+class CellManipulation;
 struct CellSentinel;
 class ClusterIterator;
 class ClusterRange;
@@ -54,6 +55,7 @@ class CellOrientation;
 class Chemotaxis;
 class ChemotaxisData;
 class FieldSecretor;
+class XmlElement;
 struct Dim3;
 }
 }
@@ -68,6 +70,7 @@ typedef void *CC3DPixelIteratorHandle;
 typedef void *CC3DFieldHandle;
 typedef void *CC3DCellHandle;
 typedef void *CC3DSBMLModelHandle;
+typedef void *CC3DXMLHandle;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -153,6 +156,23 @@ typedef struct CC3DPythonDictionaryAPIV1 {
     inline ::cc3d::kernel::CellAttributes forCell(const ::cc3d::kernel::Cell &cell) const;
 #endif
 } CC3DPythonDictionaryAPIV1;
+
+typedef struct CC3DXMLAPIV1 {
+    void *userdata;
+    CC3DXMLHandle (*get_element_fn)(void *userdata, const char *element_id);
+    void (*destroy_element_fn)(void *userdata, CC3DXMLHandle element);
+    uint8_t (*get_value_fn)(void *userdata, CC3DXMLHandle element,
+                            const char *field, char *buffer, size_t capacity);
+    uint8_t (*get_value_as_double_fn)(void *userdata, CC3DXMLHandle element,
+                                      const char *field, double *value);
+    uint8_t (*set_value_fn)(void *userdata, CC3DXMLHandle element,
+                            const char *field, const char *value);
+    uint8_t (*set_value_as_double_fn)(void *userdata, CC3DXMLHandle element,
+                                      const char *field, double value);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::XmlElement getElement(const char *element_id) const;
+#endif
+} CC3DXMLAPIV1;
 
 typedef struct CC3DClusterCellsAPIV1 {
     void *userdata;
@@ -267,6 +287,16 @@ typedef struct CC3DCellFieldAPIV1 {
     inline void assign(int x_min, int x_max, int y_min, int y_max, int z_min, int z_max, const ::cc3d::kernel::Cell &cell) const;
 #endif
 } CC3DCellFieldAPIV1;
+
+typedef struct CC3DCellManipulationAPIV1 {
+    void *userdata;
+    uint8_t (*delete_cell_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*move_cell_fn)(void *userdata, CC3DCellHandle cell, int dx, int dy, int dz);
+    uint8_t (*merge_cells_fn)(void *userdata, CC3DCellHandle source, CC3DCellHandle destination);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::CellManipulation cellManipulation() const;
+#endif
+} CC3DCellManipulationAPIV1;
 
 typedef struct CC3DSBMLAPIV1 {
     void *userdata;
@@ -501,6 +531,7 @@ typedef struct CC3DKernelContext {
     CC3DCellPixelsAPIV1 boundaryPixels;
     CC3DScalarFieldsAPIV1 scalarFields;
     CC3DCellFieldAPIV1 cellField;
+    CC3DCellManipulationAPIV1 cellManipulation;
     CC3DCellFactoryAPIV1 cellFactory;
     CC3DSBMLAPIV1 sbml;
     CC3DAdhesionFlexAPIV1 adhesionFlex;
@@ -517,6 +548,7 @@ typedef struct CC3DKernelContext {
     CC3DSecretionAPIV1 secretion;
     CC3DPythonDictionaryAPIV1 cellAttributes;
     CC3DPythonDictionaryAPIV1 sharedData;
+    CC3DXMLAPIV1 xml;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -727,6 +759,30 @@ public:
 
 private:
     const CC3DCellTypesAPIV1 *api_;
+};
+
+class CellManipulation {
+public:
+    CellManipulation() : api_(nullptr) {}
+    explicit CellManipulation(const CC3DCellManipulationAPIV1 *api) : api_(api) {}
+
+    bool deleteCell(const Cell &cell) const {
+        return api_ && api_->delete_cell_fn &&
+               api_->delete_cell_fn(api_->userdata, cell.handle()) != 0;
+    }
+
+    bool moveCell(const Cell &cell, int dx, int dy, int dz) const {
+        return api_ && api_->move_cell_fn &&
+               api_->move_cell_fn(api_->userdata, cell.handle(), dx, dy, dz) != 0;
+    }
+
+    bool mergeCells(const Cell &source, const Cell &destination) const {
+        return api_ && api_->merge_cells_fn &&
+               api_->merge_cells_fn(api_->userdata, source.handle(), destination.handle()) != 0;
+    }
+
+private:
+    const CC3DCellManipulationAPIV1 *api_;
 };
 
 class PythonDictionary {
@@ -1816,6 +1872,10 @@ inline ::cc3d::kernel::CellTypes CC3DCellTypesAPIV1::cellTypes() const {
     return ::cc3d::kernel::CellTypes(this);
 }
 
+inline ::cc3d::kernel::CellManipulation CC3DCellManipulationAPIV1::cellManipulation() const {
+    return ::cc3d::kernel::CellManipulation(this);
+}
+
 inline bool CC3DCellTypesAPIV1::tryGet(const char *type_name, unsigned char &type_id) const {
     return cellTypes().tryGet(type_name, type_id);
 }
@@ -1887,6 +1947,95 @@ inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cell_list_by_type(
 
 inline ::cc3d::kernel::SharedData CC3DPythonDictionaryAPIV1::sharedData() const {
     return ::cc3d::kernel::SharedData(this);
+}
+
+namespace cc3d {
+namespace kernel {
+
+class XmlElement {
+public:
+    XmlElement() : api_(nullptr), handle_(nullptr) {}
+
+    XmlElement(const CC3DXMLAPIV1 *api, CC3DXMLHandle handle)
+        : api_(api), handle_(handle) {}
+
+    XmlElement(const XmlElement &) = delete;
+    XmlElement &operator=(const XmlElement &) = delete;
+
+    XmlElement(XmlElement &&other) noexcept
+        : api_(other.api_), handle_(other.handle_) {
+        other.api_ = nullptr;
+        other.handle_ = nullptr;
+    }
+
+    XmlElement &operator=(XmlElement &&other) noexcept {
+        if (this != &other) {
+            reset();
+            api_ = other.api_;
+            handle_ = other.handle_;
+            other.api_ = nullptr;
+            other.handle_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~XmlElement() { reset(); }
+
+    bool valid() const { return api_ && handle_; }
+
+    std::string getValue(const char *field) const {
+        if (!valid() || !field || !api_->get_value_fn) return {};
+        size_t capacity = 256u;
+        std::vector<char> buffer(capacity, '\0');
+        for (;;) {
+            if (api_->get_value_fn(api_->userdata, handle_, field,
+                                   buffer.data(), buffer.size())) {
+                return std::string(buffer.data());
+            }
+            capacity *= 2u;
+            if (capacity > 1024u * 1024u) return {};
+            buffer.assign(capacity, '\0');
+        }
+    }
+
+    double getValueAsDouble(const char *field) const {
+        double value = 0.0;
+        if (!valid() || !field || !api_->get_value_as_double_fn ||
+            !api_->get_value_as_double_fn(api_->userdata, handle_, field, &value)) {
+            return 0.0;
+        }
+        return value;
+    }
+
+    bool setValue(const char *field, const char *value) const {
+        return valid() && field && value && api_->set_value_fn &&
+               api_->set_value_fn(api_->userdata, handle_, field, value);
+    }
+
+    bool setValue(const char *field, double value) const {
+        return valid() && field && api_->set_value_as_double_fn &&
+               api_->set_value_as_double_fn(api_->userdata, handle_, field, value);
+    }
+
+private:
+    void reset() {
+        if (api_ && handle_ && api_->destroy_element_fn) {
+            api_->destroy_element_fn(api_->userdata, handle_);
+        }
+        api_ = nullptr;
+        handle_ = nullptr;
+    }
+
+    const CC3DXMLAPIV1 *api_;
+    CC3DXMLHandle handle_;
+};
+
+}
+}
+
+inline ::cc3d::kernel::XmlElement CC3DXMLAPIV1::getElement(const char *element_id) const {
+    if (!get_element_fn || !element_id) return ::cc3d::kernel::XmlElement();
+    return ::cc3d::kernel::XmlElement(this, get_element_fn(userdata, element_id));
 }
 
 inline ::cc3d::kernel::CellAttributes CC3DPythonDictionaryAPIV1::forCell(

@@ -24,6 +24,7 @@
 #include "Potts3D/CellInventory.h"
 #include "Potts3D/Potts3D.h"
 #include "Simulator.h"
+#include "XMLUtils/CC3DXMLElement.h"
 
 using namespace CompuCell3D;
 
@@ -276,6 +277,150 @@ CC3DCellViewV1 cc3d_cell_view_from_cell(CompuCell3D::CellG *cell) {
 }
 
 namespace {
+    struct XmlElementHandle {
+        Simulator *simulator;
+        std::string elementId;
+    };
+
+    CC3DXMLElement *cc3d_find_xml_element(CC3DXMLElement *root, const std::string &elementId) {
+        if (!root) return nullptr;
+        if (root->findAttribute("id") && root->getAttribute("id") == elementId) return root;
+        for (auto *child : root->children) {
+            if (auto *found = cc3d_find_xml_element(child, elementId)) return found;
+        }
+        return nullptr;
+    }
+
+    CC3DXMLElement *cc3d_find_xml_owner(
+        Simulator *simulator, const std::string &elementId, CC3DXMLElement *&element
+    ) {
+        if (!simulator) return nullptr;
+        std::vector<CC3DXMLElement *> roots;
+        roots.push_back(simulator->ps.pottsCC3DXMLElement);
+        roots.push_back(simulator->ps.metadataCC3DXMLElement);
+        for (auto *root : simulator->ps.pluginCC3DXMLElementVector) roots.push_back(root);
+        for (auto *root : simulator->ps.steppableCC3DXMLElementVector) roots.push_back(root);
+        for (auto *root : roots) {
+            element = cc3d_find_xml_element(root, elementId);
+            if (element) return root;
+        }
+        return nullptr;
+    }
+
+    CC3DXMLHandle cc3d_xml_get_element(void *simulatorPtr, const char *elementId) {
+        if (!simulatorPtr || !elementId) return nullptr;
+        auto *simulator = static_cast<Simulator *>(simulatorPtr);
+        CC3DXMLElement *element = nullptr;
+        auto *owner = cc3d_find_xml_owner(simulator, elementId, element);
+        if (!element || !owner) return nullptr;
+        return static_cast<CC3DXMLHandle>(new XmlElementHandle{simulator, elementId});
+    }
+
+    void cc3d_xml_destroy_element(void *, CC3DXMLHandle handle) {
+        delete static_cast<XmlElementHandle *>(handle);
+    }
+
+    bool cc3d_xml_is_cdata(const char *field) {
+        return field && std::string(field) == "cdata";
+    }
+
+    CC3DXMLElement *cc3d_xml_resolve_element(
+        XmlElementHandle *handle, CC3DXMLElement *&owner
+    ) {
+        if (!handle || !handle->simulator) return nullptr;
+        CC3DXMLElement *element = nullptr;
+        owner = cc3d_find_xml_owner(handle->simulator, handle->elementId, element);
+        return owner && element ? element : nullptr;
+    }
+
+    bool cc3d_xml_get_string(XmlElementHandle *handle, const char *field, std::string &value) {
+        if (!handle || !field) return false;
+        try {
+            CC3DXMLElement *owner = nullptr;
+            auto *element = cc3d_xml_resolve_element(handle, owner);
+            if (!element) return false;
+            if (cc3d_xml_is_cdata(field)) {
+                value = element->cdata;
+            } else {
+                if (!element->findAttribute(field)) return false;
+                value = element->getAttribute(field);
+            }
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+
+    uint8_t cc3d_xml_get_value(
+        void *, CC3DXMLHandle handle, const char *field, char *buffer, size_t capacity
+    ) {
+        std::string value;
+        if (!cc3d_xml_get_string(static_cast<XmlElementHandle *>(handle), field, value) ||
+            !buffer || capacity <= value.size()) return 0u;
+        std::memcpy(buffer, value.c_str(), value.size() + 1u);
+        return 1u;
+    }
+
+    uint8_t cc3d_xml_get_value_as_double(
+        void *, CC3DXMLHandle handle, const char *field, double *value
+    ) {
+        if (!handle || !field || !value) return 0u;
+        try {
+            CC3DXMLElement *owner = nullptr;
+            auto *xml = cc3d_xml_resolve_element(
+                static_cast<XmlElementHandle *>(handle), owner
+            );
+            if (!xml) return 0u;
+            *value = cc3d_xml_is_cdata(field)
+                ? xml->getDouble()
+                : xml->getAttributeAsDouble(field);
+            return 1u;
+        } catch (...) {
+            return 0u;
+        }
+    }
+
+    bool cc3d_xml_set_string(
+        Simulator *simulator, XmlElementHandle *handle, const char *field, const char *value
+    ) {
+        if (!simulator || !handle || !field || !value ||
+            std::string(field) == "id") return false;
+        try {
+            CC3DXMLElement *owner = nullptr;
+            auto *element = cc3d_xml_resolve_element(handle, owner);
+            if (!element || !owner) return false;
+            if (cc3d_xml_is_cdata(field)) {
+                element->updateElementValue(value);
+            } else {
+                if (!element->findAttribute(field)) return false;
+                std::map<std::string, std::string> attributes;
+                attributes[field] = value;
+                element->updateElementAttributes(&attributes);
+            }
+            simulator->updateCC3DModule(owner);
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+
+    uint8_t cc3d_xml_set_value(
+        void *simulatorPtr, CC3DXMLHandle handle, const char *field, const char *value
+    ) {
+        return cc3d_xml_set_string(
+            static_cast<Simulator *>(simulatorPtr),
+            static_cast<XmlElementHandle *>(handle), field, value
+        ) ? 1u : 0u;
+    }
+
+    uint8_t cc3d_xml_set_value_as_double(
+        void *simulatorPtr, CC3DXMLHandle handle, const char *field, double value
+    ) {
+        std::ostringstream stream;
+        stream << value;
+        return cc3d_xml_set_value(simulatorPtr, handle, field, stream.str().c_str());
+    }
+
     PyObject *cc3d_python_dictionary(void *userdata, CC3DCellHandle cellHandle, bool create) {
         if (cellHandle) {
             auto *cell = static_cast<CompuCell3D::CellG *>(cellHandle);
@@ -1525,6 +1670,87 @@ namespace {
         }
     }
 
+    std::vector<CompuCell3D::Point3D> cc3d_collect_cell_pixels(
+        void *simulatorPtr, CC3DCellHandle cellHandle
+    ) {
+        std::vector<CompuCell3D::Point3D> pixels;
+        auto iterator = cc3d_cell_pixels_begin(simulatorPtr, cellHandle);
+        while (cc3d_cell_pixels_valid(nullptr, iterator)) {
+            const CC3DPixelViewV1 pixel = cc3d_cell_pixels_get(nullptr, iterator);
+            pixels.emplace_back(static_cast<short>(pixel.x), static_cast<short>(pixel.y), static_cast<short>(pixel.z));
+            cc3d_cell_pixels_next(nullptr, iterator);
+        }
+        cc3d_cell_pixels_destroy(nullptr, iterator);
+        return pixels;
+    }
+
+    bool cc3d_cell_point_in_lattice(
+        const CC3DFieldDimV1 &dim, const CompuCell3D::Point3D &point
+    ) {
+        return point.x >= 0 && point.x < dim.x &&
+               point.y >= 0 && point.y < dim.y &&
+               point.z >= 0 && point.z < dim.z;
+    }
+
+    bool cc3d_set_cell_pixel(
+        void *simulatorPtr, const CompuCell3D::Point3D &point, CC3DCellHandle cellHandle
+    ) {
+        auto *field = cc3d_cell_field_from_simulator(simulatorPtr);
+        auto *volumeTracker = cc3d_ensure_volume_tracker(simulatorPtr);
+        if (!field || !volumeTracker) return false;
+
+        field->set(point, static_cast<CompuCell3D::CellG *>(cellHandle));
+        volumeTracker->step();
+        return true;
+    }
+
+    uint8_t cc3d_cell_manipulation_delete(void *simulatorPtr, CC3DCellHandle cellHandle) {
+        if (!cellHandle) return 0u;
+        const auto pixels = cc3d_collect_cell_pixels(simulatorPtr, cellHandle);
+        for (const auto &pixel : pixels) {
+            if (!cc3d_set_cell_pixel(simulatorPtr, pixel, nullptr)) return 0u;
+        }
+        return 1u;
+    }
+
+    uint8_t cc3d_cell_manipulation_move(
+        void *simulatorPtr, CC3DCellHandle cellHandle, int dx, int dy, int dz
+    ) {
+        if (!cellHandle) return 0u;
+        const auto pixels = cc3d_collect_cell_pixels(simulatorPtr, cellHandle);
+        const CC3DFieldDimV1 dim = cc3d_cell_field_dim(simulatorPtr);
+        std::set<CompuCell3D::Point3D> oldPixels(pixels.begin(), pixels.end());
+        std::set<CompuCell3D::Point3D> newPixels;
+
+        for (const auto &pixel : pixels) {
+            const CompuCell3D::Point3D shifted(
+                static_cast<short>(pixel.x + dx),
+                static_cast<short>(pixel.y + dy),
+                static_cast<short>(pixel.z + dz));
+            if (cc3d_cell_point_in_lattice(dim, shifted)) newPixels.insert(shifted);
+        }
+
+        for (const auto &pixel : newPixels) {
+            if (!cc3d_set_cell_pixel(simulatorPtr, pixel, cellHandle)) return 0u;
+        }
+        for (const auto &pixel : oldPixels) {
+            if (newPixels.find(pixel) == newPixels.end() &&
+                !cc3d_set_cell_pixel(simulatorPtr, pixel, nullptr)) return 0u;
+        }
+        return 1u;
+    }
+
+    uint8_t cc3d_cell_manipulation_merge(
+        void *simulatorPtr, CC3DCellHandle sourceHandle, CC3DCellHandle destinationHandle
+    ) {
+        if (!sourceHandle || !destinationHandle || sourceHandle == destinationHandle) return 0u;
+        const auto pixels = cc3d_collect_cell_pixels(simulatorPtr, sourceHandle);
+        for (const auto &pixel : pixels) {
+            if (!cc3d_set_cell_pixel(simulatorPtr, pixel, destinationHandle)) return 0u;
+        }
+        return 1u;
+    }
+
     struct SBMLModelHandleState {
         PyObject *model;
     };
@@ -1910,6 +2136,10 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.cellField.dim_fn = &cc3d_cell_field_dim;
     context_.cellField.get_fn = &cc3d_cell_field_get;
     context_.cellField.assign_fn = &cc3d_cell_field_assign;
+    context_.cellManipulation.userdata = nullptr;
+    context_.cellManipulation.delete_cell_fn = &cc3d_cell_manipulation_delete;
+    context_.cellManipulation.move_cell_fn = &cc3d_cell_manipulation_move;
+    context_.cellManipulation.merge_cells_fn = &cc3d_cell_manipulation_merge;
     context_.cellFactory.userdata = nullptr;
     context_.cellFactory.create_fn = &cc3d_cell_factory_create;
     context_.sbml.userdata = nullptr;
@@ -2020,6 +2250,13 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.secretion.secrete_single_field_fn = &cc3d_secretion_single;
     context_.secretion.secrete_contact_single_field_fn = &cc3d_secretion_contact_single;
     context_.secretion.secrete_constant_single_field_fn = &cc3d_secretion_constant_single;
+    context_.xml.userdata = nullptr;
+    context_.xml.get_element_fn = &cc3d_xml_get_element;
+    context_.xml.destroy_element_fn = &cc3d_xml_destroy_element;
+    context_.xml.get_value_fn = &cc3d_xml_get_value;
+    context_.xml.get_value_as_double_fn = &cc3d_xml_get_value_as_double;
+    context_.xml.set_value_fn = &cc3d_xml_set_value;
+    context_.xml.set_value_as_double_fn = &cc3d_xml_set_value_as_double;
     cc3d_initialize_python_dictionary_api(context_.cellAttributes, nullptr);
     cc3d_initialize_python_dictionary_api(context_.sharedData, nullptr);
 }
@@ -2106,6 +2343,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.boundaryPixels.userdata = simulator_;
     context_.scalarFields.userdata = simulator_;
     context_.cellField.userdata = simulator_;
+    context_.cellManipulation.userdata = simulator_;
     context_.cellFactory.userdata = simulator_;
     context_.sbml.userdata = simulator_;
     context_.adhesionFlex.userdata = simulator_;
@@ -2120,6 +2358,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.cellOrientation.userdata = simulator_;
     context_.chemotaxis.userdata = simulator_;
     context_.secretion.userdata = simulator_;
+    context_.xml.userdata = simulator_;
     sharedSteppableVars_ = cc3d_acquire_shared_steppable_vars();
     context_.sharedData.userdata = sharedSteppableVars_;
     currentStep = simulator_->getStep();
@@ -2207,6 +2446,7 @@ void CompiledSteppable::cleanup() {
     context_.boundaryPixels.userdata = nullptr;
     context_.scalarFields.userdata = nullptr;
     context_.cellField.userdata = nullptr;
+    context_.cellManipulation.userdata = nullptr;
     context_.cellFactory.userdata = nullptr;
     context_.sbml.userdata = nullptr;
     context_.adhesionFlex.userdata = nullptr;
@@ -2221,4 +2461,5 @@ void CompiledSteppable::cleanup() {
     context_.cellOrientation.userdata = nullptr;
     context_.chemotaxis.userdata = nullptr;
     context_.secretion.userdata = nullptr;
+    context_.xml.userdata = nullptr;
 }
