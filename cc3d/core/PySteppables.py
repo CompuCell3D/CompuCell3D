@@ -173,6 +173,19 @@ class FieldFetcher:
 
             return field_registry.get_field_adapter(field_name=item)
         except KeyError:
+            # C++ compiled steppables may create simulator-owned shared NumPy fields.
+            if field_registry.discover_engine_owned_field(item):
+                field_adapter = field_registry.get_field_adapter(field_name=item)
+                if self.use_raw_fields:
+                    return field_adapter
+                if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
+                    pad = field_adapter.kwds.get("padding", 0)
+                    padding_vec = field_adapter.kwds.get("padding_vec", np.array([0, 0, 0]))
+                    if pad > 0:
+                        slices = [slice(padding, -padding) if padding else slice(None) for padding in padding_vec]
+                        return field_adapter[slices[0], slices[1], slices[2]]
+                return field_adapter
+
             # trying C++ concentration fields - e.g. diffusion solvers but not shared numpy concentration fields
             # - those are managed byfield_registry
             field = CompuCell.getConcentrationField(pg.simulator, item)

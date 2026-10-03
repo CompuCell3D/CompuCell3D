@@ -47,6 +47,7 @@ namespace CompuCell3D {
         Simulator *simulator_;
         void *sharedSteppableVars_;
         bool finished_;
+        bool initialized_;
     };
 }
 

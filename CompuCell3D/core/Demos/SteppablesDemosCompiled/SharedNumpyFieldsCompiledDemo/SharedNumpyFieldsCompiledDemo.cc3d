@@ -1,0 +1,5 @@
+<CompuCell3D>
+    <XMLScript>Simulation/SharedNumpyFieldsCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/SharedNumpyFieldsCompiledDemo.py</PythonScript>
+    <Resource Type="Cpp">Native/SharedNumpyFieldsCompiledSteppable.cpp</Resource>
+</CompuCell3D>

@@ -12,6 +12,8 @@
 #include "CC3DExceptions.h"
 #include "Automaton/Automaton.h"
 #include "Field3D/Field3D.h"
+#include "Field3D/NumpyArrayWrapper3DImpl.h"
+#include "Field3D/VectorNumpyArrayWrapper3DImpl.h"
 #include "PluginManager.h"
 #include "plugins/AdhesionFlex/AdhesionFlexPlugin.h"
 #include "plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
@@ -25,6 +27,7 @@
 #include "Potts3D/Potts3D.h"
 #include "Simulator.h"
 #include "XMLUtils/CC3DXMLElement.h"
+// #include <Utils/Coordinates3D.h>
 
 using namespace CompuCell3D;
 
@@ -1570,6 +1573,154 @@ namespace {
         return static_cast<CC3DFieldHandle>(simulator->getConcentrationFieldByName(name));
     }
 
+    CC3DSharedFieldHandle cc3d_shared_scalar_find(void *simulatorPtr, const char *name) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(simulatorPtr);
+        if (!simulator || !name) return nullptr;
+        if (auto *field = simulator->getGenericScalarFieldTypeBase(name)) return field;
+        return dynamic_cast<CompuCell3D::NumpyArrayWrapper3DImpl<float> *>(
+            simulator->getConcentrationFieldByName(name));
+    }
+
+    CC3DSharedFieldHandle cc3d_shared_scalar_create(
+        void *simulatorPtr, const char *name, CC3DFieldPrecisionV1 precision, int padding
+    ) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(simulatorPtr);
+        // Padded shared fields are intentionally deferred until the Python/C++
+        // storage-coordinate contract is implemented.  The first ABI version
+        // exposes only fields whose logical and allocated dimensions match.
+        if (!simulator || !name || padding != 0) return nullptr;
+        try {
+            switch (precision) {
+                case CC3D_FIELD_FLOAT32: simulator->createGenericScalarField<float>(name, static_cast<size_t>(padding)); break;
+                case CC3D_FIELD_FLOAT64: simulator->createGenericScalarField<double>(name, static_cast<size_t>(padding)); break;
+                case CC3D_FIELD_INT16: simulator->createGenericScalarField<short>(name, static_cast<size_t>(padding)); break;
+                case CC3D_FIELD_UINT16: simulator->createGenericScalarField<unsigned short>(name, static_cast<size_t>(padding)); break;
+                case CC3D_FIELD_INT32: simulator->createGenericScalarField<int>(name, static_cast<size_t>(padding)); break;
+                case CC3D_FIELD_UINT32: simulator->createGenericScalarField<unsigned int>(name, static_cast<size_t>(padding)); break;
+                default: return nullptr;
+            }
+            return simulator->getGenericScalarFieldTypeBase(name);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    template <typename T>
+    CC3DFieldDimV1 cc3d_shared_scalar_dim_t(CompuCell3D::NumpyArrayWrapper3DImpl<T> *field, uint8_t raw) {
+        if (!field) return {0, 0, 0};
+        auto dim = field->getDim();
+        if (!raw) {
+            auto padding = field->getPaddingVec();
+            dim.x -= static_cast<int>(2 * padding[0]);
+            dim.y -= static_cast<int>(2 * padding[1]);
+            dim.z -= static_cast<int>(2 * padding[2]);
+        }
+        return {dim.x, dim.y, dim.z};
+    }
+
+    CC3DFieldDimV1 cc3d_shared_scalar_dim(void *, CC3DSharedFieldHandle handle, uint8_t raw) {
+        auto *base = static_cast<CompuCell3D::Field3DTypeBase *>(handle);
+        if (!base) return {0, 0, 0};
+#define CC3D_SHARED_SCALAR_DIM(T) \
+        if (auto *field = dynamic_cast<CompuCell3D::NumpyArrayWrapper3DImpl<T> *>(base)) return cc3d_shared_scalar_dim_t(field, raw)
+        CC3D_SHARED_SCALAR_DIM(float);
+        CC3D_SHARED_SCALAR_DIM(double);
+        CC3D_SHARED_SCALAR_DIM(short);
+        CC3D_SHARED_SCALAR_DIM(unsigned short);
+        CC3D_SHARED_SCALAR_DIM(int);
+        CC3D_SHARED_SCALAR_DIM(unsigned int);
+#undef CC3D_SHARED_SCALAR_DIM
+        return {0, 0, 0};
+    }
+
+    template <typename T>
+    double cc3d_shared_scalar_get_t(CompuCell3D::NumpyArrayWrapper3DImpl<T> *field, int x, int y, int z, uint8_t raw) {
+        if (!field) return 0.0;
+        if (raw) {
+            auto padding = field->getPaddingVec();
+            x -= static_cast<int>(padding[0]);
+            y -= static_cast<int>(padding[1]);
+            z -= static_cast<int>(padding[2]);
+        }
+        return static_cast<double>(field->get(CompuCell3D::Point3D(x, y, z)));
+    }
+
+    double cc3d_shared_scalar_get(void *, CC3DSharedFieldHandle handle, int x, int y, int z, uint8_t raw) {
+        auto *base = static_cast<CompuCell3D::Field3DTypeBase *>(handle);
+        if (!base) return 0.0;
+#define CC3D_SHARED_SCALAR_GET(T) \
+        if (auto *field = dynamic_cast<CompuCell3D::NumpyArrayWrapper3DImpl<T> *>(base)) return cc3d_shared_scalar_get_t(field, x, y, z, raw)
+        CC3D_SHARED_SCALAR_GET(float);
+        CC3D_SHARED_SCALAR_GET(double);
+        CC3D_SHARED_SCALAR_GET(short);
+        CC3D_SHARED_SCALAR_GET(unsigned short);
+        CC3D_SHARED_SCALAR_GET(int);
+        CC3D_SHARED_SCALAR_GET(unsigned int);
+#undef CC3D_SHARED_SCALAR_GET
+        return 0.0;
+    }
+
+    template <typename T>
+    uint8_t cc3d_shared_scalar_set_t(CompuCell3D::NumpyArrayWrapper3DImpl<T> *field, int x, int y, int z, double value, uint8_t raw) {
+        if (!field) return 0u;
+        if (raw) {
+            auto padding = field->getPaddingVec();
+            x -= static_cast<int>(padding[0]);
+            y -= static_cast<int>(padding[1]);
+            z -= static_cast<int>(padding[2]);
+        }
+        field->set(CompuCell3D::Point3D(x, y, z), static_cast<T>(value));
+        return 1u;
+    }
+
+    uint8_t cc3d_shared_scalar_set(void *, CC3DSharedFieldHandle handle, int x, int y, int z, double value, uint8_t raw) {
+        auto *base = static_cast<CompuCell3D::Field3DTypeBase *>(handle);
+        if (!base) return 0u;
+#define CC3D_SHARED_SCALAR_SET(T) \
+        if (auto *field = dynamic_cast<CompuCell3D::NumpyArrayWrapper3DImpl<T> *>(base)) return cc3d_shared_scalar_set_t(field, x, y, z, value, raw)
+        CC3D_SHARED_SCALAR_SET(float);
+        CC3D_SHARED_SCALAR_SET(double);
+        CC3D_SHARED_SCALAR_SET(short);
+        CC3D_SHARED_SCALAR_SET(unsigned short);
+        CC3D_SHARED_SCALAR_SET(int);
+        CC3D_SHARED_SCALAR_SET(unsigned int);
+#undef CC3D_SHARED_SCALAR_SET
+        return 0u;
+    }
+
+    CC3DSharedFieldHandle cc3d_shared_vector_find(void *simulatorPtr, const char *name) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(simulatorPtr);
+        return simulator && name ? simulator->getVectorFieldByName(name) : nullptr;
+    }
+
+    CC3DSharedFieldHandle cc3d_shared_vector_create(void *simulatorPtr, const char *name, CC3DFieldPrecisionV1 precision, int padding) {
+        auto *simulator = static_cast<CompuCell3D::Simulator *>(simulatorPtr);
+        if (!simulator || !name || precision != CC3D_FIELD_FLOAT32 || padding != 0) return nullptr;
+        try { return simulator->createVectorField(name); } catch (...) { return nullptr; }
+    }
+
+    CC3DFieldDimV1 cc3d_shared_vector_dim(void *, CC3DSharedFieldHandle handle, uint8_t) {
+        auto *field = static_cast<CompuCell3D::Simulator::vectorField3DNumpyImpl_t *>(handle);
+        if (!field) return {0, 0, 0};
+        auto dim = field->getDim();
+        return {dim.x, dim.y, dim.z};
+    }
+
+    uint8_t cc3d_shared_vector_get(void *, CC3DSharedFieldHandle handle, int x, int y, int z, double *vx, double *vy, double *vz, uint8_t) {
+        auto *field = static_cast<CompuCell3D::Simulator::vectorField3DNumpyImpl_t *>(handle);
+        if (!field || !vx || !vy || !vz) return 0u;
+        auto value = field->get(CompuCell3D::Point3D(x, y, z));
+        *vx = value.x; *vy = value.y; *vz = value.z;
+        return 1u;
+    }
+
+    uint8_t cc3d_shared_vector_set(void *, CC3DSharedFieldHandle handle, int x, int y, int z, double vx, double vy, double vz, uint8_t) {
+        auto *field = static_cast<CompuCell3D::Simulator::vectorField3DNumpyImpl_t *>(handle);
+        if (!field) return 0u;
+        field->set(CompuCell3D::Point3D(x, y, z), Coordinates3D<float>(static_cast<float>(vx), static_cast<float>(vy), static_cast<float>(vz)));
+        return 1u;
+    }
+
     CC3DFieldDimV1 cc3d_scalar_fields_dim(void *, CC3DFieldHandle fieldHandle) {
         CC3DFieldDimV1 dim{0, 0, 0};
         auto *field = static_cast<CompuCell3D::Field3D<float> *>(fieldHandle);
@@ -2084,7 +2235,8 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
       state_(nullptr),
       simulator_(nullptr),
       sharedSteppableVars_(nullptr),
-      finished_(false) {
+      finished_(false),
+      initialized_(false) {
     context_.abiVersion = CC3D_KERNEL_ABI_VERSION;
     context_.mcs = 0;
     context_.cellTypes.userdata = nullptr;
@@ -2132,6 +2284,18 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.scalarFields.dim_fn = &cc3d_scalar_fields_dim;
     context_.scalarFields.get_fn = &cc3d_scalar_fields_get;
     context_.scalarFields.set_fn = &cc3d_scalar_fields_set;
+    context_.sharedScalarFields.userdata = nullptr;
+    context_.sharedScalarFields.find_fn = &cc3d_shared_scalar_find;
+    context_.sharedScalarFields.create_fn = &cc3d_shared_scalar_create;
+    context_.sharedScalarFields.dim_fn = &cc3d_shared_scalar_dim;
+    context_.sharedScalarFields.get_fn = &cc3d_shared_scalar_get;
+    context_.sharedScalarFields.set_fn = &cc3d_shared_scalar_set;
+    context_.sharedVectorFields.userdata = nullptr;
+    context_.sharedVectorFields.find_fn = &cc3d_shared_vector_find;
+    context_.sharedVectorFields.create_fn = &cc3d_shared_vector_create;
+    context_.sharedVectorFields.dim_fn = &cc3d_shared_vector_dim;
+    context_.sharedVectorFields.get_fn = &cc3d_shared_vector_get;
+    context_.sharedVectorFields.set_fn = &cc3d_shared_vector_set;
     context_.cellField.userdata = nullptr;
     context_.cellField.dim_fn = &cc3d_cell_field_dim;
     context_.cellField.get_fn = &cc3d_cell_field_get;
@@ -2342,6 +2506,8 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.pixels.userdata = simulator_;
     context_.boundaryPixels.userdata = simulator_;
     context_.scalarFields.userdata = simulator_;
+    context_.sharedScalarFields.userdata = simulator_;
+    context_.sharedVectorFields.userdata = simulator_;
     context_.cellField.userdata = simulator_;
     context_.cellManipulation.userdata = simulator_;
     context_.cellFactory.userdata = simulator_;
@@ -2363,6 +2529,15 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.sharedData.userdata = sharedSteppableVars_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
+
+    if (api_->init_fn && !initialized_) {
+        try {
+            api_->init_fn(&context_, state_);
+            initialized_ = true;
+        } catch (const std::exception &e) {
+            throw CC3DException(std::string("Compiled steppable init() failed: ") + e.what());
+        }
+    }
 }
 
 void CompiledSteppable::updateContext(unsigned int currentStep) {
@@ -2435,6 +2610,7 @@ void CompiledSteppable::cleanup() {
     api_ = nullptr;
     library_.reset();
     simulator_ = nullptr;
+    initialized_ = false;
     context_.cells.userdata = nullptr;
     context_.cellTypes.userdata = nullptr;
     context_.cells.clusterApi.userdata = nullptr;
@@ -2445,6 +2621,8 @@ void CompiledSteppable::cleanup() {
     context_.pixels.userdata = nullptr;
     context_.boundaryPixels.userdata = nullptr;
     context_.scalarFields.userdata = nullptr;
+    context_.sharedScalarFields.userdata = nullptr;
+    context_.sharedVectorFields.userdata = nullptr;
     context_.cellField.userdata = nullptr;
     context_.cellManipulation.userdata = nullptr;
     context_.cellFactory.userdata = nullptr;

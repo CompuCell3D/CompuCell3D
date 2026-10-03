@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 23u
+#define CC3D_KERNEL_ABI_VERSION 25u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -38,9 +38,12 @@ class CellNeighborRange;
 struct CellNeighborSentinel;
 class PixelIterator;
 class PixelRange;
+class EveryPixelRange;
 struct PixelSentinel;
 class OptionalCell;
 class ScalarField;
+class SharedScalarField;
+class SharedVectorField;
 class SBMLModel;
 class AdhesionFlex;
 class LengthConstraint;
@@ -68,6 +71,7 @@ typedef void *CC3DClusterIteratorHandle;
 typedef void *CC3DCellNeighborIteratorHandle;
 typedef void *CC3DPixelIteratorHandle;
 typedef void *CC3DFieldHandle;
+typedef void *CC3DSharedFieldHandle;
 typedef void *CC3DCellHandle;
 typedef void *CC3DSBMLModelHandle;
 typedef void *CC3DXMLHandle;
@@ -276,6 +280,41 @@ typedef struct CC3DScalarFieldsAPIV1 {
 #endif
 } CC3DScalarFieldsAPIV1;
 
+typedef enum CC3DFieldPrecisionV1 {
+    CC3D_FIELD_FLOAT32 = 0,
+    CC3D_FIELD_FLOAT64 = 1,
+    CC3D_FIELD_INT16 = 2,
+    CC3D_FIELD_UINT16 = 3,
+    CC3D_FIELD_INT32 = 4,
+    CC3D_FIELD_UINT32 = 5
+} CC3DFieldPrecisionV1;
+
+typedef struct CC3DSharedScalarFieldsAPIV1 {
+    void *userdata;
+    CC3DSharedFieldHandle (*find_fn)(void *userdata, const char *name);
+    CC3DSharedFieldHandle (*create_fn)(void *userdata, const char *name, CC3DFieldPrecisionV1 precision, int padding);
+    CC3DFieldDimV1 (*dim_fn)(void *userdata, CC3DSharedFieldHandle field, uint8_t raw);
+    double (*get_fn)(void *userdata, CC3DSharedFieldHandle field, int x, int y, int z, uint8_t raw);
+    uint8_t (*set_fn)(void *userdata, CC3DSharedFieldHandle field, int x, int y, int z, double value, uint8_t raw);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::SharedScalarField scalar(const char *name) const;
+    inline ::cc3d::kernel::SharedScalarField createScalar(const char *name, CC3DFieldPrecisionV1 precision = CC3D_FIELD_FLOAT32, int padding = 0) const;
+#endif
+} CC3DSharedScalarFieldsAPIV1;
+
+typedef struct CC3DSharedVectorFieldsAPIV1 {
+    void *userdata;
+    CC3DSharedFieldHandle (*find_fn)(void *userdata, const char *name);
+    CC3DSharedFieldHandle (*create_fn)(void *userdata, const char *name, CC3DFieldPrecisionV1 precision, int padding);
+    CC3DFieldDimV1 (*dim_fn)(void *userdata, CC3DSharedFieldHandle field, uint8_t raw);
+    uint8_t (*get_fn)(void *userdata, CC3DSharedFieldHandle field, int x, int y, int z, double *vx, double *vy, double *vz, uint8_t raw);
+    uint8_t (*set_fn)(void *userdata, CC3DSharedFieldHandle field, int x, int y, int z, double vx, double vy, double vz, uint8_t raw);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::SharedVectorField vector(const char *name) const;
+    inline ::cc3d::kernel::SharedVectorField createVector(const char *name, CC3DFieldPrecisionV1 precision = CC3D_FIELD_FLOAT32, int padding = 0) const;
+#endif
+} CC3DSharedVectorFieldsAPIV1;
+
 typedef struct CC3DCellFieldAPIV1 {
     void *userdata;
     CC3DFieldDimV1 (*dim_fn)(void *userdata);
@@ -284,6 +323,8 @@ typedef struct CC3DCellFieldAPIV1 {
 #ifdef __cplusplus
     inline ::cc3d::kernel::Dim3 dim() const;
     inline ::cc3d::kernel::OptionalCell operator()(int x, int y, int z) const;
+    inline ::cc3d::kernel::EveryPixelRange everyPixel(int step_x = 1, int step_y = 1, int step_z = 1) const;
+    inline ::cc3d::kernel::EveryPixelRange everyPixelWithSteps(int step_x, int step_y, int step_z) const;
     inline void assign(int x_min, int x_max, int y_min, int y_max, int z_min, int z_max, const ::cc3d::kernel::Cell &cell) const;
 #endif
 } CC3DCellFieldAPIV1;
@@ -549,6 +590,9 @@ typedef struct CC3DKernelContext {
     CC3DPythonDictionaryAPIV1 cellAttributes;
     CC3DPythonDictionaryAPIV1 sharedData;
     CC3DXMLAPIV1 xml;
+    // Append newly introduced APIs so existing context member offsets remain stable.
+    CC3DSharedScalarFieldsAPIV1 sharedScalarFields;
+    CC3DSharedVectorFieldsAPIV1 sharedVectorFields;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -561,6 +605,10 @@ typedef struct CC3DSteppableV1 {
     void (*step_fn)(CC3DKernelContext *ctx, void *state);
     void (*finish_fn)(CC3DKernelContext *ctx, void *state);
     void (*destroy_fn)(void *state);
+    // Optional initialization callback. It runs after the simulator context
+    // is attached and before start_fn, allowing simulator-owned fields and
+    // other resources to be created before the simulation starts.
+    void (*init_fn)(CC3DKernelContext *ctx, void *state);
 } CC3DSteppableV1;
 
 
@@ -1280,6 +1328,65 @@ private:
     CC3DCellHandle cell_;
 };
 
+struct EveryPixelSentinel {};
+
+class EveryPixelIterator {
+public:
+    EveryPixelIterator() : dim_{0, 0, 0}, step_{1, 1, 1}, current_{0, 0, 0}, valid_(false) {}
+
+    EveryPixelIterator(const Dim3 &dim, int step_x, int step_y, int step_z, bool valid)
+        : dim_(dim), step_{step_x, step_y, step_z}, current_{0, 0, 0}, valid_(valid) {}
+
+    Pixel operator*() const {
+        Pixel result;
+        result.x = current_.x;
+        result.y = current_.y;
+        result.z = current_.z;
+        return result;
+    }
+
+    EveryPixelIterator &operator++() {
+        if (!valid_) return *this;
+        current_.z += step_.z;
+        if (current_.z < dim_.z) return *this;
+        current_.z = 0;
+        current_.y += step_.y;
+        if (current_.y < dim_.y) return *this;
+        current_.y = 0;
+        current_.x += step_.x;
+        if (current_.x >= dim_.x) valid_ = false;
+        return *this;
+    }
+
+    bool operator!=(EveryPixelSentinel) const { return valid_; }
+
+private:
+    Dim3 dim_;
+    Dim3 step_;
+    Dim3 current_;
+    bool valid_;
+};
+
+class EveryPixelRange {
+public:
+    EveryPixelRange() : dim_{0, 0, 0}, step_{1, 1, 1}, valid_(false) {}
+
+    EveryPixelRange(const Dim3 &dim, int step_x, int step_y, int step_z)
+        : dim_(dim), step_{step_x, step_y, step_z},
+          valid_(step_x > 0 && step_y > 0 && step_z > 0 && dim.x > 0 && dim.y > 0 && dim.z > 0) {}
+
+    EveryPixelIterator begin() const {
+        return EveryPixelIterator(dim_, step_.x, step_.y, step_.z, valid_);
+    }
+
+    EveryPixelSentinel end() const { return EveryPixelSentinel(); }
+
+private:
+    Dim3 dim_;
+    Dim3 step_;
+    bool valid_;
+};
+
 class ScalarFieldValue {
 public:
     ScalarFieldValue(const CC3DScalarFieldsAPIV1 *api, CC3DFieldHandle field, int x, int y, int z)
@@ -1568,6 +1675,90 @@ public:
     }
 private:
     const CC3DFocalPointPlasticityAPIV1 *api_;
+};
+
+class SharedScalarFieldValue {
+public:
+    SharedScalarFieldValue(const CC3DSharedScalarFieldsAPIV1 *api, CC3DSharedFieldHandle field, int x, int y, int z, bool raw)
+        : api_(api), field_(field), x_(x), y_(y), z_(z), raw_(raw) {}
+
+    operator double() const {
+        return api_ && field_ && api_->get_fn ? api_->get_fn(api_->userdata, field_, x_, y_, z_, raw_ ? 1u : 0u) : 0.0;
+    }
+
+    SharedScalarFieldValue &operator=(double value) {
+        if (api_ && field_ && api_->set_fn) api_->set_fn(api_->userdata, field_, x_, y_, z_, value, raw_ ? 1u : 0u);
+        return *this;
+    }
+
+private:
+    const CC3DSharedScalarFieldsAPIV1 *api_;
+    CC3DSharedFieldHandle field_;
+    int x_, y_, z_;
+    bool raw_;
+};
+
+class SharedScalarField {
+public:
+    SharedScalarField() : api_(nullptr), field_(nullptr), raw_(false) {}
+    SharedScalarField(const CC3DSharedScalarFieldsAPIV1 *api, CC3DSharedFieldHandle field, bool raw = false)
+        : api_(api), field_(field), raw_(raw) {}
+
+    explicit operator bool() const { return api_ && field_; }
+
+    SharedScalarField raw() const { return SharedScalarField(api_, field_, true); }
+
+    Dim3 dim() const {
+        if (!api_ || !field_ || !api_->dim_fn) return {0, 0, 0};
+        CC3DFieldDimV1 d = api_->dim_fn(api_->userdata, field_, raw_ ? 1u : 0u);
+        return {d.x, d.y, d.z};
+    }
+
+    double get(int x, int y, int z) const {
+        return api_ && field_ && api_->get_fn ? api_->get_fn(api_->userdata, field_, x, y, z, raw_ ? 1u : 0u) : 0.0;
+    }
+
+    bool set(int x, int y, int z, double value) const {
+        return api_ && field_ && api_->set_fn && api_->set_fn(api_->userdata, field_, x, y, z, value, raw_ ? 1u : 0u);
+    }
+
+    SharedScalarFieldValue at(int x, int y, int z) const {
+        return SharedScalarFieldValue(api_, field_, x, y, z, raw_);
+    }
+
+private:
+    const CC3DSharedScalarFieldsAPIV1 *api_;
+    CC3DSharedFieldHandle field_;
+    bool raw_;
+};
+
+class SharedVectorField {
+public:
+    SharedVectorField() : api_(nullptr), field_(nullptr), raw_(false) {}
+    SharedVectorField(const CC3DSharedVectorFieldsAPIV1 *api, CC3DSharedFieldHandle field, bool raw = false)
+        : api_(api), field_(field), raw_(raw) {}
+
+    explicit operator bool() const { return api_ && field_; }
+    SharedVectorField raw() const { return SharedVectorField(api_, field_, true); }
+
+    Dim3 dim() const {
+        if (!api_ || !field_ || !api_->dim_fn) return {0, 0, 0};
+        CC3DFieldDimV1 d = api_->dim_fn(api_->userdata, field_, raw_ ? 1u : 0u);
+        return {d.x, d.y, d.z};
+    }
+
+    bool get(int x, int y, int z, double &vx, double &vy, double &vz) const {
+        return api_ && field_ && api_->get_fn && api_->get_fn(api_->userdata, field_, x, y, z, &vx, &vy, &vz, raw_ ? 1u : 0u);
+    }
+
+    bool set(int x, int y, int z, double vx, double vy, double vz) const {
+        return api_ && field_ && api_->set_fn && api_->set_fn(api_->userdata, field_, x, y, z, vx, vy, vz, raw_ ? 1u : 0u);
+    }
+
+private:
+    const CC3DSharedVectorFieldsAPIV1 *api_;
+    CC3DSharedFieldHandle field_;
+    bool raw_;
 };
 
 class ClusterSurface {
@@ -2095,6 +2286,18 @@ inline ::cc3d::kernel::OptionalCell CC3DCellFieldAPIV1::operator()(int x, int y,
     return ::cc3d::kernel::OptionalCell(get_fn(userdata, x, y, z));
 }
 
+inline ::cc3d::kernel::EveryPixelRange CC3DCellFieldAPIV1::everyPixel(
+    int step_x, int step_y, int step_z
+) const {
+    return ::cc3d::kernel::EveryPixelRange(dim(), step_x, step_y, step_z);
+}
+
+inline ::cc3d::kernel::EveryPixelRange CC3DCellFieldAPIV1::everyPixelWithSteps(
+    int step_x, int step_y, int step_z
+) const {
+    return everyPixel(step_x, step_y, step_z);
+}
+
 inline void CC3DCellFieldAPIV1::assign(
     int x_min,
     int x_max,
@@ -2132,6 +2335,30 @@ inline ::cc3d::kernel::AdhesionFlex CC3DAdhesionFlexAPIV1::adhesionFlex() const 
 
 inline ::cc3d::kernel::LengthConstraint CC3DLengthConstraintAPIV1::lengthConstraint() const {
     return ::cc3d::kernel::LengthConstraint(this);
+}
+
+inline ::cc3d::kernel::SharedScalarField CC3DSharedScalarFieldsAPIV1::scalar(const char *name) const {
+    if (!find_fn || !name) return ::cc3d::kernel::SharedScalarField();
+    return ::cc3d::kernel::SharedScalarField(this, find_fn(userdata, name));
+}
+
+inline ::cc3d::kernel::SharedScalarField CC3DSharedScalarFieldsAPIV1::createScalar(
+    const char *name, CC3DFieldPrecisionV1 precision, int padding
+) const {
+    if (!create_fn || !name) return ::cc3d::kernel::SharedScalarField();
+    return ::cc3d::kernel::SharedScalarField(this, create_fn(userdata, name, precision, padding));
+}
+
+inline ::cc3d::kernel::SharedVectorField CC3DSharedVectorFieldsAPIV1::vector(const char *name) const {
+    if (!find_fn || !name) return ::cc3d::kernel::SharedVectorField();
+    return ::cc3d::kernel::SharedVectorField(this, find_fn(userdata, name));
+}
+
+inline ::cc3d::kernel::SharedVectorField CC3DSharedVectorFieldsAPIV1::createVector(
+    const char *name, CC3DFieldPrecisionV1 precision, int padding
+) const {
+    if (!create_fn || !name) return ::cc3d::kernel::SharedVectorField();
+    return ::cc3d::kernel::SharedVectorField(this, create_fn(userdata, name, precision, padding));
 }
 
 inline ::cc3d::kernel::ClusterSurface CC3DClusterSurfaceAPIV1::clusterSurface() const {

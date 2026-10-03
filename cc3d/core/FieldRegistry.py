@@ -219,6 +219,20 @@ class FieldRegistry:
             precision_type=npy_precision_type
         )
 
+    def discover_engine_owned_field(self, field_name: str) -> bool:
+        """Attach a Python NumPy view to a shared field created by the C++ simulator."""
+        if field_name in self.__fields_to_create:
+            return True
+
+        if self.simulator.getGenericScalarFieldTypeBase(field_name) is not None:
+            return self.engine_scalar_field_to_field_adapter_generic(field_name) is not None
+
+        if self.simulator.getVectorFieldByName(field_name) is not None:
+            self.engine_vector_field_to_field_adapter(field_name)
+            return field_name in self.__fields_to_create
+
+        return False
+
     def create_scalar_field_cell_level(self, field_name: str, **kwds) -> None:
         """
         Creates scalar field cell level
