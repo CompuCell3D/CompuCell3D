@@ -7,6 +7,7 @@ namespace {
         cc3d::kernel::SharedScalarField scalar;
         cc3d::kernel::SharedScalarField integer;
         cc3d::kernel::SharedVectorField vector;
+
     };
 
     void *create() { return new State; }

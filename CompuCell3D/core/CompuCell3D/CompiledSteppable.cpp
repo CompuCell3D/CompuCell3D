@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include <Python.h>
@@ -857,7 +858,7 @@ namespace {
         static FocalPointPlasticityBridge bridge{};
         bridge.callbacks = cc3d_get_focal_point_plasticity_callbacks(simulatorPtr);
         return bridge.callbacks ? &bridge : nullptr;
-}
+    }
 
     const CC3DClusterSurfaceCallbacksV1 *cc3d_ensure_cluster_surface(void *simulatorPtr) {
         auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
@@ -1271,6 +1272,26 @@ namespace {
         auto *p = cc3d_ensure_focal_point_plasticity(simulatorPtr);
         if (p) p->setAnchorParameters(static_cast<CompuCell3D::CellG *>(cell), id, lambda, target, max, x, y, z);
     }
+
+    CC3DFPPLinkIteratorHandle cc3d_fpp_links_begin(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->links_begin_fn ? p->callbacks->links_begin_fn(p->callbacks->plugin_instance, c) : nullptr; }
+    CC3DFPPLinkIteratorHandle cc3d_fpp_internal_links_begin(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->internal_links_begin_fn ? p->callbacks->internal_links_begin_fn(p->callbacks->plugin_instance, c) : nullptr; }
+    CC3DFPPLinkIteratorHandle cc3d_fpp_anchors_begin(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->anchors_begin_fn ? p->callbacks->anchors_begin_fn(p->callbacks->plugin_instance, c) : nullptr; }
+    CC3DFPPLinkViewV1 cc3d_fpp_find_link(void *s, CC3DCellHandle a, CC3DCellHandle b) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->find_link_fn ? p->callbacks->find_link_fn(p->callbacks->plugin_instance, a, b) : CC3DFPPLinkViewV1{}; }
+    CC3DFPPLinkViewV1 cc3d_fpp_find_internal_link(void *s, CC3DCellHandle a, CC3DCellHandle b) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->find_internal_link_fn ? p->callbacks->find_internal_link_fn(p->callbacks->plugin_instance, a, b) : CC3DFPPLinkViewV1{}; }
+    size_t cc3d_fpp_link_count(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->link_count_fn ? p->callbacks->link_count_fn(p->callbacks->plugin_instance, c) : 0u; }
+    size_t cc3d_fpp_internal_link_count(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->internal_link_count_fn ? p->callbacks->internal_link_count_fn(p->callbacks->plugin_instance, c) : 0u; }
+    size_t cc3d_fpp_anchor_count(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->anchor_count_fn ? p->callbacks->anchor_count_fn(p->callbacks->plugin_instance, c) : 0u; }
+    CC3DFPPCellIteratorHandle cc3d_fpp_linked_cells_begin(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->linked_cells_begin_fn ? p->callbacks->linked_cells_begin_fn(p->callbacks->plugin_instance, c) : nullptr; }
+    CC3DFPPCellIteratorHandle cc3d_fpp_internal_linked_cells_begin(void *s, CC3DCellHandle c) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->internal_linked_cells_begin_fn ? p->callbacks->internal_linked_cells_begin_fn(p->callbacks->plugin_instance, c) : nullptr; }
+
+    uint8_t cc3d_fpp_links_valid(void *s, CC3DFPPLinkIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->links_valid_fn ? p->callbacks->links_valid_fn(p->callbacks->plugin_instance, h) : 0u; }
+    CC3DFPPLinkViewV1 cc3d_fpp_links_get(void *s, CC3DFPPLinkIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->links_get_fn ? p->callbacks->links_get_fn(p->callbacks->plugin_instance, h) : CC3DFPPLinkViewV1{}; }
+    void cc3d_fpp_links_next(void *s, CC3DFPPLinkIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); if (p && p->callbacks->links_next_fn) p->callbacks->links_next_fn(p->callbacks->plugin_instance, h); }
+    void cc3d_fpp_links_destroy(void *s, CC3DFPPLinkIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); if (p && p->callbacks->links_destroy_fn) p->callbacks->links_destroy_fn(p->callbacks->plugin_instance, h); }
+    uint8_t cc3d_fpp_cells_valid(void *s, CC3DFPPCellIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->linked_cells_valid_fn ? p->callbacks->linked_cells_valid_fn(p->callbacks->plugin_instance, h) : 0u; }
+    CC3DCellViewV1 cc3d_fpp_cells_get(void *s, CC3DFPPCellIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); return p && p->callbacks->linked_cells_get_fn ? p->callbacks->linked_cells_get_fn(p->callbacks->plugin_instance, h) : CC3DCellViewV1{}; }
+    void cc3d_fpp_cells_next(void *s, CC3DFPPCellIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); if (p && p->callbacks->linked_cells_next_fn) p->callbacks->linked_cells_next_fn(p->callbacks->plugin_instance, h); }
+    void cc3d_fpp_cells_destroy(void *s, CC3DFPPCellIteratorHandle h) { auto *p = cc3d_ensure_focal_point_plasticity(s); if (p && p->callbacks->linked_cells_destroy_fn) p->callbacks->linked_cells_destroy_fn(p->callbacks->plugin_instance, h); }
 
     std::vector<float> cc3d_float_vector_from_array(const float *values, size_t count) {
         if (!values || count == 0u) {
@@ -2377,6 +2398,37 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.focalPointPlasticity.create_anchor_fn = &cc3d_fpp_create_anchor;
     context_.focalPointPlasticity.delete_anchor_fn = &cc3d_fpp_delete_anchor;
     context_.focalPointPlasticity.set_anchor_fn = &cc3d_fpp_set_anchor;
+    context_.focalPointPlasticityQueries.userdata = nullptr;
+    context_.focalPointPlasticityQueries.links_begin_fn = &cc3d_fpp_links_begin;
+    context_.focalPointPlasticityQueries.links_valid_fn = &cc3d_fpp_links_valid;
+    context_.focalPointPlasticityQueries.links_get_fn = &cc3d_fpp_links_get;
+    context_.focalPointPlasticityQueries.links_next_fn = &cc3d_fpp_links_next;
+    context_.focalPointPlasticityQueries.links_destroy_fn = &cc3d_fpp_links_destroy;
+    context_.focalPointPlasticityQueries.internal_links_begin_fn = &cc3d_fpp_internal_links_begin;
+    context_.focalPointPlasticityQueries.internal_links_valid_fn = &cc3d_fpp_links_valid;
+    context_.focalPointPlasticityQueries.internal_links_get_fn = &cc3d_fpp_links_get;
+    context_.focalPointPlasticityQueries.internal_links_next_fn = &cc3d_fpp_links_next;
+    context_.focalPointPlasticityQueries.internal_links_destroy_fn = &cc3d_fpp_links_destroy;
+    context_.focalPointPlasticityQueries.anchors_begin_fn = &cc3d_fpp_anchors_begin;
+    context_.focalPointPlasticityQueries.anchors_valid_fn = &cc3d_fpp_links_valid;
+    context_.focalPointPlasticityQueries.anchors_get_fn = &cc3d_fpp_links_get;
+    context_.focalPointPlasticityQueries.anchors_next_fn = &cc3d_fpp_links_next;
+    context_.focalPointPlasticityQueries.anchors_destroy_fn = &cc3d_fpp_links_destroy;
+    context_.focalPointPlasticityQueries.find_link_fn = &cc3d_fpp_find_link;
+    context_.focalPointPlasticityQueries.find_internal_link_fn = &cc3d_fpp_find_internal_link;
+    context_.focalPointPlasticityQueries.link_count_fn = &cc3d_fpp_link_count;
+    context_.focalPointPlasticityQueries.internal_link_count_fn = &cc3d_fpp_internal_link_count;
+    context_.focalPointPlasticityQueries.anchor_count_fn = &cc3d_fpp_anchor_count;
+    context_.focalPointPlasticityQueries.linked_cells_begin_fn = &cc3d_fpp_linked_cells_begin;
+    context_.focalPointPlasticityQueries.linked_cells_valid_fn = &cc3d_fpp_cells_valid;
+    context_.focalPointPlasticityQueries.linked_cells_get_fn = &cc3d_fpp_cells_get;
+    context_.focalPointPlasticityQueries.linked_cells_next_fn = &cc3d_fpp_cells_next;
+    context_.focalPointPlasticityQueries.linked_cells_destroy_fn = &cc3d_fpp_cells_destroy;
+    context_.focalPointPlasticityQueries.internal_linked_cells_begin_fn = &cc3d_fpp_internal_linked_cells_begin;
+    context_.focalPointPlasticityQueries.internal_linked_cells_valid_fn = &cc3d_fpp_cells_valid;
+    context_.focalPointPlasticityQueries.internal_linked_cells_get_fn = &cc3d_fpp_cells_get;
+    context_.focalPointPlasticityQueries.internal_linked_cells_next_fn = &cc3d_fpp_cells_next;
+    context_.focalPointPlasticityQueries.internal_linked_cells_destroy_fn = &cc3d_fpp_cells_destroy;
     context_.polarizationVector.userdata = nullptr;
     context_.polarizationVector.set_fn = &cc3d_polarization_set;
     context_.polarizationVector.get_fn = &cc3d_polarization_get;
@@ -2520,6 +2572,7 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.orientedGrowth.userdata = simulator_;
     context_.momentOfInertia.userdata = simulator_;
     context_.focalPointPlasticity.userdata = simulator_;
+    context_.focalPointPlasticityQueries.userdata = simulator_;
     context_.polarizationVector.userdata = simulator_;
     context_.cellOrientation.userdata = simulator_;
     context_.chemotaxis.userdata = simulator_;
@@ -2635,6 +2688,7 @@ void CompiledSteppable::cleanup() {
     context_.orientedGrowth.userdata = nullptr;
     context_.momentOfInertia.userdata = nullptr;
     context_.focalPointPlasticity.userdata = nullptr;
+    context_.focalPointPlasticityQueries.userdata = nullptr;
     context_.polarizationVector.userdata = nullptr;
     context_.cellOrientation.userdata = nullptr;
     context_.chemotaxis.userdata = nullptr;

@@ -30,6 +30,42 @@ FocalPointPlasticityPlugin::~FocalPointPlasticityPlugin() {
     cc3d_unregister_focal_point_plasticity_callbacks(this);
 }
 
+std::vector<FocalPointPlasticityLink *> FocalPointPlasticityPlugin::getFPPLinkList(CellG *_cell) {
+    return _cell ? linkInv.getCellLinkList(_cell) : linkInv.getLinkList();
+}
+
+std::vector<FocalPointPlasticityInternalLink *> FocalPointPlasticityPlugin::getFPPInternalLinkList(CellG *_cell) {
+    return _cell ? linkInvInternal.getCellLinkList(_cell) : linkInvInternal.getLinkList();
+}
+
+std::vector<FocalPointPlasticityAnchor *> FocalPointPlasticityPlugin::getFPPAnchorList(CellG *_cell) {
+    return _cell ? linkInvAnchor.getCellLinkList(_cell) : linkInvAnchor.getLinkList();
+}
+
+FocalPointPlasticityLink *FocalPointPlasticityPlugin::getFPPLinkByCells(CellG *_cell0, CellG *_cell1) {
+    return linkInv.getLinkByCells(_cell0, _cell1);
+}
+
+FocalPointPlasticityInternalLink *FocalPointPlasticityPlugin::getFPPInternalLinkByCells(CellG *_cell0, CellG *_cell1) {
+    return linkInvInternal.getLinkByCells(_cell0, _cell1);
+}
+
+std::vector<CellG *> FocalPointPlasticityPlugin::getFPPLinkedCells(CellG *_cell, bool _internal) {
+    return _internal ? linkInvInternal.getLinkedCells(_cell) : linkInv.getLinkedCells(_cell);
+}
+
+size_t FocalPointPlasticityPlugin::getFPPLinkCount(CellG *_cell) {
+    return _cell ? linkInv.getCellLinkInventory(_cell)->getLinkInventorySize() : linkInv.getLinkInventorySize();
+}
+
+size_t FocalPointPlasticityPlugin::getFPPInternalLinkCount(CellG *_cell) {
+    return _cell ? linkInvInternal.getCellLinkInventory(_cell)->getLinkInventorySize() : linkInvInternal.getLinkInventorySize();
+}
+
+size_t FocalPointPlasticityPlugin::getFPPAnchorCount(CellG *_cell) {
+    return _cell ? linkInvAnchor.getCellLinkInventory(_cell)->getLinkInventorySize() : linkInvAnchor.getLinkInventorySize();
+}
+
 void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     cc3d_register_focal_point_plasticity_plugin(simulator, this);
     sim = simulator;

@@ -2,6 +2,7 @@
 #define CC3D_COMPILED_STEPPABLE_PLUGIN_API_H
 #include <stddef.h>
 #include <stdint.h>
+#include "kernel.h"
 #if defined(_WIN32)
 # if defined(CompuCellLibShared_EXPORTS)
 #  define CC3D_PLUGIN_API_EXPORT __declspec(dllexport)
@@ -97,6 +98,36 @@ typedef struct CC3DFocalPointPlasticityCallbacksV1 {
     int (*create_anchor_fn)(void *, CC3DPluginCellHandle, double, double, double, float, float, float);
     void (*delete_anchor_fn)(void *, CC3DPluginCellHandle, int);
     void (*set_anchor_fn)(void *, CC3DPluginCellHandle, int, double, double, double, float, float, float);
+    CC3DFPPLinkIteratorHandle (*links_begin_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*links_valid_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkViewV1 (*links_get_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*links_next_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*links_destroy_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkIteratorHandle (*internal_links_begin_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*internal_links_valid_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkViewV1 (*internal_links_get_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*internal_links_next_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*internal_links_destroy_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkIteratorHandle (*anchors_begin_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*anchors_valid_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkViewV1 (*anchors_get_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*anchors_next_fn)(void *, CC3DFPPLinkIteratorHandle);
+    void (*anchors_destroy_fn)(void *, CC3DFPPLinkIteratorHandle);
+    CC3DFPPLinkViewV1 (*find_link_fn)(void *, CC3DPluginCellHandle, CC3DPluginCellHandle);
+    CC3DFPPLinkViewV1 (*find_internal_link_fn)(void *, CC3DPluginCellHandle, CC3DPluginCellHandle);
+    size_t (*link_count_fn)(void *, CC3DPluginCellHandle);
+    size_t (*internal_link_count_fn)(void *, CC3DPluginCellHandle);
+    size_t (*anchor_count_fn)(void *, CC3DPluginCellHandle);
+    CC3DFPPCellIteratorHandle (*linked_cells_begin_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*linked_cells_valid_fn)(void *, CC3DFPPCellIteratorHandle);
+    CC3DCellViewV1 (*linked_cells_get_fn)(void *, CC3DFPPCellIteratorHandle);
+    void (*linked_cells_next_fn)(void *, CC3DFPPCellIteratorHandle);
+    void (*linked_cells_destroy_fn)(void *, CC3DFPPCellIteratorHandle);
+    CC3DFPPCellIteratorHandle (*internal_linked_cells_begin_fn)(void *, CC3DPluginCellHandle);
+    uint8_t (*internal_linked_cells_valid_fn)(void *, CC3DFPPCellIteratorHandle);
+    CC3DCellViewV1 (*internal_linked_cells_get_fn)(void *, CC3DFPPCellIteratorHandle);
+    void (*internal_linked_cells_next_fn)(void *, CC3DFPPCellIteratorHandle);
+    void (*internal_linked_cells_destroy_fn)(void *, CC3DFPPCellIteratorHandle);
 } CC3DFocalPointPlasticityCallbacksV1;
 
 typedef struct CC3DPolarizationVectorCallbacksV1 {

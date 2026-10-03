@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 25u
+#define CC3D_KERNEL_ABI_VERSION 27u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -75,6 +75,9 @@ typedef void *CC3DSharedFieldHandle;
 typedef void *CC3DCellHandle;
 typedef void *CC3DSBMLModelHandle;
 typedef void *CC3DXMLHandle;
+typedef void *CC3DFPPLinkIteratorHandle;
+typedef void *CC3DFPPCellIteratorHandle;
+typedef void *CC3DFPPLinkHandle;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -123,6 +126,14 @@ typedef struct CC3DCellViewV1 {
     double *biasVecZ;
     bool *connectivityOn;
 } CC3DCellViewV1;
+
+typedef struct CC3DFPPLinkViewV1 {
+    CC3DFPPLinkHandle handle;
+    CC3DCellViewV1 initiator;
+    CC3DCellViewV1 initiated;
+    int anchorId;
+    uint8_t valid;
+} CC3DFPPLinkViewV1;
 
 typedef struct CC3DCellTypesAPIV1 {
     void *userdata;
@@ -479,6 +490,47 @@ typedef struct CC3DFocalPointPlasticityAPIV1 {
 #endif
 } CC3DFocalPointPlasticityAPIV1;
 
+// Query operations are kept in a separate table because the base FPP table is
+// embedded in the middle of CC3DKernelContext. Appending fields to that base
+// table would move every following context member and corrupt older modules.
+typedef struct CC3DFocalPointPlasticityQueriesAPIV1 {
+    void *userdata;
+    CC3DFPPLinkIteratorHandle (*links_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*links_valid_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkViewV1 (*links_get_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*links_next_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*links_destroy_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkIteratorHandle (*internal_links_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*internal_links_valid_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkViewV1 (*internal_links_get_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*internal_links_next_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*internal_links_destroy_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkIteratorHandle (*anchors_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*anchors_valid_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkViewV1 (*anchors_get_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*anchors_next_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    void (*anchors_destroy_fn)(void *userdata, CC3DFPPLinkIteratorHandle iterator);
+    CC3DFPPLinkViewV1 (*find_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    CC3DFPPLinkViewV1 (*find_internal_link_fn)(void *userdata, CC3DCellHandle cell1, CC3DCellHandle cell2);
+    size_t (*link_count_fn)(void *userdata, CC3DCellHandle cell);
+    size_t (*internal_link_count_fn)(void *userdata, CC3DCellHandle cell);
+    size_t (*anchor_count_fn)(void *userdata, CC3DCellHandle cell);
+    CC3DFPPCellIteratorHandle (*linked_cells_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*linked_cells_valid_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    CC3DCellViewV1 (*linked_cells_get_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    void (*linked_cells_next_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    void (*linked_cells_destroy_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    CC3DFPPCellIteratorHandle (*internal_linked_cells_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*internal_linked_cells_valid_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    CC3DCellViewV1 (*internal_linked_cells_get_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    void (*internal_linked_cells_next_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+    void (*internal_linked_cells_destroy_fn)(void *userdata, CC3DFPPCellIteratorHandle iterator);
+#ifdef __cplusplus
+    inline ::cc3d::kernel::FocalPointPlasticity focalPointPlasticity(
+        const CC3DFocalPointPlasticityAPIV1 *base) const;
+#endif
+} CC3DFocalPointPlasticityQueriesAPIV1;
+
 typedef struct CC3DPolarizationVectorAPIV1 {
     void *userdata;
     void (*set_fn)(void *, CC3DCellHandle, float, float, float);
@@ -563,6 +615,13 @@ typedef struct CC3DSecretionAPIV1 {
 } CC3DSecretionAPIV1;
 
 typedef struct CC3DKernelContext {
+    // ABI layout rule: this context is shared with separately compiled DLLs.
+    // Never insert fields, reorder fields, or grow a struct already embedded
+    // here. This includes nested tables such as CC3DFocalPointPlasticityAPIV1:
+    // growing one of them shifts every member that follows it. Existing
+    // members keep their byte offsets forever. New APIs must be represented by
+    // a new table appended at the end of this struct, followed by an ABI
+    // version bump and a full rebuild of the host and all compiled modules.
     uint32_t abiVersion;
     uint64_t mcs;
     CC3DCellTypesAPIV1 cellTypes;
@@ -593,6 +652,7 @@ typedef struct CC3DKernelContext {
     // Append newly introduced APIs so existing context member offsets remain stable.
     CC3DSharedScalarFieldsAPIV1 sharedScalarFields;
     CC3DSharedVectorFieldsAPIV1 sharedVectorFields;
+    CC3DFocalPointPlasticityQueriesAPIV1 focalPointPlasticityQueries;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -1636,7 +1696,10 @@ private:
 
 class FocalPointPlasticity {
 public:
-    explicit FocalPointPlasticity(const CC3DFocalPointPlasticityAPIV1 *api) : api_(api) {}
+    explicit FocalPointPlasticity(
+        const CC3DFocalPointPlasticityAPIV1 *api,
+        const CC3DFocalPointPlasticityQueriesAPIV1 *queries = nullptr
+    ) : api_(api), queries_(queries) {}
 
     void create(const Cell &cell1, const Cell &cell2, double lambda,
                 double target_distance = 0.0, double max_distance = 0.0) const {
@@ -1673,8 +1736,160 @@ public:
                    double max_distance = 100000.0, float x = -1, float y = -1, float z = -1) const {
         if (api_ && api_->set_anchor_fn) api_->set_anchor_fn(api_->userdata, cell.handle(), anchor_id, lambda, target_distance, max_distance, x, y, z);
     }
+
+    class Link {
+    public:
+        Link() : view_{} {}
+        explicit Link(const CC3DFPPLinkViewV1 &view) : view_(view) {}
+        explicit operator bool() const { return view_.valid != 0; }
+        Cell initiator() const { return Cell(view_.initiator); }
+        Cell initiated() const { return Cell(view_.initiated); }
+        Cell otherCell(const Cell &cell) const {
+            if (cell.handle() == view_.initiator.handle) return initiated();
+            if (cell.handle() == view_.initiated.handle) return initiator();
+            return Cell(CC3DCellViewV1{});
+        }
+        int anchorId() const { return view_.anchorId; }
+        CC3DFPPLinkHandle handle() const { return view_.handle; }
+    private:
+        CC3DFPPLinkViewV1 view_;
+    };
+
+    class LinkIterator {
+    public:
+        LinkIterator() : queries_(nullptr), handle_(nullptr), kind_(0) {}
+        LinkIterator(const CC3DFocalPointPlasticityQueriesAPIV1 *api, CC3DFPPLinkIteratorHandle handle, int kind)
+            : queries_(api), handle_(handle), kind_(kind) {}
+        LinkIterator(const LinkIterator &) = delete;
+        LinkIterator &operator=(const LinkIterator &) = delete;
+        LinkIterator(LinkIterator &&other) noexcept
+            : queries_(other.queries_), handle_(other.handle_), kind_(other.kind_) {
+            other.queries_ = nullptr; other.handle_ = nullptr;
+        }
+        LinkIterator &operator=(LinkIterator &&other) noexcept {
+            if (this != &other) { cleanup(); queries_ = other.queries_; handle_ = other.handle_; kind_ = other.kind_; other.queries_ = nullptr; other.handle_ = nullptr; }
+            return *this;
+        }
+        ~LinkIterator() { cleanup(); }
+        Link operator*() const { return Link(get()); }
+        LinkIterator &operator++() { if (valid()) next(); return *this; }
+        bool operator!=(CellSentinel) const { return valid(); }
+    private:
+        CC3DFPPLinkViewV1 get() const {
+            if (!queries_ || !handle_) return CC3DFPPLinkViewV1{};
+            switch (kind_) {
+                case 1: return queries_->internal_links_get_fn(queries_->userdata, handle_);
+                case 2: return queries_->anchors_get_fn(queries_->userdata, handle_);
+                default: return queries_->links_get_fn(queries_->userdata, handle_);
+            }
+        }
+        bool valid() const {
+            if (!queries_ || !handle_) return false;
+            switch (kind_) {
+                case 1: return queries_->internal_links_valid_fn(queries_->userdata, handle_) != 0;
+                case 2: return queries_->anchors_valid_fn(queries_->userdata, handle_) != 0;
+                default: return queries_->links_valid_fn(queries_->userdata, handle_) != 0;
+            }
+        }
+        void next() {
+            switch (kind_) {
+                case 1: queries_->internal_links_next_fn(queries_->userdata, handle_); break;
+                case 2: queries_->anchors_next_fn(queries_->userdata, handle_); break;
+                default: queries_->links_next_fn(queries_->userdata, handle_); break;
+            }
+        }
+        void cleanup() {
+            if (queries_ && handle_) {
+                switch (kind_) {
+                    case 1: queries_->internal_links_destroy_fn(queries_->userdata, handle_); break;
+                    case 2: queries_->anchors_destroy_fn(queries_->userdata, handle_); break;
+                    default: queries_->links_destroy_fn(queries_->userdata, handle_); break;
+                }
+            }
+            queries_ = nullptr; handle_ = nullptr;
+        }
+        const CC3DFocalPointPlasticityQueriesAPIV1 *queries_;
+        CC3DFPPLinkIteratorHandle handle_;
+        int kind_;
+    };
+
+    class LinkRange {
+    public:
+        LinkRange(const CC3DFocalPointPlasticityQueriesAPIV1 *api, CC3DCellHandle cell, int kind)
+            : queries_(api), cell_(cell), kind_(kind) {}
+        LinkIterator begin() const {
+            if (!queries_) return LinkIterator();
+            CC3DFPPLinkIteratorHandle handle = nullptr;
+            if (kind_ == 1) handle = queries_->internal_links_begin_fn(queries_->userdata, cell_);
+            else if (kind_ == 2) handle = queries_->anchors_begin_fn(queries_->userdata, cell_);
+            else handle = queries_->links_begin_fn(queries_->userdata, cell_);
+            return LinkIterator(queries_, handle, kind_);
+        }
+        CellSentinel end() const { return CellSentinel(); }
+    private:
+        const CC3DFocalPointPlasticityQueriesAPIV1 *queries_;
+        CC3DCellHandle cell_;
+        int kind_;
+    };
+
+    class CellIterator {
+    public:
+        CellIterator() : queries_(nullptr), handle_(nullptr), internal_(false) {}
+        CellIterator(const CC3DFocalPointPlasticityQueriesAPIV1 *api, CC3DFPPCellIteratorHandle handle, bool internal)
+            : queries_(api), handle_(handle), internal_(internal) {}
+        CellIterator(const CellIterator &) = delete;
+        CellIterator &operator=(const CellIterator &) = delete;
+        CellIterator(CellIterator &&other) noexcept : queries_(other.queries_), handle_(other.handle_), internal_(other.internal_) { other.queries_ = nullptr; other.handle_ = nullptr; }
+        CellIterator &operator=(CellIterator &&other) noexcept { if (this != &other) { cleanup(); queries_ = other.queries_; handle_ = other.handle_; internal_ = other.internal_; other.queries_ = nullptr; other.handle_ = nullptr; } return *this; }
+        ~CellIterator() { cleanup(); }
+        Cell operator*() const { return Cell(get()); }
+        CellIterator &operator++() { if (valid()) next(); return *this; }
+        bool operator!=(CellSentinel) const { return valid(); }
+    private:
+        CC3DCellViewV1 get() const { return internal_ ? queries_->internal_linked_cells_get_fn(queries_->userdata, handle_) : queries_->linked_cells_get_fn(queries_->userdata, handle_); }
+        bool valid() const { return queries_ && handle_ && (internal_ ? queries_->internal_linked_cells_valid_fn(queries_->userdata, handle_) : queries_->linked_cells_valid_fn(queries_->userdata, handle_)) != 0; }
+        void next() { if (internal_) queries_->internal_linked_cells_next_fn(queries_->userdata, handle_); else queries_->linked_cells_next_fn(queries_->userdata, handle_); }
+        void cleanup() { if (queries_ && handle_) { if (internal_) queries_->internal_linked_cells_destroy_fn(queries_->userdata, handle_); else queries_->linked_cells_destroy_fn(queries_->userdata, handle_); } queries_ = nullptr; handle_ = nullptr; }
+        const CC3DFocalPointPlasticityQueriesAPIV1 *queries_;
+        CC3DFPPCellIteratorHandle handle_;
+        bool internal_;
+    };
+
+    class CellRange {
+    public:
+        CellRange(const CC3DFocalPointPlasticityQueriesAPIV1 *api, CC3DCellHandle cell, bool internal)
+            : queries_(api), cell_(cell), internal_(internal) {}
+        CellIterator begin() const {
+            if (!queries_) return CellIterator();
+            auto handle = internal_ ? queries_->internal_linked_cells_begin_fn(queries_->userdata, cell_) : queries_->linked_cells_begin_fn(queries_->userdata, cell_);
+            return CellIterator(queries_, handle, internal_);
+        }
+        CellSentinel end() const { return CellSentinel(); }
+    private:
+        const CC3DFocalPointPlasticityQueriesAPIV1 *queries_;
+        CC3DCellHandle cell_;
+        bool internal_;
+    };
+
+    LinkRange links() const { return LinkRange(queries_, nullptr, 0); }
+    LinkRange links(const Cell &cell) const { return LinkRange(queries_, cell.handle(), 0); }
+    LinkRange internalLinks() const { return LinkRange(queries_, nullptr, 1); }
+    LinkRange internalLinks(const Cell &cell) const { return LinkRange(queries_, cell.handle(), 1); }
+    LinkRange anchors() const { return LinkRange(queries_, nullptr, 2); }
+    LinkRange anchors(const Cell &cell) const { return LinkRange(queries_, cell.handle(), 2); }
+    Link findLink(const Cell &cell1, const Cell &cell2) const { return queries_ && queries_->find_link_fn ? Link(queries_->find_link_fn(queries_->userdata, cell1.handle(), cell2.handle())) : Link(); }
+    Link findInternalLink(const Cell &cell1, const Cell &cell2) const { return queries_ && queries_->find_internal_link_fn ? Link(queries_->find_internal_link_fn(queries_->userdata, cell1.handle(), cell2.handle())) : Link(); }
+    size_t linkCount() const { return queries_ && queries_->link_count_fn ? queries_->link_count_fn(queries_->userdata, nullptr) : 0u; }
+    size_t linkCount(const Cell &cell) const { return queries_ && queries_->link_count_fn ? queries_->link_count_fn(queries_->userdata, cell.handle()) : 0u; }
+    size_t internalLinkCount() const { return queries_ && queries_->internal_link_count_fn ? queries_->internal_link_count_fn(queries_->userdata, nullptr) : 0u; }
+    size_t internalLinkCount(const Cell &cell) const { return queries_ && queries_->internal_link_count_fn ? queries_->internal_link_count_fn(queries_->userdata, cell.handle()) : 0u; }
+    size_t anchorCount() const { return queries_ && queries_->anchor_count_fn ? queries_->anchor_count_fn(queries_->userdata, nullptr) : 0u; }
+    size_t anchorCount(const Cell &cell) const { return queries_ && queries_->anchor_count_fn ? queries_->anchor_count_fn(queries_->userdata, cell.handle()) : 0u; }
+    CellRange linkedCells(const Cell &cell) const { return CellRange(queries_, cell.handle(), false); }
+    CellRange internalLinkedCells(const Cell &cell) const { return CellRange(queries_, cell.handle(), true); }
 private:
     const CC3DFocalPointPlasticityAPIV1 *api_;
+    const CC3DFocalPointPlasticityQueriesAPIV1 *queries_;
 };
 
 class SharedScalarFieldValue {
@@ -2383,6 +2598,11 @@ inline ::cc3d::kernel::MomentOfInertia CC3DMomentOfInertiaAPIV1::momentOfInertia
 
 inline ::cc3d::kernel::FocalPointPlasticity CC3DFocalPointPlasticityAPIV1::focalPointPlasticity() const {
     return ::cc3d::kernel::FocalPointPlasticity(this);
+}
+inline ::cc3d::kernel::FocalPointPlasticity
+CC3DFocalPointPlasticityQueriesAPIV1::focalPointPlasticity(
+    const CC3DFocalPointPlasticityAPIV1 *base) const {
+    return ::cc3d::kernel::FocalPointPlasticity(base, this);
 }
 inline ::cc3d::kernel::PolarizationVector CC3DPolarizationVectorAPIV1::polarizationVector() const {
     return ::cc3d::kernel::PolarizationVector(this);
