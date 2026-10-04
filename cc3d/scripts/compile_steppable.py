@@ -10,6 +10,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from cc3d.core.CompiledSteppableMetadata import metadata_path, write_build_metadata
+
 try:
     from cc3d.scripts.windows_vcvars import (
         compiler_path_from_env,
@@ -366,12 +368,37 @@ def compile_command(
     return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, build_type=build_type), None
 
 
+def clean_compiled_steppable_artifacts(output_path: Path | str) -> list[Path]:
+    """Remove compiler outputs associated with one compiled steppable."""
+    output_path = Path(output_path).expanduser().resolve()
+    stem = output_path.with_suffix("")
+    candidates = {
+        output_path,
+        metadata_path(output_path),
+        stem.with_suffix(".obj"),
+        stem.with_suffix(".o"),
+        stem.with_suffix(".pdb"),
+        stem.with_suffix(".ilk"),
+        stem.with_suffix(".exp"),
+        stem.with_suffix(".lib"),
+        stem.with_suffix(".manifest"),
+    }
+    removed: list[Path] = []
+    for candidate in sorted(candidates, key=str):
+        if candidate.is_file():
+            candidate.unlink()
+            removed.append(candidate)
+    return removed
+
+
 def clean_output(output_path: Path) -> None:
-    if output_path.exists():
-        output_path.unlink()
-        print(f"Removed {output_path}")
+    """Backward-compatible CLI wrapper for compiled-steppable cleanup."""
+    removed = clean_compiled_steppable_artifacts(output_path)
+    if removed:
+        for path in removed:
+            print(f"Removed {path}")
     else:
-        print(f"Nothing to clean: {output_path}")
+        print(f"Nothing to clean: {Path(output_path).expanduser().resolve()}")
 
 
 def _effective_compile_command(cmd: list[str], env: dict[str, str] | None) -> list[str]:
@@ -418,7 +445,7 @@ def compile_steppable_source(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    return CompileResult(
+    result = CompileResult(
         source_path=resolved_source_path,
         output_path=resolved_output_path,
         include_root=include_root_info.include_root,
@@ -428,6 +455,16 @@ def compile_steppable_source(
         stdout=completed.stdout,
         stderr=completed.stderr,
     )
+    if result.success:
+        write_build_metadata(
+            source_path=result.source_path,
+            output_path=result.output_path,
+            include_root=result.include_root,
+            include_root_source=result.include_root_source,
+            command=result.command,
+            build_type=build_type,
+        )
+    return result
 
 
 def parse_args() -> argparse.Namespace:

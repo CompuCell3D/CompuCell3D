@@ -1,7 +1,7 @@
 // Use the repository ABI header directly. The Python environment may contain
 // an older copy where Cell::type is read-only, although the C ABI supports
 // changing a cell type after mitosis.
-#include "../../../../cc3d/kernel.h"
+#include <cc3d/kernel.h>
 
 #include <algorithm>
 #include <cmath>

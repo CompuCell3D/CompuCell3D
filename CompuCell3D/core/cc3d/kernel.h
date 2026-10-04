@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 27u
+#define CC3D_KERNEL_ABI_VERSION 29u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -78,6 +78,22 @@ typedef void *CC3DXMLHandle;
 typedef void *CC3DFPPLinkIteratorHandle;
 typedef void *CC3DFPPCellIteratorHandle;
 typedef void *CC3DFPPLinkHandle;
+typedef void *CC3DDictionaryIteratorHandle;
+
+typedef enum CC3DDictionaryValueType {
+    CC3D_DICTIONARY_VALUE_MISSING = 0,
+    CC3D_DICTIONARY_VALUE_NONE = 1,
+    CC3D_DICTIONARY_VALUE_BOOL = 2,
+    CC3D_DICTIONARY_VALUE_INT = 3,
+    CC3D_DICTIONARY_VALUE_DOUBLE = 4,
+    CC3D_DICTIONARY_VALUE_STRING = 5,
+    CC3D_DICTIONARY_VALUE_TUPLE = 6,
+    CC3D_DICTIONARY_VALUE_LIST = 7,
+    CC3D_DICTIONARY_VALUE_DICTIONARY = 8,
+    CC3D_DICTIONARY_VALUE_OBJECT = 9
+} CC3DDictionaryValueType;
+
+typedef struct CC3DPythonDictionaryQueriesAPIV1 CC3DPythonDictionaryQueriesAPIV1;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -167,8 +183,11 @@ typedef struct CC3DPythonDictionaryAPIV1 {
     size_t (*get_tuple_fn)(void *userdata, CC3DCellHandle cell, const char *key,
                            double *buffer, size_t capacity);
 #ifdef __cplusplus
-    inline ::cc3d::kernel::SharedData sharedData() const;
-    inline ::cc3d::kernel::CellAttributes forCell(const ::cc3d::kernel::Cell &cell) const;
+    inline ::cc3d::kernel::SharedData sharedData(
+        const CC3DPythonDictionaryQueriesAPIV1 *queries = nullptr) const;
+    inline ::cc3d::kernel::CellAttributes forCell(
+        const ::cc3d::kernel::Cell &cell,
+        const CC3DPythonDictionaryQueriesAPIV1 *queries = nullptr) const;
 #endif
 } CC3DPythonDictionaryAPIV1;
 
@@ -531,6 +550,27 @@ typedef struct CC3DFocalPointPlasticityQueriesAPIV1 {
 #endif
 } CC3DFocalPointPlasticityQueriesAPIV1;
 
+// Dictionary extensions live in a separate table because both dictionary
+// tables are embedded in the middle of CC3DKernelContext. Do not append these
+// operations to CC3DPythonDictionaryAPIV1; doing so would shift all following
+// context members and break separately compiled modules.
+typedef struct CC3DPythonDictionaryQueriesAPIV1 {
+    void *userdata;
+    CC3DDictionaryIteratorHandle (*keys_begin_fn)(void *userdata, CC3DCellHandle cell);
+    uint8_t (*keys_valid_fn)(void *userdata, CC3DDictionaryIteratorHandle iterator);
+    size_t (*keys_get_fn)(void *userdata, CC3DDictionaryIteratorHandle iterator,
+                          char *buffer, size_t capacity);
+    void (*keys_next_fn)(void *userdata, CC3DDictionaryIteratorHandle iterator);
+    void (*keys_destroy_fn)(void *userdata, CC3DDictionaryIteratorHandle iterator);
+    CC3DDictionaryValueType (*get_type_fn)(void *userdata, CC3DCellHandle cell, const char *key);
+    size_t (*get_size_fn)(void *userdata, CC3DCellHandle cell, const char *key);
+    uint8_t (*set_none_fn)(void *userdata, CC3DCellHandle cell, const char *key);
+    uint8_t (*set_list_fn)(void *userdata, CC3DCellHandle cell, const char *key,
+                           const double *values, size_t count);
+    size_t (*get_list_fn)(void *userdata, CC3DCellHandle cell, const char *key,
+                          double *buffer, size_t capacity);
+} CC3DPythonDictionaryQueriesAPIV1;
+
 typedef struct CC3DPolarizationVectorAPIV1 {
     void *userdata;
     void (*set_fn)(void *, CC3DCellHandle, float, float, float);
@@ -653,6 +693,7 @@ typedef struct CC3DKernelContext {
     CC3DSharedScalarFieldsAPIV1 sharedScalarFields;
     CC3DSharedVectorFieldsAPIV1 sharedVectorFields;
     CC3DFocalPointPlasticityQueriesAPIV1 focalPointPlasticityQueries;
+    CC3DPythonDictionaryQueriesAPIV1 dictionaryQueries;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -895,9 +936,10 @@ private:
 
 class PythonDictionary {
 public:
-    PythonDictionary() : api_(nullptr), cell_(nullptr) {}
-    PythonDictionary(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell)
-        : api_(api), cell_(cell) {}
+    PythonDictionary() : api_(nullptr), queries_(nullptr), cell_(nullptr) {}
+    PythonDictionary(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell,
+                     const CC3DPythonDictionaryQueriesAPIV1 *queries = nullptr)
+        : api_(api), queries_(queries), cell_(cell) {}
 
     bool contains(const char *key) const {
         return api_ && api_->contains_fn && key && api_->contains_fn(api_->userdata, cell_, key) != 0;
@@ -919,6 +961,44 @@ public:
     }
     bool setTuple(const char *key, const std::vector<double> &values) const {
         return api_ && api_->set_tuple_fn && key && api_->set_tuple_fn(api_->userdata, cell_, key, values.data(), values.size()) != 0;
+    }
+    bool setNone(const char *key) const {
+        return queries_ && queries_->set_none_fn && key &&
+               queries_->set_none_fn(queries_->userdata, cell_, key) != 0;
+    }
+    bool setList(const char *key, const std::vector<double> &values) const {
+        return queries_ && queries_->set_list_fn && key &&
+               queries_->set_list_fn(queries_->userdata, cell_, key, values.data(), values.size()) != 0;
+    }
+    CC3DDictionaryValueType type(const char *key) const {
+        return queries_ && queries_->get_type_fn && key
+            ? queries_->get_type_fn(queries_->userdata, cell_, key)
+            : CC3D_DICTIONARY_VALUE_MISSING;
+    }
+    size_t size(const char *key) const {
+        return queries_ && queries_->get_size_fn && key
+            ? queries_->get_size_fn(queries_->userdata, cell_, key)
+            : 0u;
+    }
+    std::vector<std::string> keys() const {
+        std::vector<std::string> result;
+        if (!queries_ || !queries_->keys_begin_fn || !queries_->keys_valid_fn ||
+            !queries_->keys_get_fn || !queries_->keys_next_fn ||
+            !queries_->keys_destroy_fn) return result;
+        CC3DDictionaryIteratorHandle iterator =
+            queries_->keys_begin_fn(queries_->userdata, cell_);
+        while (iterator && queries_->keys_valid_fn(queries_->userdata, iterator)) {
+            const size_t length = queries_->keys_get_fn(
+                queries_->userdata, iterator, nullptr, 0u);
+            std::string key(length, '\0');
+            if (length) {
+                queries_->keys_get_fn(queries_->userdata, iterator, &key[0], length + 1u);
+            }
+            result.push_back(std::move(key));
+            queries_->keys_next_fn(queries_->userdata, iterator);
+        }
+        if (iterator) queries_->keys_destroy_fn(queries_->userdata, iterator);
+        return result;
     }
     bool getBool(const char *key, bool &value) const {
         uint8_t result = 0;
@@ -946,24 +1026,34 @@ public:
         if (size) api_->get_tuple_fn(api_->userdata, cell_, key, result.data(), size);
         return result;
     }
+    std::vector<double> getList(const char *key) const {
+        if (!queries_ || !queries_->get_list_fn || !key) return {};
+        const size_t size = queries_->get_list_fn(queries_->userdata, cell_, key, nullptr, 0u);
+        std::vector<double> result(size);
+        if (size) queries_->get_list_fn(queries_->userdata, cell_, key, result.data(), size);
+        return result;
+    }
 
 protected:
     const CC3DPythonDictionaryAPIV1 *api_;
+    const CC3DPythonDictionaryQueriesAPIV1 *queries_;
     CC3DCellHandle cell_;
 };
 
 class CellAttributes : public PythonDictionary {
 public:
     CellAttributes() = default;
-    CellAttributes(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell)
-        : PythonDictionary(api, cell) {}
+    CellAttributes(const CC3DPythonDictionaryAPIV1 *api, CC3DCellHandle cell,
+                   const CC3DPythonDictionaryQueriesAPIV1 *queries = nullptr)
+        : PythonDictionary(api, cell, queries) {}
 };
 
 class SharedData : public PythonDictionary {
 public:
     SharedData() = default;
-    explicit SharedData(const CC3DPythonDictionaryAPIV1 *api)
-        : PythonDictionary(api, nullptr) {}
+    explicit SharedData(const CC3DPythonDictionaryAPIV1 *api,
+                        const CC3DPythonDictionaryQueriesAPIV1 *queries = nullptr)
+        : PythonDictionary(api, nullptr, queries) {}
 };
 
 class CellNeighbor {
@@ -2351,8 +2441,9 @@ inline ::cc3d::kernel::CellTypeRange CC3DCellsAPIV1::cell_list_by_type(
     return byType(type_ids);
 }
 
-inline ::cc3d::kernel::SharedData CC3DPythonDictionaryAPIV1::sharedData() const {
-    return ::cc3d::kernel::SharedData(this);
+inline ::cc3d::kernel::SharedData CC3DPythonDictionaryAPIV1::sharedData(
+    const CC3DPythonDictionaryQueriesAPIV1 *queries) const {
+    return ::cc3d::kernel::SharedData(this, queries);
 }
 
 namespace cc3d {
@@ -2445,9 +2536,10 @@ inline ::cc3d::kernel::XmlElement CC3DXMLAPIV1::getElement(const char *element_i
 }
 
 inline ::cc3d::kernel::CellAttributes CC3DPythonDictionaryAPIV1::forCell(
-    const ::cc3d::kernel::Cell &cell
+    const ::cc3d::kernel::Cell &cell,
+    const CC3DPythonDictionaryQueriesAPIV1 *queries
 ) const {
-    return ::cc3d::kernel::CellAttributes(this, cell.handle());
+    return ::cc3d::kernel::CellAttributes(this, cell.handle(), queries);
 }
 
 inline ::cc3d::kernel::ClusterRange CC3DCellsAPIV1::clusters() const {

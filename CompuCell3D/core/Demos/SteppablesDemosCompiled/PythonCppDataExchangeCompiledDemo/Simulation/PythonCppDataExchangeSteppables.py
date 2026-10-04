@@ -5,10 +5,14 @@ class PythonExchangeSteppable(SteppableBasePy):
     def start(self):
         self.shared_steppable_vars["python_status"] = "started"
         self.shared_steppable_vars["python_to_cpp"] = 1.0
+        self.shared_steppable_vars["python_none"] = None
+        self.shared_steppable_vars["python_list"] = [1.0, 2.0, 3.0]
+        self.shared_steppable_vars["python_nested"] = {"nested_value": 7}
 
         for cell in self.cell_list:
             cell.dict["python_signal"] = float(cell.id)
             cell.dict["python_vector"] = (float(cell.id), 10.0, 20.0)
+            cell.dict["python_list"] = [float(cell.id), 4.0, 5.0]
 
     def step(self, mcs):
         self.shared_steppable_vars["python_to_cpp"] = float(mcs)

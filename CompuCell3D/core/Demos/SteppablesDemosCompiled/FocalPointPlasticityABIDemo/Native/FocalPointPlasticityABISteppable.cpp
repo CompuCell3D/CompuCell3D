@@ -1,6 +1,6 @@
 // Use the repository ABI header directly. The active Python environment may
 // contain an older installed header without the FPP inventory operations.
-#include "../../../../cc3d/kernel.h"
+#include <cc3d/kernel.h>
 #include <iostream>
 
 namespace {

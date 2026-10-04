@@ -436,6 +436,179 @@ namespace {
 
     bool cc3d_python_key_valid(const char *key) { return key && *key; }
 
+    struct CC3DPythonDictionaryIterator {
+        PyObject *keys = nullptr;
+        Py_ssize_t index = 0;
+    };
+
+    PyObject *cc3d_python_dictionary_item(void *userdata, CC3DCellHandle cellHandle,
+                                          const char *key) {
+        PyObject *dict = cc3d_python_dictionary(userdata, cellHandle, false);
+        return dict && cc3d_python_key_valid(key) ? PyDict_GetItemString(dict, key) : nullptr;
+    }
+
+    CC3DDictionaryIteratorHandle cc3d_python_dict_keys_begin(
+        void *userdata, CC3DCellHandle cellHandle) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        auto *iterator = new CC3DPythonDictionaryIterator;
+        iterator->keys = PyList_New(0);
+        PyObject *dict = cc3d_python_dictionary(userdata, cellHandle, false);
+        PyObject *keys = nullptr;
+        if (iterator->keys && dict && PyDict_Check(dict)) {
+            keys = PyDict_Keys(dict);
+            if (keys) {
+                const Py_ssize_t count = PyList_Size(keys);
+                for (Py_ssize_t i = 0; i < count; ++i) {
+                    PyObject *key = PyList_GetItem(keys, i);
+                    if (PyUnicode_Check(key)) PyList_Append(iterator->keys, key);
+                }
+            }
+            Py_XDECREF(keys);
+        }
+        PyGILState_Release(state);
+        return iterator;
+    }
+
+    uint8_t cc3d_python_dict_keys_valid(
+        void *userdata, CC3DDictionaryIteratorHandle handle) {
+        (void) userdata;
+        PyGILState_STATE state = PyGILState_Ensure();
+        auto *iterator = static_cast<CC3DPythonDictionaryIterator *>(handle);
+        const bool valid = iterator && iterator->keys &&
+                           iterator->index < PyList_Size(iterator->keys);
+        PyGILState_Release(state);
+        return valid ? 1u : 0u;
+    }
+
+    size_t cc3d_python_dict_keys_get(
+        void *userdata, CC3DDictionaryIteratorHandle handle,
+        char *buffer, size_t capacity) {
+        (void) userdata;
+        PyGILState_STATE state = PyGILState_Ensure();
+        auto *iterator = static_cast<CC3DPythonDictionaryIterator *>(handle);
+        PyObject *key = iterator && iterator->keys &&
+                        iterator->index < PyList_Size(iterator->keys)
+                    ? PyList_GetItem(iterator->keys, iterator->index) : nullptr;
+        const char *value = key ? PyUnicode_AsUTF8(key) : nullptr;
+        const size_t length = value ? strlen(value) : 0u;
+        if (value && buffer && capacity) {
+            const size_t copySize = length < capacity - 1u ? length : capacity - 1u;
+            memcpy(buffer, value, copySize);
+            buffer[copySize] = '\0';
+        }
+        PyErr_Clear();
+        PyGILState_Release(state);
+        return value ? length : 0u;
+    }
+
+    void cc3d_python_dict_keys_next(
+        void *userdata, CC3DDictionaryIteratorHandle handle) {
+        (void) userdata;
+        PyGILState_STATE state = PyGILState_Ensure();
+        auto *iterator = static_cast<CC3DPythonDictionaryIterator *>(handle);
+        if (iterator) ++iterator->index;
+        PyGILState_Release(state);
+    }
+
+    void cc3d_python_dict_keys_destroy(
+        void *userdata, CC3DDictionaryIteratorHandle handle) {
+        (void) userdata;
+        PyGILState_STATE state = PyGILState_Ensure();
+        auto *iterator = static_cast<CC3DPythonDictionaryIterator *>(handle);
+        if (iterator) {
+            Py_XDECREF(iterator->keys);
+            delete iterator;
+        }
+        PyGILState_Release(state);
+    }
+
+    CC3DDictionaryValueType cc3d_python_dict_get_type(
+        void *userdata, CC3DCellHandle cellHandle, const char *key) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyObject *item = cc3d_python_dictionary_item(userdata, cellHandle, key);
+        CC3DDictionaryValueType type = CC3D_DICTIONARY_VALUE_MISSING;
+        if (item == Py_None) type = CC3D_DICTIONARY_VALUE_NONE;
+        else if (item && PyBool_Check(item)) type = CC3D_DICTIONARY_VALUE_BOOL;
+        else if (item && PyLong_Check(item)) type = CC3D_DICTIONARY_VALUE_INT;
+        else if (item && PyFloat_Check(item)) type = CC3D_DICTIONARY_VALUE_DOUBLE;
+        else if (item && PyUnicode_Check(item)) type = CC3D_DICTIONARY_VALUE_STRING;
+        else if (item && PyTuple_Check(item)) type = CC3D_DICTIONARY_VALUE_TUPLE;
+        else if (item && PyList_Check(item)) type = CC3D_DICTIONARY_VALUE_LIST;
+        else if (item && PyDict_Check(item)) type = CC3D_DICTIONARY_VALUE_DICTIONARY;
+        else if (item) type = CC3D_DICTIONARY_VALUE_OBJECT;
+        PyGILState_Release(state);
+        return type;
+    }
+
+    size_t cc3d_python_dict_get_size(
+        void *userdata, CC3DCellHandle cellHandle, const char *key) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyObject *item = cc3d_python_dictionary_item(userdata, cellHandle, key);
+        size_t size = 0u;
+        if (item && (PyList_Check(item) || PyTuple_Check(item))) {
+            size = static_cast<size_t>(PySequence_Size(item));
+        } else if (item && PyDict_Check(item)) {
+            size = static_cast<size_t>(PyDict_Size(item));
+        }
+        PyErr_Clear();
+        PyGILState_Release(state);
+        return size;
+    }
+
+    uint8_t cc3d_python_dict_set_none(
+        void *userdata, CC3DCellHandle cellHandle, const char *key) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyObject *dict = cc3d_python_dictionary(userdata, cellHandle, true);
+        const int result = dict && cc3d_python_key_valid(key) &&
+                           PyDict_SetItemString(dict, key, Py_None) == 0;
+        PyGILState_Release(state);
+        return result ? 1u : 0u;
+    }
+
+    uint8_t cc3d_python_dict_set_list(
+        void *userdata, CC3DCellHandle cellHandle, const char *key,
+        const double *values, size_t count) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyObject *dict = cc3d_python_dictionary(userdata, cellHandle, true);
+        PyObject *item = PyList_New(count);
+        if (item && (values || count == 0u)) {
+            for (size_t i = 0; i < count; ++i) {
+                PyList_SET_ITEM(item, i, PyFloat_FromDouble(values[i]));
+            }
+        } else if (item) {
+            Py_CLEAR(item);
+        }
+        const int result = dict && item && cc3d_python_key_valid(key) &&
+                           PyDict_SetItemString(dict, key, item) == 0;
+        Py_XDECREF(item);
+        PyGILState_Release(state);
+        return result ? 1u : 0u;
+    }
+
+    size_t cc3d_python_dict_get_list(
+        void *userdata, CC3DCellHandle cellHandle, const char *key,
+        double *buffer, size_t capacity) {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyObject *item = cc3d_python_dictionary_item(userdata, cellHandle, key);
+        const bool valid = item && PyList_Check(item);
+        const size_t size = valid ? static_cast<size_t>(PyList_Size(item)) : 0u;
+        if (valid && buffer) {
+            const size_t copySize = size < capacity ? size : capacity;
+            for (size_t i = 0; i < copySize; ++i) {
+                PyObject *value = PyList_GetItem(item, static_cast<Py_ssize_t>(i));
+                if (!(PyFloat_Check(value) || (PyLong_Check(value) && !PyBool_Check(value)))) {
+                    PyErr_Clear();
+                    PyGILState_Release(state);
+                    return 0u;
+                }
+                buffer[i] = PyFloat_AsDouble(value);
+            }
+        }
+        PyErr_Clear();
+        PyGILState_Release(state);
+        return valid ? size : 0u;
+    }
+
     uint8_t cc3d_python_dict_contains(void *userdata, CC3DCellHandle cellHandle, const char *key) {
         PyGILState_STATE state = PyGILState_Ensure();
         PyObject *dict = cc3d_python_dictionary(userdata, cellHandle, false);
@@ -585,6 +758,21 @@ namespace {
         api.get_double_fn = &cc3d_python_dict_get_double;
         api.get_string_fn = &cc3d_python_dict_get_string;
         api.get_tuple_fn = &cc3d_python_dict_get_tuple;
+    }
+
+    void cc3d_initialize_python_dictionary_queries_api(
+        CC3DPythonDictionaryQueriesAPIV1 &api, void *userdata) {
+        api.userdata = userdata;
+        api.keys_begin_fn = &cc3d_python_dict_keys_begin;
+        api.keys_valid_fn = &cc3d_python_dict_keys_valid;
+        api.keys_get_fn = &cc3d_python_dict_keys_get;
+        api.keys_next_fn = &cc3d_python_dict_keys_next;
+        api.keys_destroy_fn = &cc3d_python_dict_keys_destroy;
+        api.get_type_fn = &cc3d_python_dict_get_type;
+        api.get_size_fn = &cc3d_python_dict_get_size;
+        api.set_none_fn = &cc3d_python_dict_set_none;
+        api.set_list_fn = &cc3d_python_dict_set_list;
+        api.get_list_fn = &cc3d_python_dict_get_list;
     }
 
     PyObject *cc3d_acquire_shared_steppable_vars() {
@@ -2475,6 +2663,7 @@ CompiledSteppable::CompiledSteppable(const std::string &libraryPath, const std::
     context_.xml.set_value_as_double_fn = &cc3d_xml_set_value_as_double;
     cc3d_initialize_python_dictionary_api(context_.cellAttributes, nullptr);
     cc3d_initialize_python_dictionary_api(context_.sharedData, nullptr);
+    cc3d_initialize_python_dictionary_queries_api(context_.dictionaryQueries, nullptr);
 }
 
 CompiledSteppable::~CompiledSteppable() {
@@ -2580,6 +2769,9 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.xml.userdata = simulator_;
     sharedSteppableVars_ = cc3d_acquire_shared_steppable_vars();
     context_.sharedData.userdata = sharedSteppableVars_;
+    // Query callbacks use userdata only for the shared dictionary; cell
+    // dictionaries are resolved from the CellG handle passed to each call.
+    context_.dictionaryQueries.userdata = sharedSteppableVars_;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 
@@ -2694,4 +2886,5 @@ void CompiledSteppable::cleanup() {
     context_.chemotaxis.userdata = nullptr;
     context_.secretion.userdata = nullptr;
     context_.xml.userdata = nullptr;
+    context_.dictionaryQueries.userdata = nullptr;
 }

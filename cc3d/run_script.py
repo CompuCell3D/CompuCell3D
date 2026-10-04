@@ -5,6 +5,7 @@ from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.CompiledSteppableAutoCompiler import (
+    clean_project_steppables,
     compile_project_steppables,
     format_compiled_steppable_summary,
 )
@@ -87,6 +88,12 @@ def process_cml(known_args=None):
     cml_parser.add_argument('--force-compile-steppables', required=False, action='store_true', default=False,
                             help='compile C++ steppable resources even when the output library is up to date')
 
+    cml_parser.add_argument('--clean-compiled-steppables', required=False, action='store_true', default=False,
+                            help='remove generated artifacts for all C++ steppable resources and exit')
+
+    cml_parser.add_argument('--clean-and-compile-steppables', required=False, action='store_true', default=False,
+                            help='remove generated artifacts, force-compile all C++ steppables, then run')
+
     cml_parser.add_argument('--steppable-include-root', required=False, action='store',
                             help='include root containing cc3d/kernel.h for compiled steppables')
 
@@ -147,6 +154,32 @@ def main(args:argparse.Namespace=None):
     current_dir = args.current_dir if args.current_dir else ''
     cc3d_sim_fname_abs = join(current_dir, cc3d_sim_fname)
 
+    if args.clean_compiled_steppables and args.clean_and_compile_steppables:
+        raise ValueError('--clean-compiled-steppables and --clean-and-compile-steppables are mutually exclusive')
+    if args.clean_compiled_steppables and args.force_compile_steppables:
+        raise ValueError('--clean-compiled-steppables cannot be combined with --force-compile-steppables')
+    if args.clean_and_compile_steppables and args.no_compile_steppables:
+        raise ValueError('--clean-and-compile-steppables cannot be combined with --no-compile-steppables')
+
+    if args.clean_compiled_steppables:
+        removed_paths = clean_project_steppables(cc3d_sim_fname_abs)
+        print('Compiled steppable cleanup:')
+        if removed_paths:
+            for path in removed_paths:
+                print(f'  [removed] {path}')
+        else:
+            print('  No compiled steppable artifacts found.')
+        return
+
+    if args.clean_and_compile_steppables:
+        removed_paths = clean_project_steppables(cc3d_sim_fname_abs)
+        print('Compiled steppable cleanup:')
+        if removed_paths:
+            for path in removed_paths:
+                print(f'  [removed] {path}')
+        else:
+            print('  No compiled steppable artifacts found.')
+
     persistent_globals.execute_step_at_mcs_0 = args.execute_step_at_mcs_0
     persistent_globals.simulation_file_name = cc3d_sim_fname_abs
     persistent_globals.output_frequency = output_frequency
@@ -164,12 +197,13 @@ def main(args:argparse.Namespace=None):
 
     persistent_globals.log_to_file = args.log_to_file
 
-    if not args.no_compile_steppables and (args.force_compile_steppables or auto_compile_enabled()):
+    force_compile = args.force_compile_steppables or args.clean_and_compile_steppables
+    if not args.no_compile_steppables and (force_compile or auto_compile_enabled()):
         compile_summary = compile_project_steppables(
             cc3d_project_path=cc3d_sim_fname_abs,
             repo_path=args.steppable_repo,
             include_root=args.steppable_include_root,
-            force=args.force_compile_steppables,
+            force=force_compile,
             macos_toolchain=args.steppable_macos_toolchain,
             msvc_version=args.steppable_msvc_version,
         )
