@@ -25,3 +25,14 @@ vtk
 CompuCell3D/Twedit++5/EditorWindow_old.py
 *.sqlite
 *.dylib
+
+# Compiled steppable build artifacts
+**/*.cc3d-build.json
+**/*.dll
+**/*.exp
+**/*.ilk
+**/*.lib
+**/*.obj
+**/*.pdb
+**/*.so
+**/*.dylib
