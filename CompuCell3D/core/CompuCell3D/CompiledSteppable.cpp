@@ -16,6 +16,8 @@
 #include "Field3D/NumpyArrayWrapper3DImpl.h"
 #include "Field3D/VectorNumpyArrayWrapper3DImpl.h"
 #include "PluginManager.h"
+#include "PublicUtilities/NumericalUtils.h"
+#include "Boundary/BoundaryStrategy.h"
 #include "plugins/AdhesionFlex/AdhesionFlexPlugin.h"
 #include "plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
 #include "plugins/PixelTracker/PixelTrackerPlugin.h"
@@ -881,6 +883,97 @@ namespace {
     CompuCell3D::Potts3D *cc3d_potts_from_simulator(void *simulatorPtr) {
         auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
         return simulator ? simulator->getPotts() : nullptr;
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_point(double x, double y, double z) {
+        return CC3DGeometryPointV1{x, y, z};
+    }
+
+    CompuCell3D::Dim3D cc3d_geometry_dim(void *simulatorPtr) {
+        auto *potts = cc3d_potts_from_simulator(simulatorPtr);
+        auto *field = potts ? potts->getCellFieldG() : nullptr;
+        return field ? field->getDim() : CompuCell3D::Dim3D();
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_distance_vector(void *, CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) {
+        return cc3d_geometry_point(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+    }
+
+    double cc3d_geometry_distance(void *, CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) {
+        return dist(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_invariant_distance_vector(void *simulatorPtr, CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) {
+        auto dim = cc3d_geometry_dim(simulatorPtr);
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        auto result = distanceVectorCoordinatesInvariant(
+            Coordinates3D<double>(p2.x, p2.y, p2.z),
+            Coordinates3D<double>(p1.x, p1.y, p1.z),
+            Point3D(dim.x, dim.y, dim.z),
+            simulator ? simulator->getBoundaryStrategy() : nullptr);
+        return cc3d_geometry_point(result.x, result.y, result.z);
+    }
+
+    double cc3d_geometry_invariant_distance(void *simulatorPtr, CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) {
+        auto v = cc3d_geometry_invariant_distance_vector(simulatorPtr, p1, p2);
+        return dist(v.x, v.y, v.z);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_unconditional_invariant_distance_vector(void *simulatorPtr, CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) {
+        auto dim = cc3d_geometry_dim(simulatorPtr);
+        auto result = unconditionalDistanceVectorCoordinatesInvariant(
+            Coordinates3D<double>(p2.x, p2.y, p2.z),
+            Coordinates3D<double>(p1.x, p1.y, p1.z),
+            Point3D(dim.x, dim.y, dim.z));
+        return cc3d_geometry_point(result.x, result.y, result.z);
+    }
+
+    double cc3d_geometry_vector_norm(void *, CC3DGeometryPointV1 value) {
+        return dist(value.x, value.y, value.z);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_cell_point(CC3DCellHandle handle) {
+        auto *cell = static_cast<CompuCell3D::CellG *>(handle);
+        return cell ? cc3d_geometry_point(cell->xCOM, cell->yCOM, cell->zCOM) : cc3d_geometry_point(0.0, 0.0, 0.0);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_distance_vector_between_cells(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, uint8_t invariant) {
+        auto p1 = cc3d_geometry_cell_point(a);
+        auto p2 = cc3d_geometry_cell_point(b);
+        return invariant ? cc3d_geometry_invariant_distance_vector(simulatorPtr, p1, p2)
+                         : cc3d_geometry_distance_vector(nullptr, p1, p2);
+    }
+
+    double cc3d_geometry_distance_between_cells(void *simulatorPtr, CC3DCellHandle a, CC3DCellHandle b, uint8_t invariant) {
+        auto v = cc3d_geometry_distance_vector_between_cells(simulatorPtr, a, b, invariant);
+        return dist(v.x, v.y, v.z);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_hex_to_cartesian(void *simulatorPtr, CC3DGeometryPointV1 value) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator || !simulator->getBoundaryStrategy()) return value;
+        auto result = simulator->getBoundaryStrategy()->Hex2Cartesian(Coordinates3D<double>(value.x, value.y, value.z));
+        return cc3d_geometry_point(result.x, result.y, result.z);
+    }
+
+    CC3DGeometryPointV1 cc3d_geometry_cartesian_to_hex(void *simulatorPtr, CC3DGeometryPointV1 value) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator || !simulator->getBoundaryStrategy()) return value;
+        auto result = simulator->getBoundaryStrategy()->HexCoord(Point3D(
+            static_cast<short>(value.x), static_cast<short>(value.y), static_cast<short>(value.z)));
+        return cc3d_geometry_point(result.x, result.y, result.z);
+    }
+
+    uint8_t cc3d_geometry_is_in_bounds(void *simulatorPtr, CC3DGeometryPointV1 value) {
+        auto *simulator = cc3d_simulator_from_ptr(simulatorPtr);
+        if (!simulator || !simulator->getBoundaryStrategy()) return 0u;
+        return simulator->getBoundaryStrategy()->isValid(Point3D(
+            static_cast<short>(value.x), static_cast<short>(value.y), static_cast<short>(value.z))) ? 1u : 0u;
+    }
+
+    CC3DFieldDimV1 cc3d_geometry_field_dim(void *simulatorPtr) {
+        auto dim = cc3d_geometry_dim(simulatorPtr);
+        return CC3DFieldDimV1{dim.x, dim.y, dim.z};
     }
 
     uint8_t cc3d_cell_types_get(void *simulatorPtr, const char *typeName, unsigned char *typeId) {
@@ -2772,6 +2865,19 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     // Query callbacks use userdata only for the shared dictionary; cell
     // dictionaries are resolved from the CellG handle passed to each call.
     context_.dictionaryQueries.userdata = sharedSteppableVars_;
+    context_.geometry.userdata = simulator_;
+    context_.geometry.distance_vector_fn = &cc3d_geometry_distance_vector;
+    context_.geometry.distance_fn = &cc3d_geometry_distance;
+    context_.geometry.invariant_distance_vector_fn = &cc3d_geometry_invariant_distance_vector;
+    context_.geometry.invariant_distance_fn = &cc3d_geometry_invariant_distance;
+    context_.geometry.unconditional_invariant_distance_vector_fn = &cc3d_geometry_unconditional_invariant_distance_vector;
+    context_.geometry.vector_norm_fn = &cc3d_geometry_vector_norm;
+    context_.geometry.distance_vector_between_cells_fn = &cc3d_geometry_distance_vector_between_cells;
+    context_.geometry.distance_between_cells_fn = &cc3d_geometry_distance_between_cells;
+    context_.geometry.hex_to_cartesian_fn = &cc3d_geometry_hex_to_cartesian;
+    context_.geometry.cartesian_to_hex_fn = &cc3d_geometry_cartesian_to_hex;
+    context_.geometry.is_in_bounds_fn = &cc3d_geometry_is_in_bounds;
+    context_.geometry.field_dim_fn = &cc3d_geometry_field_dim;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 
@@ -2887,4 +2993,5 @@ void CompiledSteppable::cleanup() {
     context_.secretion.userdata = nullptr;
     context_.xml.userdata = nullptr;
     context_.dictionaryQueries.userdata = nullptr;
+    context_.geometry.userdata = nullptr;
 }

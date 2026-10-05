@@ -1,0 +1,6 @@
+<Simulation version="4.0.0">
+    <XMLScript>Simulation/GeometryABIDemo.xml</XMLScript>
+    <PythonScript>Simulation/GeometryABIDemo.py</PythonScript>
+    <Resource Type="Python">Simulation/GeometryComparisonSteppables.py</Resource>
+    <Resource Type="Cpp">Native/GeometryABISteppable.cpp</Resource>
+</Simulation>

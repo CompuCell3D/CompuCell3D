@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 29u
+#define CC3D_KERNEL_ABI_VERSION 30u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -94,6 +94,43 @@ typedef enum CC3DDictionaryValueType {
 } CC3DDictionaryValueType;
 
 typedef struct CC3DPythonDictionaryQueriesAPIV1 CC3DPythonDictionaryQueriesAPIV1;
+typedef struct CC3DFieldDimV1 CC3DFieldDimV1;
+
+typedef struct CC3DGeometryPointV1 {
+    double x;
+    double y;
+    double z;
+} CC3DGeometryPointV1;
+
+typedef struct CC3DGeometryAPIV1 {
+    void *userdata;
+    CC3DGeometryPointV1 (*distance_vector_fn)(void *, CC3DGeometryPointV1, CC3DGeometryPointV1);
+    double (*distance_fn)(void *, CC3DGeometryPointV1, CC3DGeometryPointV1);
+    CC3DGeometryPointV1 (*invariant_distance_vector_fn)(void *, CC3DGeometryPointV1, CC3DGeometryPointV1);
+    double (*invariant_distance_fn)(void *, CC3DGeometryPointV1, CC3DGeometryPointV1);
+    CC3DGeometryPointV1 (*unconditional_invariant_distance_vector_fn)(void *, CC3DGeometryPointV1, CC3DGeometryPointV1);
+    double (*vector_norm_fn)(void *, CC3DGeometryPointV1);
+    CC3DGeometryPointV1 (*distance_vector_between_cells_fn)(void *, CC3DCellHandle, CC3DCellHandle, uint8_t invariant);
+    double (*distance_between_cells_fn)(void *, CC3DCellHandle, CC3DCellHandle, uint8_t invariant);
+    CC3DGeometryPointV1 (*hex_to_cartesian_fn)(void *, CC3DGeometryPointV1);
+    CC3DGeometryPointV1 (*cartesian_to_hex_fn)(void *, CC3DGeometryPointV1);
+    uint8_t (*is_in_bounds_fn)(void *, CC3DGeometryPointV1);
+    CC3DFieldDimV1 (*field_dim_fn)(void *);
+#ifdef __cplusplus
+    inline CC3DGeometryPointV1 distanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const;
+    inline double distance(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const;
+    inline CC3DGeometryPointV1 invariantDistanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const;
+    inline double invariantDistance(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const;
+    inline CC3DGeometryPointV1 unconditionalInvariantDistanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const;
+    inline double vectorNorm(CC3DGeometryPointV1 value) const;
+    inline CC3DGeometryPointV1 distanceVectorBetweenCells(CC3DCellHandle a, CC3DCellHandle b, bool invariant = false) const;
+    inline double distanceBetweenCells(CC3DCellHandle a, CC3DCellHandle b, bool invariant = false) const;
+    inline CC3DGeometryPointV1 hexToCartesian(CC3DGeometryPointV1 value) const;
+    inline CC3DGeometryPointV1 cartesianToHex(CC3DGeometryPointV1 value) const;
+    inline bool isInBounds(CC3DGeometryPointV1 value) const;
+    inline CC3DFieldDimV1 fieldDim() const;
+#endif
+} CC3DGeometryAPIV1;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -694,6 +731,7 @@ typedef struct CC3DKernelContext {
     CC3DSharedVectorFieldsAPIV1 sharedVectorFields;
     CC3DFocalPointPlasticityQueriesAPIV1 focalPointPlasticityQueries;
     CC3DPythonDictionaryQueriesAPIV1 dictionaryQueries;
+    CC3DGeometryAPIV1 geometry;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -2533,6 +2571,54 @@ private:
 inline ::cc3d::kernel::XmlElement CC3DXMLAPIV1::getElement(const char *element_id) const {
     if (!get_element_fn || !element_id) return ::cc3d::kernel::XmlElement();
     return ::cc3d::kernel::XmlElement(this, get_element_fn(userdata, element_id));
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::distanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const {
+    return distance_vector_fn ? distance_vector_fn(userdata, p1, p2) : CC3DGeometryPointV1{0.0, 0.0, 0.0};
+}
+
+inline double CC3DGeometryAPIV1::distance(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const {
+    return distance_fn ? distance_fn(userdata, p1, p2) : 0.0;
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::invariantDistanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const {
+    return invariant_distance_vector_fn ? invariant_distance_vector_fn(userdata, p1, p2) : CC3DGeometryPointV1{0.0, 0.0, 0.0};
+}
+
+inline double CC3DGeometryAPIV1::invariantDistance(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const {
+    return invariant_distance_fn ? invariant_distance_fn(userdata, p1, p2) : 0.0;
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::unconditionalInvariantDistanceVector(CC3DGeometryPointV1 p1, CC3DGeometryPointV1 p2) const {
+    return unconditional_invariant_distance_vector_fn ? unconditional_invariant_distance_vector_fn(userdata, p1, p2) : CC3DGeometryPointV1{0.0, 0.0, 0.0};
+}
+
+inline double CC3DGeometryAPIV1::vectorNorm(CC3DGeometryPointV1 value) const {
+    return vector_norm_fn ? vector_norm_fn(userdata, value) : 0.0;
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::distanceVectorBetweenCells(CC3DCellHandle a, CC3DCellHandle b, bool invariant) const {
+    return distance_vector_between_cells_fn ? distance_vector_between_cells_fn(userdata, a, b, invariant ? 1u : 0u) : CC3DGeometryPointV1{0.0, 0.0, 0.0};
+}
+
+inline double CC3DGeometryAPIV1::distanceBetweenCells(CC3DCellHandle a, CC3DCellHandle b, bool invariant) const {
+    return distance_between_cells_fn ? distance_between_cells_fn(userdata, a, b, invariant ? 1u : 0u) : 0.0;
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::hexToCartesian(CC3DGeometryPointV1 value) const {
+    return hex_to_cartesian_fn ? hex_to_cartesian_fn(userdata, value) : value;
+}
+
+inline CC3DGeometryPointV1 CC3DGeometryAPIV1::cartesianToHex(CC3DGeometryPointV1 value) const {
+    return cartesian_to_hex_fn ? cartesian_to_hex_fn(userdata, value) : value;
+}
+
+inline bool CC3DGeometryAPIV1::isInBounds(CC3DGeometryPointV1 value) const {
+    return is_in_bounds_fn && is_in_bounds_fn(userdata, value) != 0u;
+}
+
+inline CC3DFieldDimV1 CC3DGeometryAPIV1::fieldDim() const {
+    return field_dim_fn ? field_dim_fn(userdata) : CC3DFieldDimV1{0, 0, 0};
 }
 
 inline ::cc3d::kernel::CellAttributes CC3DPythonDictionaryAPIV1::forCell(
