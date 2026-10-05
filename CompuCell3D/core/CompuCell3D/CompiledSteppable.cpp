@@ -47,6 +47,10 @@ namespace {
     struct CellOrientationRegistration { void *simulator; CC3DCellOrientationCallbacksV1 callbacks; };
     struct ChemotaxisRegistration { void *simulator; CC3DChemotaxisCallbacksV1 callbacks; };
     struct SecretionRegistration { void *simulator; CC3DSecretionCallbacksV1 callbacks; };
+    struct DiscoveryNameIterator {
+        std::vector<std::string> names;
+        size_t index = 0u;
+    };
     LengthConstraintRegistration lengthConstraintRegistration{};
     ClusterSurfaceRegistration clusterSurfaceRegistration{};
     ClusterSurfaceTrackerRegistration clusterSurfaceTrackerRegistration{};
@@ -974,6 +978,69 @@ namespace {
     CC3DFieldDimV1 cc3d_geometry_field_dim(void *simulatorPtr) {
         auto dim = cc3d_geometry_dim(simulatorPtr);
         return CC3DFieldDimV1{dim.x, dim.y, dim.z};
+    }
+
+    uint8_t cc3d_plugin_loaded(void *, const char *name) {
+        return name && CompuCell3D::Simulator::pluginManager.isLoaded(name) ? 1u : 0u;
+    }
+
+    uint8_t cc3d_plugin_registered(void *, const char *name) {
+        return name && CompuCell3D::Simulator::pluginManager.isRegistered(name) ? 1u : 0u;
+    }
+
+    uint8_t cc3d_steppable_loaded(void *, const char *name) {
+        return name && CompuCell3D::Simulator::steppableManager.isLoaded(name) ? 1u : 0u;
+    }
+
+    uint8_t cc3d_steppable_registered(void *, const char *name) {
+        return name && CompuCell3D::Simulator::steppableManager.isRegistered(name) ? 1u : 0u;
+    }
+
+    CC3DNameIteratorHandle cc3d_loaded_plugins_begin(void *) {
+        auto *iterator = new DiscoveryNameIterator;
+        for (auto *info : CompuCell3D::Simulator::pluginManager.getPluginInfos()) {
+            if (info && CompuCell3D::Simulator::pluginManager.isLoaded(info->getName())) {
+                iterator->names.push_back(info->getName());
+            }
+        }
+        return iterator;
+    }
+
+    CC3DNameIteratorHandle cc3d_loaded_steppables_begin(void *) {
+        auto *iterator = new DiscoveryNameIterator;
+        for (auto *info : CompuCell3D::Simulator::steppableManager.getPluginInfos()) {
+            if (info && CompuCell3D::Simulator::steppableManager.isLoaded(info->getName())) {
+                iterator->names.push_back(info->getName());
+            }
+        }
+        return iterator;
+    }
+
+    uint8_t cc3d_discovery_names_valid(void *, CC3DNameIteratorHandle handle) {
+        auto *iterator = static_cast<DiscoveryNameIterator *>(handle);
+        return iterator && iterator->index < iterator->names.size() ? 1u : 0u;
+    }
+
+    size_t cc3d_discovery_names_get(void *, CC3DNameIteratorHandle handle,
+                                    char *buffer, size_t capacity) {
+        auto *iterator = static_cast<DiscoveryNameIterator *>(handle);
+        if (!iterator || iterator->index >= iterator->names.size()) return 0u;
+        const auto &name = iterator->names[iterator->index];
+        if (buffer && capacity) {
+            const size_t copySize = name.size() < capacity - 1u ? name.size() : capacity - 1u;
+            std::memcpy(buffer, name.data(), copySize);
+            buffer[copySize] = '\0';
+        }
+        return name.size();
+    }
+
+    void cc3d_discovery_names_next(void *, CC3DNameIteratorHandle handle) {
+        auto *iterator = static_cast<DiscoveryNameIterator *>(handle);
+        if (iterator && iterator->index < iterator->names.size()) ++iterator->index;
+    }
+
+    void cc3d_discovery_names_destroy(void *, CC3DNameIteratorHandle handle) {
+        delete static_cast<DiscoveryNameIterator *>(handle);
     }
 
     uint8_t cc3d_cell_types_get(void *simulatorPtr, const char *typeName, unsigned char *typeId) {
@@ -2878,6 +2945,21 @@ void CompiledSteppable::attachSimulator(Simulator *simulator) {
     context_.geometry.cartesian_to_hex_fn = &cc3d_geometry_cartesian_to_hex;
     context_.geometry.is_in_bounds_fn = &cc3d_geometry_is_in_bounds;
     context_.geometry.field_dim_fn = &cc3d_geometry_field_dim;
+    context_.discovery.userdata = simulator_;
+    context_.discovery.plugin_loaded_fn = &cc3d_plugin_loaded;
+    context_.discovery.plugin_registered_fn = &cc3d_plugin_registered;
+    context_.discovery.steppable_loaded_fn = &cc3d_steppable_loaded;
+    context_.discovery.steppable_registered_fn = &cc3d_steppable_registered;
+    context_.discovery.plugins_begin_fn = &cc3d_loaded_plugins_begin;
+    context_.discovery.plugins_valid_fn = &cc3d_discovery_names_valid;
+    context_.discovery.plugins_get_fn = &cc3d_discovery_names_get;
+    context_.discovery.plugins_next_fn = &cc3d_discovery_names_next;
+    context_.discovery.plugins_destroy_fn = &cc3d_discovery_names_destroy;
+    context_.discovery.steppables_begin_fn = &cc3d_loaded_steppables_begin;
+    context_.discovery.steppables_valid_fn = &cc3d_discovery_names_valid;
+    context_.discovery.steppables_get_fn = &cc3d_discovery_names_get;
+    context_.discovery.steppables_next_fn = &cc3d_discovery_names_next;
+    context_.discovery.steppables_destroy_fn = &cc3d_discovery_names_destroy;
     currentStep = simulator_->getStep();
     updateContext(currentStep < 0 ? 0u : static_cast<unsigned int>(currentStep));
 
@@ -2994,4 +3076,5 @@ void CompiledSteppable::cleanup() {
     context_.xml.userdata = nullptr;
     context_.dictionaryQueries.userdata = nullptr;
     context_.geometry.userdata = nullptr;
+    context_.discovery.userdata = nullptr;
 }

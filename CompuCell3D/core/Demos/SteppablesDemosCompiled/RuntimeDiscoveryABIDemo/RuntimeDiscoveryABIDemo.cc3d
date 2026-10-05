@@ -1,0 +1,6 @@
+<Simulation version="4.0.0">
+    <XMLScript>Simulation/RuntimeDiscoveryABIDemo.xml</XMLScript>
+    <PythonScript>Simulation/RuntimeDiscoveryABIDemo.py</PythonScript>
+    <Resource Type="Python">Simulation/RuntimeDiscoverySteppables.py</Resource>
+    <Resource Type="Cpp">Native/RuntimeDiscoveryABISteppable.cpp</Resource>
+</Simulation>

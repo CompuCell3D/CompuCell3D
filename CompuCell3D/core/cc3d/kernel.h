@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CC3D_KERNEL_ABI_VERSION 30u
+#define CC3D_KERNEL_ABI_VERSION 31u
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CC3D_STEPPABLE_EXPORT __declspec(dllexport)
@@ -79,6 +79,7 @@ typedef void *CC3DFPPLinkIteratorHandle;
 typedef void *CC3DFPPCellIteratorHandle;
 typedef void *CC3DFPPLinkHandle;
 typedef void *CC3DDictionaryIteratorHandle;
+typedef void *CC3DNameIteratorHandle;
 
 typedef enum CC3DDictionaryValueType {
     CC3D_DICTIONARY_VALUE_MISSING = 0,
@@ -131,6 +132,32 @@ typedef struct CC3DGeometryAPIV1 {
     inline CC3DFieldDimV1 fieldDim() const;
 #endif
 } CC3DGeometryAPIV1;
+
+typedef struct CC3DDiscoveryAPIV1 {
+    void *userdata;
+    uint8_t (*plugin_loaded_fn)(void *, const char *name);
+    uint8_t (*plugin_registered_fn)(void *, const char *name);
+    uint8_t (*steppable_loaded_fn)(void *, const char *name);
+    uint8_t (*steppable_registered_fn)(void *, const char *name);
+    CC3DNameIteratorHandle (*plugins_begin_fn)(void *);
+    uint8_t (*plugins_valid_fn)(void *, CC3DNameIteratorHandle);
+    size_t (*plugins_get_fn)(void *, CC3DNameIteratorHandle, char *, size_t);
+    void (*plugins_next_fn)(void *, CC3DNameIteratorHandle);
+    void (*plugins_destroy_fn)(void *, CC3DNameIteratorHandle);
+    CC3DNameIteratorHandle (*steppables_begin_fn)(void *);
+    uint8_t (*steppables_valid_fn)(void *, CC3DNameIteratorHandle);
+    size_t (*steppables_get_fn)(void *, CC3DNameIteratorHandle, char *, size_t);
+    void (*steppables_next_fn)(void *, CC3DNameIteratorHandle);
+    void (*steppables_destroy_fn)(void *, CC3DNameIteratorHandle);
+#ifdef __cplusplus
+    inline bool hasPlugin(const char *name) const;
+    inline bool isPluginRegistered(const char *name) const;
+    inline bool hasSteppable(const char *name) const;
+    inline bool isSteppableRegistered(const char *name) const;
+    inline std::vector<std::string> loadedPlugins() const;
+    inline std::vector<std::string> loadedSteppables() const;
+#endif
+} CC3DDiscoveryAPIV1;
 
 typedef struct CC3DCellViewV1 {
     CC3DCellHandle handle;
@@ -732,6 +759,7 @@ typedef struct CC3DKernelContext {
     CC3DFocalPointPlasticityQueriesAPIV1 focalPointPlasticityQueries;
     CC3DPythonDictionaryQueriesAPIV1 dictionaryQueries;
     CC3DGeometryAPIV1 geometry;
+    CC3DDiscoveryAPIV1 discovery;
 #ifdef __cplusplus
     inline ::cc3d::kernel::Cell newCell(unsigned char cell_type) const;
 #endif
@@ -2619,6 +2647,54 @@ inline bool CC3DGeometryAPIV1::isInBounds(CC3DGeometryPointV1 value) const {
 
 inline CC3DFieldDimV1 CC3DGeometryAPIV1::fieldDim() const {
     return field_dim_fn ? field_dim_fn(userdata) : CC3DFieldDimV1{0, 0, 0};
+}
+
+inline bool CC3DDiscoveryAPIV1::hasPlugin(const char *name) const {
+    return plugin_loaded_fn && name && plugin_loaded_fn(userdata, name) != 0u;
+}
+
+inline bool CC3DDiscoveryAPIV1::isPluginRegistered(const char *name) const {
+    return plugin_registered_fn && name && plugin_registered_fn(userdata, name) != 0u;
+}
+
+inline bool CC3DDiscoveryAPIV1::hasSteppable(const char *name) const {
+    return steppable_loaded_fn && name && steppable_loaded_fn(userdata, name) != 0u;
+}
+
+inline bool CC3DDiscoveryAPIV1::isSteppableRegistered(const char *name) const {
+    return steppable_registered_fn && name && steppable_registered_fn(userdata, name) != 0u;
+}
+
+inline std::vector<std::string> CC3DDiscoveryAPIV1::loadedPlugins() const {
+    std::vector<std::string> result;
+    if (!plugins_begin_fn || !plugins_valid_fn || !plugins_get_fn ||
+        !plugins_next_fn || !plugins_destroy_fn) return result;
+    auto iterator = plugins_begin_fn(userdata);
+    while (iterator && plugins_valid_fn(userdata, iterator)) {
+        const size_t length = plugins_get_fn(userdata, iterator, nullptr, 0u);
+        std::string name(length, '\0');
+        if (length) plugins_get_fn(userdata, iterator, &name[0], length + 1u);
+        result.push_back(std::move(name));
+        plugins_next_fn(userdata, iterator);
+    }
+    if (iterator) plugins_destroy_fn(userdata, iterator);
+    return result;
+}
+
+inline std::vector<std::string> CC3DDiscoveryAPIV1::loadedSteppables() const {
+    std::vector<std::string> result;
+    if (!steppables_begin_fn || !steppables_valid_fn || !steppables_get_fn ||
+        !steppables_next_fn || !steppables_destroy_fn) return result;
+    auto iterator = steppables_begin_fn(userdata);
+    while (iterator && steppables_valid_fn(userdata, iterator)) {
+        const size_t length = steppables_get_fn(userdata, iterator, nullptr, 0u);
+        std::string name(length, '\0');
+        if (length) steppables_get_fn(userdata, iterator, &name[0], length + 1u);
+        result.push_back(std::move(name));
+        steppables_next_fn(userdata, iterator);
+    }
+    if (iterator) steppables_destroy_fn(userdata, iterator);
+    return result;
 }
 
 inline ::cc3d::kernel::CellAttributes CC3DPythonDictionaryAPIV1::forCell(
