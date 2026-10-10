@@ -348,8 +348,8 @@ ADD_SUBDIRECTORY(core)
 
 # install info files
 install(FILES
-    License.txt
-    ReleaseNotes.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/../License.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../ReleaseNotes.rst
     DESTINATION
     ${CMAKE_INSTALL_PREFIX}
 )
