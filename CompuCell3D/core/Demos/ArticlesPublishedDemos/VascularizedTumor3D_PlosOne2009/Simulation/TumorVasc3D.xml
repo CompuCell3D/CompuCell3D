@@ -15,7 +15,7 @@
             <MotilityParameters CellType="Vascular" Motility="0"/>
             <MotilityParameters CellType="Normal" Motility="100"/>
             <MotilityParameters CellType="Hypoxic" Motility="100"/>
-            <MotilityParameters CellType="Necrotic" Motility="`100"/>
+            <MotilityParameters CellType="Necrotic" Motility="100"/>
         </CellMotility>
         <NeighborOrder>3</NeighborOrder>
     </Potts>

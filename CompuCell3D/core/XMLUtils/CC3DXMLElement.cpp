@@ -1,6 +1,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 //#define _DEBUG
 
@@ -10,6 +11,29 @@
 #include <Logger/CC3DLogger.h>
 
 using namespace std;
+
+namespace {
+
+	template <class Converter>
+	auto convertWithContext(
+		const std::string &raw_value,
+		const std::string &element_name,
+		const std::string &source_kind,
+		const std::string &source_name,
+		const std::string &target_type,
+		Converter converter
+	) -> decltype(converter(raw_value)) {
+		try {
+			return converter(raw_value);
+		} catch (const std::exception &e) {
+			throw std::invalid_argument(
+				string("Element '") + element_name + "' " + source_kind + " '" + source_name +
+				"' with value '" + raw_value + "' cannot be converted to " + target_type + ": " + e.what()
+			);
+		}
+	}
+
+}
 
 CC3DXMLElementPtrT::CC3DXMLElementPtrT(CC3DXMLElement* pValue) : pData(pValue)
 {
@@ -439,51 +463,51 @@ std::map<std::string,std::string> CC3DXMLElement::getAttributes(){
 double CC3DXMLElement::getAttributeAsDouble(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!";
-	return strToDouble(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "double", strToDouble);
 
 }
 unsigned int CC3DXMLElement::getAttributeAsUInt(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToUInt(mitr->second);
-
+	return convertWithContext(mitr->second, name, "attribute", key, "unsigned int", strToUInt);
+	
 }
 int CC3DXMLElement::getAttributeAsInt(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToInt(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "int", strToInt);
 }
 
 char CC3DXMLElement::getAttributeAsByte(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToByte(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "byte", strToByte);
 }
 
 unsigned char CC3DXMLElement::getAttributeAsUByte(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToUByte(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "unsigned byte", strToUByte);
 }
 
 
 short CC3DXMLElement::getAttributeAsShort(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToShort(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "short", strToShort);
 
 }
 unsigned short CC3DXMLElement::getAttributeAsUShort(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToUShort(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "unsigned short", strToUShort);
 
 }
 bool CC3DXMLElement::getAttributeAsBool(const std::string key){
 
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
 	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
-	return strToBool(mitr->second);
+	return convertWithContext(mitr->second, name, "attribute", key, "bool", strToBool);
 }
 
 
@@ -531,27 +555,27 @@ bool CC3DXMLElement::findElement(const std::string _name, std::map<std::string,s
 }
 
 unsigned int CC3DXMLElement::getUInt(){
-	return (unsigned int)getInt();
+	return convertWithContext(cdata, name, "CDATA", "value", "unsigned int", strToUInt);
 }
 
 int CC3DXMLElement::getInt(){
-	return stoi(cdata);
+	return convertWithContext(cdata, name, "CDATA", "value", "int", strToInt);
 }
 
 short CC3DXMLElement::getShort(){
-	return (short)getInt();
+	return convertWithContext(cdata, name, "CDATA", "value", "short", strToShort);
 }
 
 unsigned short CC3DXMLElement::getUShort(){
-	return (unsigned short)getInt();
+	return convertWithContext(cdata, name, "CDATA", "value", "unsigned short", strToUShort);
 }
 
 double CC3DXMLElement::getDouble(){
-	return stod(cdata);
+	return convertWithContext(cdata, name, "CDATA", "value", "double", strToDouble);
 }
 
 bool CC3DXMLElement::getBool(){
-	return strToBool(cdata);
+	return convertWithContext(cdata, name, "CDATA", "value", "bool", strToBool);
 }
 
 std::string CC3DXMLElement::getText(){
@@ -563,9 +587,9 @@ std::string CC3DXMLElement::getName(){
 }
 
 char CC3DXMLElement::getByte(){
-	return (char)getUInt();
+	return convertWithContext(cdata, name, "CDATA", "value", "byte", strToByte);
 }
 
 unsigned char CC3DXMLElement::getUByte(){
-	return (unsigned char)getUInt();
+	return convertWithContext(cdata, name, "CDATA", "value", "unsigned byte", strToUByte);
 }

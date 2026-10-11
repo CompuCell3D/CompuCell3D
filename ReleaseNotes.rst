@@ -1,6 +1,28 @@
 Release Notes
 =============
 
+Version 4.10.0
+--------------
+**2026-10-10**
+
+New features:
+ - GPU solvers now work out of the box when the required GPU drivers are installed; see the GPU/OpenCL Driver Setup notes for Windows and Ubuntu Linux
+ - Added expand-all and collapse-all actions to the Model Editor steering pane
+ - Added processor-count and debug-frequency options to the Simulation Wizard
+ - Enabled Twedit++ autosave by default
+ - Added automatic character pairing for brackets, quotes, and related characters
+
+Improvements:
+ - Improved Player window management when moving windows between screens
+ - Improved tile and cascade behavior for floating Player windows
+ - Improved backend steering to handle simultaneous plugin and steppable changes more reliably
+
+Bug fixes:
+ - Fixed OpenCL solver issues on macOS
+ - Updated packages that support OpenCL
+ - Fixed Twedit++ configuration dialog and settings persistence issues
+
+
 Version 4.9.0
 -------------
 **2026-05-16**
@@ -600,7 +622,4 @@ Version 3.5.0
 - Fixed significant bug in parallel Potts section - had to allow nested omp regions as PDE solver caller calls
   PDE solver from within parallel section . PDESolver though instantiates its own parallel section to solve PDE
   so there are nested parallel regions
-
-
-
 

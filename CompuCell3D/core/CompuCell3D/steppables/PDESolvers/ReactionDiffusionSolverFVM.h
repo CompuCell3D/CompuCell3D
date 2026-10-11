@@ -214,7 +214,8 @@ namespace CompuCell3D {
 		Potts3D *potts;
 		Automaton *automaton;
 		ParallelUtilsOpenMP *pUtils;
-		ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+
+        ParallelUtilsOpenMP::OpenMPLockV1_t *lockPtrV1;
 
 		CC3DXMLElement *xmlData;
 

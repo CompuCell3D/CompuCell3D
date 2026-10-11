@@ -611,42 +611,31 @@ void Simulator::processMetadataCC3D(CC3DXMLElement *_xmlData) {
         return;
     if (_xmlData->getFirstElement("NumberOfProcessors")) {
         unsigned int numberOfProcessors = _xmlData->getFirstElement("NumberOfProcessors")->getUInt();
-        pUtils->setNumberOfWorkNodes(numberOfProcessors);
-        CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
-        workNodeChangeEvent.newNumberOfNodes = numberOfProcessors;
+        if (pUtils->getNumberOfWorkNodes() != numberOfProcessors) {
+            pUtils->setNumberOfWorkNodes(numberOfProcessors);
+            CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
+            workNodeChangeEvent.newNumberOfNodes = numberOfProcessors;
 
-        // this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
-        postEvent(workNodeChangeEvent);
-
-    } else if (_xmlData->getFirstElement("VirtualProcessingUnits")) {
-
-        unsigned int numberOfVPUs = _xmlData->getFirstElement("VirtualProcessingUnits")->getUInt();
-        unsigned int threadsPerVPU = 0;
-
-        if (_xmlData->getFirstElement("VirtualProcessingUnits")->findAttribute("ThreadsPerVPU")) {
-            threadsPerVPU = _xmlData->getFirstElement("VirtualProcessingUnits")->getAttributeAsUInt("ThreadsPerVPU");
+            // this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
+            postEvent(workNodeChangeEvent);
         }
-        CC3D_Log(LOG_DEBUG) << "updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU;
-        pUtils->setVPUs(numberOfVPUs, threadsPerVPU);
 
-        CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
-        workNodeChangeEvent.newNumberOfNodes = numberOfVPUs;
-
-        // this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
-        postEvent(workNodeChangeEvent);
     }
 
     if (_xmlData->getFirstElement("DebugOutputFrequency")) {
         //updating DebugOutputFrequency in Potts using Metadata
         unsigned int debugOutputFrequency = _xmlData->getFirstElement("DebugOutputFrequency")->getUInt();
-        potts.setDebugOutputFrequency(debugOutputFrequency > 0 ? debugOutputFrequency : 0);
-        ppdCC3DPtr->debugOutputFrequency = debugOutputFrequency;
+        if (ppdCC3DPtr->debugOutputFrequency != debugOutputFrequency) {
+            potts.setDebugOutputFrequency(debugOutputFrequency > 0 ? debugOutputFrequency : 0);
+            ppdCC3DPtr->debugOutputFrequency = debugOutputFrequency;
+        }
     }
 
     CC3DXMLElementList npmVec = _xmlData->getElements("NonParallelModule");
 
     for (size_t i = 0; i < npmVec.size(); ++i) {
-        // this is simple initialization because for now we only allow Potts to have non-parallel execution. Adding more functionalty later will be straight-forward
+        // this is simple initialization because for now we only allow Potts to have non-parallel execution.
+        // Adding more functionality later will be straight-forward
         string moduleName = npmVec[i]->getAttribute("Name");
         if (moduleName == "Potts") {
             potts.setParallelUtils(pUtilsSingle);
@@ -1104,7 +1093,7 @@ CC3DXMLElement *Simulator::getCC3DModuleData(std::string _moduleType, std::strin
         }
         return 0;
     } else if (_moduleType == "Steppable") {
-        for (size_t i = 0; i < ps.pluginCC3DXMLElementVector.size(); ++i) {
+        for (size_t i = 0; i < ps.steppableCC3DXMLElementVector.size(); ++i) {
             if (ps.steppableCC3DXMLElementVector[i]->getAttribute("Type") == _moduleName)
                 return ps.steppableCC3DXMLElementVector[i];
         }
@@ -1149,8 +1138,8 @@ void Simulator::steer() {
 
     if (ps.updateMetadataCC3DXMLElement) {
 
-        processMetadataCC3D(
-                ps.updateMetadataCC3DXMLElement); // here we update number of work nodes and Debug output frequency
+        // here we update number of work nodes and Debug output frequency
+        processMetadataCC3D(ps.updateMetadataCC3DXMLElement);
         ps.updateMetadataCC3DXMLElement = 0;
 
     } else if (ps.updatePluginCC3DXMLElementVector.size()) {
@@ -1170,7 +1159,9 @@ void Simulator::steer() {
 
         }
         ps.updatePluginCC3DXMLElementVector.clear();
-    } else if (ps.updateSteppableCC3DXMLElementVector.size()) {
+    }
+
+    if (ps.updateSteppableCC3DXMLElementVector.size()) {
 
         string moduleName;
         for (size_t i = 0; i < ps.updateSteppableCC3DXMLElementVector.size(); ++i) {

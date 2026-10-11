@@ -57,9 +57,7 @@
             Py_ssize_t x, y, z;
 
             //x-coord
-            if (PyInt_Check(xCoord)) {
-                x = PyInt_AsLong(PyTuple_GetItem(_indexTuple, 0));
-            } else if (PyLong_Check(xCoord)) {
+            if (PyLong_Check(xCoord)) {
                 x = PyLong_AsLong(PyTuple_GetItem(_indexTuple, 0));
             } else if (PyFloat_Check(xCoord)) {
                 x = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple, 0)));
@@ -69,9 +67,7 @@
                         "Wrong Type (X): only integer or float values are allowed here - floats are rounded");
             }
             //y-coord
-            if (PyInt_Check(yCoord)) {
-                y = PyInt_AsLong(PyTuple_GetItem(_indexTuple, 1));
-            } else if (PyLong_Check(yCoord)) {
+            if (PyLong_Check(yCoord)) {
                 y = PyLong_AsLong(PyTuple_GetItem(_indexTuple, 1));
             } else if (PyFloat_Check(yCoord)) {
                 y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple, 1)));
@@ -81,9 +77,7 @@
                         "Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
             }
             //z-coord
-            if (PyInt_Check(zCoord)) {
-                z = PyInt_AsLong(PyTuple_GetItem(_indexTuple, 2));
-            } else if (PyLong_Check(zCoord)) {
+            if (PyLong_Check(zCoord)) {
                 z = PyLong_AsLong(PyTuple_GetItem(_indexTuple, 2));
             } else if (PyFloat_Check(zCoord)) {
                 z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple, 2)));
@@ -145,11 +139,7 @@ FIELD3DEXTENDERBASE(className,returnType)
      //cerr<<"ok="<<ok<<endl;
 
     }else{
-        if (PyInt_Check(xCoord)){
-            start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-            stop_x=start_x;
-            step_x=1;
-        }else if (PyLong_Check(xCoord)){
+        if (PyLong_Check(xCoord)){
             start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
             stop_x=start_x;
             step_x=1;
@@ -180,11 +170,7 @@ FIELD3DEXTENDERBASE(className,returnType)
 
 
     }else{
-        if (PyInt_Check(yCoord)){
-            start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-            stop_y=start_y;
-            step_y=1;
-        }else if (PyLong_Check(yCoord)){
+        if (PyLong_Check(yCoord)){
             start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
             stop_y=start_y;
             step_y=1;
@@ -214,11 +200,7 @@ FIELD3DEXTENDERBASE(className,returnType)
 	   int ok = PySlice_GetIndices(zCoord, dim.z, &start_z, &stop_z, &step_z);
 
     }else{
-        if (PyInt_Check(zCoord)){
-            start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-            stop_z=start_z;
-            step_z=1;
-        }else if (PyLong_Check(zCoord)){
+        if (PyLong_Check(zCoord)){
             start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
             stop_z=start_z;
             step_z=1;

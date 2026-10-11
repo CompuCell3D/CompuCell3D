@@ -84,9 +84,9 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 9)
+set(COMPUCELL3D_MINOR_VERSION 10)
 set(COMPUCELL3D_BUILD_VERSION 0)
-set(COMPUCELL3D_REV_NUMBER 20260214)
+set(COMPUCELL3D_REV_NUMBER 20260626)
 set(COMPUCELL3D_BUILD_NUMBER 0)
 
 ## Specify a version for all libs to use
@@ -348,8 +348,8 @@ ADD_SUBDIRECTORY(core)
 
 # install info files
 install(FILES
-    License.txt
-    ReleaseNotes.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/../License.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../ReleaseNotes.rst
     DESTINATION
     ${CMAKE_INSTALL_PREFIX}
 )
