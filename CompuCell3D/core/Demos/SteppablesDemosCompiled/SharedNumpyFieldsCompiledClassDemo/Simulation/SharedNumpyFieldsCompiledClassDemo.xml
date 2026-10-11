@@ -1,0 +1,34 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="50" y="50" z="1"/>
+        <Steps>30</Steps>
+        <Temperature>10</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Cell" TypeId="1"/>
+    </Plugin>
+
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Cell" LambdaVolume="2.0" TargetVolume="25"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Cell" Type2="Medium">10</Energy>
+        <Energy Type1="Cell" Type2="Cell">10</Energy>
+        <NeighborOrder>1</NeighborOrder>
+    </Plugin>
+
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="25" y="25" z="0"/>
+            <Radius>5</Radius>
+            <Gap>0</Gap>
+            <Width>3</Width>
+            <Types>Cell</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>
