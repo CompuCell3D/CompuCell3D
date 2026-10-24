@@ -1,10 +1,31 @@
 # Compiling Native Steppables
 
-`compile_steppable.py` builds a single C++ steppable that uses the public `cc3d/kernel.h` ABI. The output is written next to the source file:
+`compile_steppable.py` builds a C++ steppable that uses the public `cc3d/kernel.h` ABI. The source file passed on the command line is the entry source. Other `.cpp`, `.h`, and `.hpp` files below its directory are discovered automatically and compiled or tracked as part of the same native target. The output is written next to the entry source file:
 
 - Windows: `.dll`
 - macOS: `.dylib`
 - Linux: `.so`
+
+For example, this source tree produces one shared library:
+
+```text
+Native_GrowthSteppable/
+    GrowthSteppable.cpp
+    Utilities/
+        Vector3.cpp
+        Geometry.h
+    Models/
+        CellGrowthModel.cpp
+        CellGrowthModel.h
+```
+
+The `.cc3d` resource declaration remains a reference to the entry source:
+
+```xml
+<Resource Type="Cpp">Native_GrowthSteppable/GrowthSteppable.cpp</Resource>
+```
+
+The directory containing the entry source is the target root. Include paths for the target root and discovered subdirectories are added automatically. Keep separate compiled steppables in separate target roots; two C++ resources sharing one target root are rejected.
 
 Run the command from an activated CC3D conda environment so `python -m cc3d.scripts.compile_steppable` resolves to the installed CC3D package. In an installed conda package, the script expects the public ABI header at `$CONDA_PREFIX/include/cc3d/kernel.h`.
 
@@ -170,7 +191,8 @@ Resource paths are resolved relative to the folder containing the `.cc3d` projec
 Automatic compilation only rebuilds when needed:
 
 - the native library does not exist
-- the C++ source is newer than the native library
+- the declared entry source, a discovered implementation source, or a discovered header is newer than or differs from the recorded build metadata
+- the discovered source set or include paths changed
 - `cc3d/kernel.h` is newer than the native library
 - `--force-compile-steppables` is passed
 

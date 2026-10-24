@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 
-METADATA_SCHEMA_VERSION = 1
+METADATA_SCHEMA_VERSION = 2
 METADATA_SUFFIX = ".cc3d-build.json"
 
 
@@ -45,14 +45,28 @@ def write_build_metadata(
     include_root_source: str,
     command: tuple[str, ...] | list[str],
     build_type: str,
+    source_root: Path | str | None = None,
+    source_paths: list[Path | str] | tuple[Path | str, ...] | None = None,
+    header_paths: list[Path | str] | tuple[Path | str, ...] | None = None,
+    include_dirs: list[Path | str] | tuple[Path | str, ...] | None = None,
 ) -> Path:
     source_path = Path(source_path).expanduser().resolve()
     output_path = Path(output_path).expanduser().resolve()
     include_root = Path(include_root).expanduser().resolve()
+    source_root = Path(source_root).expanduser().resolve() if source_root else source_path.parent
+    source_paths = tuple(Path(path).expanduser().resolve() for path in (source_paths or (source_path,)))
+    header_paths = tuple(Path(path).expanduser().resolve() for path in (header_paths or ()))
+    include_dirs = tuple(Path(path).expanduser().resolve() for path in (include_dirs or (include_root,)))
     kernel_header = include_root / "cc3d" / "kernel.h"
     metadata = {
         "metadata_schema_version": METADATA_SCHEMA_VERSION,
         "source_path": str(source_path),
+        "source_root": str(source_root),
+        "source_paths": [str(path) for path in source_paths],
+        "header_paths": [str(path) for path in header_paths],
+        "source_hashes": {str(path): file_sha256(path) for path in source_paths},
+        "header_hashes": {str(path): file_sha256(path) for path in header_paths},
+        "include_dirs": [str(path) for path in include_dirs],
         "output_path": str(output_path),
         "metadata_path": str(metadata_path(output_path)),
         "source_sha256": file_sha256(source_path),

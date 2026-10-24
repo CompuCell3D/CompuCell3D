@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+from collections.abc import Sequence
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -29,6 +30,17 @@ except ImportError:
 
 
 DEFAULT_REPO = None
+
+_STEPPABLE_SOURCE_SUFFIXES = {".cpp"}
+_STEPPABLE_HEADER_SUFFIXES = {".h", ".hpp"}
+_STEPPABLE_IGNORED_DIRECTORIES = {
+    ".cc3d-build",
+    ".git",
+    ".idea",
+    "build",
+    "cmake-build-debug",
+    "cmake-build-release",
+}
 
 
 @dataclass(frozen=True)
@@ -55,6 +67,9 @@ class CompileResult:
     return_code: int
     stdout: str
     stderr: str
+    source_paths: tuple[Path, ...] = ()
+    header_paths: tuple[Path, ...] = ()
+    include_dirs: tuple[Path, ...] = ()
 
     @property
     def success(self) -> bool:
@@ -74,8 +89,85 @@ class CompileResult:
             "return_code": self.return_code,
             "stdout": self.stdout,
             "stderr": self.stderr,
+            "source_paths": [str(path) for path in self.source_paths],
+            "header_paths": [str(path) for path in self.header_paths],
+            "include_dirs": [str(path) for path in self.include_dirs],
             "success": self.success,
         }
+
+
+@dataclass(frozen=True)
+class SteppableSourceSet:
+    entry_source: Path
+    source_root: Path
+    source_paths: tuple[Path, ...]
+    header_paths: tuple[Path, ...]
+    include_dirs: tuple[Path, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "entry_source": str(self.entry_source),
+            "source_root": str(self.source_root),
+            "source_paths": [str(path) for path in self.source_paths],
+            "header_paths": [str(path) for path in self.header_paths],
+            "include_dirs": [str(path) for path in self.include_dirs],
+        }
+
+
+def discover_steppable_sources(entry_source: Path | str) -> SteppableSourceSet:
+    """Discover the local source tree belonging to one C++ resource.
+
+    The directory containing the declared entry source is the target root.
+    The entry source is authoritative even when it does not exist yet, so the
+    build planner can report a useful missing-source error.
+    """
+    entry_source = Path(entry_source).expanduser().resolve()
+    source_root = entry_source.parent
+    source_paths: set[Path] = {entry_source}
+    header_paths: set[Path] = set()
+    include_dirs: set[Path] = {source_root}
+
+    if source_root.is_dir():
+        for path in source_root.rglob("*"):
+            relative_path = path.relative_to(source_root)
+            if any(part in _STEPPABLE_IGNORED_DIRECTORIES for part in relative_path.parts[:-1]):
+                continue
+            if not path.is_file():
+                continue
+            if path.suffix.lower() in _STEPPABLE_SOURCE_SUFFIXES:
+                source_paths.add(path.resolve())
+                include_dirs.add(path.parent.resolve())
+            elif path.suffix.lower() in _STEPPABLE_HEADER_SUFFIXES:
+                header_paths.add(path.resolve())
+                include_dirs.add(path.parent.resolve())
+
+    return SteppableSourceSet(
+        entry_source=entry_source,
+        source_root=source_root,
+        source_paths=tuple(sorted(source_paths, key=str)),
+        header_paths=tuple(sorted(header_paths, key=str)),
+        include_dirs=tuple(sorted(include_dirs, key=str)),
+    )
+
+
+def _normalize_source_paths(source_path: Path | str | Sequence[Path | str]) -> tuple[Path, ...]:
+    if isinstance(source_path, (str, Path)):
+        values = (source_path,)
+    else:
+        values = tuple(source_path)
+    if not values:
+        raise ValueError("At least one C++ source file is required")
+    return tuple(Path(path).expanduser().resolve() for path in values)
+
+
+def _normalize_include_dirs(
+    include_root: Path,
+    include_dirs: Sequence[Path | str] | None,
+) -> tuple[Path, ...]:
+    values = [include_root]
+    if include_dirs:
+        values.extend(Path(path).expanduser().resolve() for path in include_dirs)
+    return tuple(dict.fromkeys(values))
 
 
 def env_value(env: dict[str, str], name: str) -> str | None:
@@ -204,9 +296,10 @@ def conda_compiler() -> str | None:
 
 
 def macos_compile_command(
-    source_path: Path,
+    source_path: Path | Sequence[Path],
     include_root: Path,
     output_path: Path,
+    include_dirs: Sequence[Path] | None = None,
     build_type: str = "Release",
 ) -> list[str]:
 
@@ -252,6 +345,8 @@ def macos_compile_command(
             "Your Xcode Command Line Tools installation may be incomplete."
         )
 
+    source_paths = _normalize_source_paths(source_path)
+    resolved_include_dirs = _normalize_include_dirs(include_root, include_dirs)
     return [
         compiler,
         *compiler_debug_flags(build_type, "clang"),
@@ -265,9 +360,8 @@ def macos_compile_command(
         "-isystem",
         str(libcxx_include),
 
-        f"-I{include_root}",
-
-        str(source_path),
+        *(f"-I{path}" for path in resolved_include_dirs),
+        *(str(path) for path in source_paths),
 
         "-o",
         str(output_path),
@@ -275,46 +369,64 @@ def macos_compile_command(
 
 
 
-def macos_compile_command_conda(source_path: Path, include_root: Path, output_path: Path, build_type: str = "Release") -> list[str]:
+def macos_compile_command_conda(
+    source_path: Path | Sequence[Path],
+    include_root: Path,
+    output_path: Path,
+    include_dirs: Sequence[Path] | None = None,
+    build_type: str = "Release",
+) -> list[str]:
     compiler = conda_compiler()
     if not compiler:
         raise RuntimeError("Could not locate a conda clang++. Activate the conda environment or set CXX.")
 
+    source_paths = _normalize_source_paths(source_path)
+    resolved_include_dirs = _normalize_include_dirs(include_root, include_dirs)
     return [
         compiler,
         *compiler_debug_flags(build_type, "clang"),
         "-std=c++17",
         "-dynamiclib",
-        str(source_path),
-        f"-I{include_root}",
+        *(str(path) for path in source_paths),
+        *(f"-I{path}" for path in resolved_include_dirs),
         "-o",
         str(output_path),
     ]
 
 
-def linux_compile_command(source_path: Path, include_root: Path, output_path: Path, build_type: str = "Release") -> list[str]:
+def linux_compile_command(
+    source_path: Path | Sequence[Path],
+    include_root: Path,
+    output_path: Path,
+    include_dirs: Sequence[Path] | None = None,
+    build_type: str = "Release",
+) -> list[str]:
     compiler = os.environ.get("CXX") or shutil.which("g++") or shutil.which("clang++")
     if not compiler:
         raise RuntimeError("Could not locate a C++ compiler. Set CXX or install g++/clang++.")
 
+    source_paths = _normalize_source_paths(source_path)
+    resolved_include_dirs = _normalize_include_dirs(include_root, include_dirs)
     return [
         compiler,
         *compiler_debug_flags(build_type, "clang"),
         "-std=c++17",
         "-fPIC",
         "-shared",
-        str(source_path),
-        f"-I{include_root}",
+        *(str(path) for path in source_paths),
+        *(f"-I{path}" for path in resolved_include_dirs),
         "-o",
         str(output_path),
     ]
 
 
 def windows_compile_command(
-    source_path: Path,
+    source_path: Path | Sequence[Path],
     include_root: Path,
     output_path: Path,
     msvc_version: str | None,
+    include_dirs: Sequence[Path] | None = None,
+    object_dir: Path | None = None,
     build_type: str = "Release",
 ) -> tuple[list[str], dict[str, str] | None]:
     compiler = os.environ.get("CXX") or shutil.which("cl")
@@ -326,6 +438,8 @@ def windows_compile_command(
         if not compiler:
             raise RuntimeError(f"Could not locate cl.exe after activating {install.vcvars64}")
 
+    source_paths = _normalize_source_paths(source_path)
+    resolved_include_dirs = _normalize_include_dirs(include_root, include_dirs)
     return [
         compiler,
         *compiler_debug_flags(build_type, "msvc"),
@@ -333,19 +447,27 @@ def windows_compile_command(
         "/EHsc",
         "/LD",
         *(["/DEBUG"] if normalized_build_type(build_type) in {"debug", "relwithdebinfo"} else []),
-        str(source_path),
-        f"/I{include_root}",
-        f"/Fo:{output_path.with_suffix('.obj')}",
+        *(str(path) for path in source_paths),
+        *(f"/I{path}" for path in resolved_include_dirs),
+        *(
+            [f"/Fo:{output_path.with_suffix('.obj')}"]
+            if len(source_paths) == 1
+            else [f"/Fo:{object_dir}{os.sep}"]
+            if object_dir
+            else []
+        ),
         f"/Fe:{output_path}",
     ], env
 
 
 def compile_command(
-    source_path: Path,
+    source_path: Path | Sequence[Path],
     include_root: Path,
     output_path: Path,
     macos_toolchain: str,
     msvc_version: str | None,
+    include_dirs: Sequence[Path] | None = None,
+    object_dir: Path | None = None,
     build_type: str = "Release",
 ) -> tuple[list[str], dict[str, str] | None]:
     if sys.platform == "darwin":
@@ -354,18 +476,21 @@ def compile_command(
                 source_path=source_path,
                 include_root=include_root,
                 output_path=output_path,
+                include_dirs=include_dirs,
                 build_type=build_type,
             ), None
-        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, build_type=build_type), None
+        return macos_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, include_dirs=include_dirs, build_type=build_type), None
     if sys.platform.startswith("win"):
         return windows_compile_command(
             source_path=source_path,
             include_root=include_root,
             output_path=output_path,
             msvc_version=msvc_version,
+            include_dirs=include_dirs,
+            object_dir=object_dir,
             build_type=build_type,
         )
-    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, build_type=build_type), None
+    return linux_compile_command(source_path=source_path, include_root=include_root, output_path=output_path, include_dirs=include_dirs, build_type=build_type), None
 
 
 def clean_compiled_steppable_artifacts(output_path: Path | str) -> list[Path]:
@@ -388,6 +513,10 @@ def clean_compiled_steppable_artifacts(output_path: Path | str) -> list[Path]:
         if candidate.is_file():
             candidate.unlink()
             removed.append(candidate)
+    intermediate_dir = output_path.parent / ".cc3d-build" / output_path.stem
+    if intermediate_dir.is_dir():
+        shutil.rmtree(intermediate_dir)
+        removed.append(intermediate_dir)
     return removed
 
 
@@ -419,22 +548,30 @@ def compile_steppable_source(
     output_path: Path | str | None = None,
     macos_toolchain: str = "apple",
     msvc_version: str | None = None,
+    source_set: SteppableSourceSet | None = None,
     build_type: str = "Release",
 ) -> CompileResult:
     resolved_repo_path = Path(repo_path).expanduser().resolve() if repo_path else None
     resolved_source_path = Path(source_path).expanduser().resolve()
     resolved_output_path = Path(output_path).expanduser().resolve() if output_path else build_output_path(resolved_source_path)
+    source_set = source_set or discover_steppable_sources(resolved_source_path)
+    object_dir = None
+    if sys.platform.startswith("win") and len(source_set.source_paths) > 1:
+        object_dir = resolved_output_path.parent / ".cc3d-build" / resolved_output_path.stem
+        object_dir.mkdir(parents=True, exist_ok=True)
     include_root_info = resolve_kernel_include_root(
         repo_path=resolved_repo_path,
         include_root=Path(include_root) if include_root else None,
     )
 
     cmd, env = compile_command(
-        source_path=resolved_source_path,
+        source_path=source_set.source_paths,
         include_root=include_root_info.include_root,
         output_path=resolved_output_path,
         macos_toolchain=macos_toolchain,
         msvc_version=msvc_version,
+        include_dirs=source_set.include_dirs,
+        object_dir=object_dir,
         build_type=build_type,
     )
     effective_cmd = _effective_compile_command(cmd, env)
@@ -454,6 +591,9 @@ def compile_steppable_source(
         return_code=completed.returncode,
         stdout=completed.stdout,
         stderr=completed.stderr,
+        source_paths=source_set.source_paths,
+        header_paths=source_set.header_paths,
+        include_dirs=source_set.include_dirs,
     )
     if result.success:
         write_build_metadata(
@@ -463,6 +603,10 @@ def compile_steppable_source(
             include_root_source=result.include_root_source,
             command=result.command,
             build_type=build_type,
+            source_root=source_set.source_root,
+            source_paths=result.source_paths,
+            header_paths=result.header_paths,
+            include_dirs=result.include_dirs,
         )
     return result
 
@@ -554,17 +698,21 @@ def main() -> int:
         clean_output(output_path)
         return 0
 
+    source_set = discover_steppable_sources(source_path)
     include_root_info = resolve_kernel_include_root(
         repo_path=repo_path,
         include_root=Path(args.include_root) if args.include_root else None,
     )
-
     cmd, env = compile_command(
-        source_path=source_path,
+        source_path=source_set.source_paths,
         include_root=include_root_info.include_root,
         output_path=output_path,
         macos_toolchain=args.macos_toolchain,
         msvc_version=args.msvc_version,
+        include_dirs=source_set.include_dirs,
+        object_dir=(output_path.parent / ".cc3d-build" / output_path.stem)
+        if sys.platform.startswith("win") and len(source_set.source_paths) > 1
+        else None,
         build_type=args.build_type,
     )
 
@@ -577,7 +725,18 @@ def main() -> int:
         print("Command:")
         print(" ".join(cmd))
 
-    run_compile_command(cmd, env)
+    result = compile_steppable_source(
+        source_path=source_path,
+        repo_path=repo_path,
+        include_root=Path(args.include_root) if args.include_root else None,
+        output_path=output_path,
+        macos_toolchain=args.macos_toolchain,
+        msvc_version=args.msvc_version,
+        source_set=source_set,
+        build_type=args.build_type,
+    )
+    if not result.success:
+        raise RuntimeError(result.log or f"Compilation failed with exit code {result.return_code}")
     print(f"Built {output_path}")
     return 0
 
