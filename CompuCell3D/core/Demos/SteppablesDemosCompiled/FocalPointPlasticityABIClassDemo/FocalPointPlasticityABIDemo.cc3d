@@ -1,0 +1,7 @@
+<CompuCell3D>
+    <XMLScript>Simulation/FocalPointPlasticityABIDemo.xml</XMLScript>
+    <PythonScript>Simulation/FocalPointPlasticityABIDemo.py</PythonScript>
+    <Resource Type="Cpp">Native/FocalPointPlasticityABIClassSteppable.cpp</Resource>
+</CompuCell3D>
+
+
