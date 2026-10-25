@@ -28,7 +28,7 @@ namespace {
         state->vector.set(10, 20, 0, 1.0, 2.0, 3.0);
 
         std::cout << "C++ shared fields created scalar=" << state->scalar.get(10, 20, 0)
-                  << " int16=" << state->integer.get(10, 20, 0) << '\n';
+                  << " int16=" << state->integer.get(10, 20, 0) << std::endl;
         printScalarFieldHead(state->scalar, 3, 5);
     }
 
@@ -48,7 +48,7 @@ namespace {
                       << " scalar=" << state->scalar.get(15, 25, 0)
                       << " int16=" << state->integer.get(15, 25, 0)
                       << " vector=(" << vx << "," << vy << "," << vz << ")"
-                      << " sampled_pixels=" << sampledPixels << '\n';
+                      << " sampled_pixels=" << sampledPixels << std::endl;
         }
     }
 

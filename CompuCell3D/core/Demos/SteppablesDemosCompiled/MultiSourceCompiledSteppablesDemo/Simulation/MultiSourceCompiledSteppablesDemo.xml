@@ -1,7 +1,7 @@
 <CompuCell3D Revision="20260829" Version="4.0.0">
     <Potts>
-        <Dimensions x="60" y="60" z="1"/>
-        <Steps>30</Steps>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>1000</Steps>
         <Temperature>10.0</Temperature>
         <NeighborOrder>1</NeighborOrder>
     </Potts>
@@ -27,8 +27,8 @@
 
     <Steppable Type="UniformInitializer">
         <Region>
-            <BoxMin x="10" y="10" z="0"/>
-            <BoxMax x="50" y="50" z="1"/>
+            <BoxMin x="20" y="20" z="0"/>
+            <BoxMax x="80" y="80" z="1"/>
             <Gap>5</Gap>
             <Width>5</Width>
             <Types>A,B</Types>

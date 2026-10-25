@@ -1,6 +1,5 @@
 #include <cc3d/kernel.h>
 
-#include <cstdio>
 #include <iostream>
 
 #include "Utilities/Vector2D.h"
@@ -16,21 +15,21 @@ namespace {
             int count = 0;
             for (auto cell : ctx->cells) {
                 cell.targetVolume = 25;
-                cell.lambdaVolume = 2.0;
-                cell.targetSurface = 30.0;
-                cell.lambdaSurface = 1.0;
+                cell.lambdaVolume = 10.0;
+                // cell.targetSurface = 30.0;
+                // cell.lambdaSurface = 10.0;
 
                 if (count < 10) {
                     std::cerr << "growth cell.id=" << cell.id
                               << " targetVol=" << cell.targetVolume
                               << " targetSur=" << cell.targetSurface
                               << " lambdaSur=" << cell.lambdaSurface
-                              << " surface=" << cell.surface << '\n';
+                              << " surface=" << cell.surface << std::endl;
                 }
                 ++count;
             }
 
-            std::printf("Multi-source growth start\n");
+            std::cerr << "Multi-source growth start" << std::endl;
         }
 
         void step(CC3DKernelContext *ctx) {
@@ -42,21 +41,25 @@ namespace {
                     if (executionCount_ == 0u) {
                         std::cout << "growth vector utility cell.id=" << cell.id
                                   << " center_norm_squared=" << centerOfMass.normSquared()
-                                  << '\n';
+                                  << std::endl;
                     }
                 }
             }
 
             ++executionCount_;
-            std::printf("Multi-source growth step mcs=%llu execution=%llu\n",
-                        static_cast<unsigned long long>(ctx->mcs),
-                        static_cast<unsigned long long>(executionCount_));
+            std::cout << "Multi-source growth step mcs="
+                      << static_cast<unsigned long long>(ctx->mcs)
+                      << " execution="
+                      << static_cast<unsigned long long>(executionCount_)
+                      << std::endl;
         }
 
         void finish(CC3DKernelContext *ctx) {
-            std::printf("Multi-source growth finish mcs=%llu execution=%llu\n",
-                        static_cast<unsigned long long>(ctx->mcs),
-                        static_cast<unsigned long long>(executionCount_));
+            std::cout << "Multi-source growth finish mcs="
+                      << static_cast<unsigned long long>(ctx->mcs)
+                      << " execution="
+                      << static_cast<unsigned long long>(executionCount_)
+                      << std::endl;
         }
 
     private:

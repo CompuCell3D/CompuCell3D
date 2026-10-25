@@ -6,6 +6,11 @@
 - macOS: `.dylib`
 - Linux: `.so`
 
+Compiler intermediates and metadata are written below
+`.cc3d-build/<library-name>/` within the target root. This keeps the target
+root free of object files, import libraries, linker files, debug databases,
+manifests, and metadata sidecars.
+
 For example, this source tree produces one shared library:
 
 ```text
@@ -25,7 +30,7 @@ The `.cc3d` resource declaration remains a reference to the entry source:
 <Resource Type="Cpp">Native_GrowthSteppable/GrowthSteppable.cpp</Resource>
 ```
 
-The directory containing the entry source is the target root. Include paths for the target root and discovered subdirectories are added automatically. Keep separate compiled steppables in separate target roots; two C++ resources sharing one target root are rejected.
+The directory containing the entry source is the target root. The target root must contain exactly one root-level `.cpp` file: the declared entry source. Additional implementation files may be placed in subdirectories. Include paths for the target root and discovered subdirectories are added automatically. Keep separate compiled steppables in separate target roots; two C++ resources sharing one target root are rejected.
 
 Run the command from an activated CC3D conda environment so `python -m cc3d.scripts.compile_steppable` resolves to the installed CC3D package. In an installed conda package, the script expects the public ABI header at `$CONDA_PREFIX/include/cc3d/kernel.h`.
 

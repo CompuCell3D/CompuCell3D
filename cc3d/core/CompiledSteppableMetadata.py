@@ -14,8 +14,14 @@ METADATA_SCHEMA_VERSION = 2
 METADATA_SUFFIX = ".cc3d-build.json"
 
 
+def build_artifacts_dir(output_path: Path | str) -> Path:
+    output_path = Path(output_path).expanduser().resolve()
+    return output_path.parent / ".cc3d-build" / output_path.stem
+
+
 def metadata_path(output_path: Path | str) -> Path:
-    return Path(output_path).expanduser().resolve().with_suffix(METADATA_SUFFIX)
+    output_path = Path(output_path).expanduser().resolve()
+    return build_artifacts_dir(output_path) / f"{output_path.stem}{METADATA_SUFFIX}"
 
 
 def file_sha256(path: Path | str) -> str | None:

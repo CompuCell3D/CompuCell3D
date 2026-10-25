@@ -11,7 +11,11 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from cc3d.core.CompiledSteppableMetadata import metadata_path, write_build_metadata
+from cc3d.core.CompiledSteppableMetadata import (
+    build_artifacts_dir,
+    metadata_path,
+    write_build_metadata,
+)
 
 try:
     from cc3d.scripts.windows_vcvars import (
@@ -128,6 +132,23 @@ def discover_steppable_sources(entry_source: Path | str) -> SteppableSourceSet:
     include_dirs: set[Path] = {source_root}
 
     if source_root.is_dir():
+        root_level_sources = tuple(sorted(
+            (path.resolve() for path in source_root.iterdir()
+             if path.is_file() and path.suffix.lower() in _STEPPABLE_SOURCE_SUFFIXES),
+            key=str,
+        ))
+        if len(root_level_sources) > 1:
+            files = "\n".join(f"  {path}" for path in root_level_sources)
+            raise ValueError(
+                "C++ steppable target contains more than one root-level .cpp file.\n"
+                f"Target root: {source_root}\n"
+                "The target root must contain only the declared entry source. "
+                "Move additional implementation files into a subdirectory, or "
+                "create a separate target root and C++ resource for another steppable.\n"
+                "Root-level .cpp files:\n"
+                f"{files}"
+            )
+
         for path in source_root.rglob("*"):
             relative_path = path.relative_to(source_root)
             if any(part in _STEPPABLE_IGNORED_DIRECTORIES for part in relative_path.parts[:-1]):
@@ -449,14 +470,18 @@ def windows_compile_command(
         *(["/DEBUG"] if normalized_build_type(build_type) in {"debug", "relwithdebinfo"} else []),
         *(str(path) for path in source_paths),
         *(f"/I{path}" for path in resolved_include_dirs),
+        *([f"/Fo:{object_dir}{os.sep}"] if object_dir else []),
+        f"/Fe:{output_path}",
         *(
-            [f"/Fo:{output_path.with_suffix('.obj')}"]
-            if len(source_paths) == 1
-            else [f"/Fo:{object_dir}{os.sep}"]
+            [
+                "/link",
+                f"/IMPLIB:{object_dir / output_path.with_suffix('.lib').name}",
+                f"/PDB:{object_dir / output_path.with_suffix('.pdb').name}",
+                f"/MANIFESTFILE:{object_dir / output_path.with_suffix('.manifest').name}",
+            ]
             if object_dir
             else []
         ),
-        f"/Fe:{output_path}",
     ], env
 
 
@@ -497,9 +522,11 @@ def clean_compiled_steppable_artifacts(output_path: Path | str) -> list[Path]:
     """Remove compiler outputs associated with one compiled steppable."""
     output_path = Path(output_path).expanduser().resolve()
     stem = output_path.with_suffix("")
-    candidates = {
-        output_path,
-        metadata_path(output_path),
+    candidates = {output_path, metadata_path(output_path)}
+    # Remove artifacts from older versions that placed compiler outputs beside
+    # the shared library. New builds keep these files below .cc3d-build.
+    candidates.update({
+        stem.with_suffix(".cc3d-build.json"),
         stem.with_suffix(".obj"),
         stem.with_suffix(".o"),
         stem.with_suffix(".pdb"),
@@ -507,17 +534,35 @@ def clean_compiled_steppable_artifacts(output_path: Path | str) -> list[Path]:
         stem.with_suffix(".exp"),
         stem.with_suffix(".lib"),
         stem.with_suffix(".manifest"),
-    }
+    })
     removed: list[Path] = []
     for candidate in sorted(candidates, key=str):
         if candidate.is_file():
             candidate.unlink()
             removed.append(candidate)
-    intermediate_dir = output_path.parent / ".cc3d-build" / output_path.stem
+    intermediate_dir = build_artifacts_dir(output_path)
     if intermediate_dir.is_dir():
         shutil.rmtree(intermediate_dir)
         removed.append(intermediate_dir)
     return removed
+
+
+def _remove_legacy_root_artifacts(output_path: Path) -> None:
+    """Remove compiler artifacts written beside the library by older builds."""
+    stem = output_path.with_suffix("")
+    legacy_paths = (
+        stem.with_suffix(".cc3d-build.json"),
+        stem.with_suffix(".obj"),
+        stem.with_suffix(".o"),
+        stem.with_suffix(".pdb"),
+        stem.with_suffix(".ilk"),
+        stem.with_suffix(".exp"),
+        stem.with_suffix(".lib"),
+        stem.with_suffix(".manifest"),
+    )
+    for path in legacy_paths:
+        if path.is_file():
+            path.unlink()
 
 
 def clean_output(output_path: Path) -> None:
@@ -556,8 +601,8 @@ def compile_steppable_source(
     resolved_output_path = Path(output_path).expanduser().resolve() if output_path else build_output_path(resolved_source_path)
     source_set = source_set or discover_steppable_sources(resolved_source_path)
     object_dir = None
-    if sys.platform.startswith("win") and len(source_set.source_paths) > 1:
-        object_dir = resolved_output_path.parent / ".cc3d-build" / resolved_output_path.stem
+    if sys.platform.startswith("win"):
+        object_dir = build_artifacts_dir(resolved_output_path)
         object_dir.mkdir(parents=True, exist_ok=True)
     include_root_info = resolve_kernel_include_root(
         repo_path=resolved_repo_path,
@@ -608,6 +653,7 @@ def compile_steppable_source(
             header_paths=result.header_paths,
             include_dirs=result.include_dirs,
         )
+        _remove_legacy_root_artifacts(result.output_path)
     return result
 
 
@@ -710,8 +756,8 @@ def main() -> int:
         macos_toolchain=args.macos_toolchain,
         msvc_version=args.msvc_version,
         include_dirs=source_set.include_dirs,
-        object_dir=(output_path.parent / ".cc3d-build" / output_path.stem)
-        if sys.platform.startswith("win") and len(source_set.source_paths) > 1
+        object_dir=build_artifacts_dir(output_path)
+        if sys.platform.startswith("win")
         else None,
         build_type=args.build_type,
     )
