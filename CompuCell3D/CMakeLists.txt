@@ -350,6 +350,7 @@ ADD_SUBDIRECTORY(core)
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../License.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/../ReleaseNotes.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/../cc3d-release.json
     DESTINATION
     ${CMAKE_INSTALL_PREFIX}
 )

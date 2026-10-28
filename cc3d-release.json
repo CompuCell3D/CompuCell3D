@@ -1,0 +1,20 @@
+{
+  "product": "CompuCell3D",
+  "version": "4.10.0",
+  "revision": 2,
+  "release_date": "2026-10-10",
+  "release_url": "https://github.com/CompuCell3D/CompuCell3D/releases/tag/4.10.0",
+  "whats_new": [
+    "Improved GPU solvers and OpenCL support",
+    "Improved Player window management across screens",
+    "Improved tiling and cascading of floating Player windows",
+    "Expand-all and collapse-all actions in the Model Editor steering pane",
+    "Improved steering of simultaneous plugin and steppable changes",
+    "Twedit++ autosave enabled by default",
+    "Automatic character pairing in Twedit++",
+    "Improved Twedit++ configuration handling",
+    "Added processor-count and debug-frequency options to the Simulation Wizard",
+    "Fixed ffmpeg detection in Player",
+    "Multiple bug fixes"
+  ]
+}
