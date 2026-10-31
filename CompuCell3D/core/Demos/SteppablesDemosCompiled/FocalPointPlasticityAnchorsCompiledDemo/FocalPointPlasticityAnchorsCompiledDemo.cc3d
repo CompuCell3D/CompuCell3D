@@ -1,5 +1,5 @@
 <Simulation version="3.6.1">
  <XMLScript Type="XMLScript">Simulation/FocalPointPlasticityAnchorsCompiledDemo.xml</XMLScript>
  <PythonScript>Simulation/FocalPointPlasticityAnchorsCompiledDemo.py</PythonScript>
- <Resource Type="Cpp">Native/FocalPointPlasticityAnchorsCompiledSteppable.cpp</Resource>
+ <Resource Type="CppSteppable">Native/FocalPointPlasticityAnchorsCompiledSteppable.cpp</Resource>
 </Simulation>

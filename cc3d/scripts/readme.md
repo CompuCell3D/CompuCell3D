@@ -27,7 +27,7 @@ Native_GrowthSteppable/
 The `.cc3d` resource declaration remains a reference to the entry source:
 
 ```xml
-<Resource Type="Cpp">Native_GrowthSteppable/GrowthSteppable.cpp</Resource>
+<Resource Type="CppSteppable">Native_GrowthSteppable/GrowthSteppable.cpp</Resource>
 ```
 
 The directory containing the entry source is the target root. The target root must contain exactly one root-level `.cpp` file: the declared entry source. Additional implementation files may be placed in subdirectories. Include paths for the target root and discovered subdirectories are added automatically. Keep separate compiled steppables in separate target roots; two C++ resources sharing one target root are rejected.
@@ -188,7 +188,7 @@ For GUI use, call with `probe=False` to populate a fast initial selector, then c
 `cc3d.run_script` automatically compiles C++ steppable resources listed in a `.cc3d` file before starting the simulation. It looks for resources such as:
 
 ```xml
-<Resource Type="Cpp">Native/CellFieldOperationsSteppableCompiled.cpp</Resource>
+<Resource Type="CppSteppable">Native/CellFieldOperationsSteppableCompiled.cpp</Resource>
 ```
 
 Resource paths are resolved relative to the folder containing the `.cc3d` project file.

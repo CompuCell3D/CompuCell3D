@@ -1,5 +1,5 @@
 <Simulation version="4.0.0">
    <XMLScript>Simulation/ClusterSurfaceCompiledDemo.xml</XMLScript>
    <PythonScript>Simulation/ClusterSurfaceCompiledDemo.py</PythonScript>
-   <Resource Type="Cpp">Native/ClusterSurfaceCompiledSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/ClusterSurfaceCompiledSteppable.cpp</Resource>
 </Simulation>

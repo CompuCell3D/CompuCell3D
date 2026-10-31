@@ -1,5 +1,5 @@
 <Simulation version="4.0.0">
     <XMLScript>Simulation/MitosisClusterCompiledDemo.xml</XMLScript>
     <PythonScript>Simulation/MitosisClusterCompiledDemo.py</PythonScript>
-    <Resource Type="Cpp">Native/MitosisClusterCompiledSteppable.cpp</Resource>
+    <Resource Type="CppSteppable">Native/MitosisClusterCompiledSteppable.cpp</Resource>
 </Simulation>

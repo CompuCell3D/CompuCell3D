@@ -1,7 +1,7 @@
-<CompuCell3D Revision="20260829" Version="4.0.0">
-    <XMLScript Type="XMLScript">Simulation/MultiSourceCompiledSteppablesDemo.xml</XMLScript>
-    <PythonScript Type="PythonScript">Simulation/MultiSourceCompiledSteppablesDemo.py</PythonScript>
-    <Resource Type="Python">Simulation/MultiSourceCompiledSteppablesSteppables.py</Resource>
-    <Resource Type="Cpp">Native_GrowthSteppable/GrowthClassSteppable.cpp</Resource>
-    <Resource Type="Cpp">Native_SharedNumpyFieldsSteppable/SharedNumpyFieldsCompiledSteppable.cpp</Resource>
-</CompuCell3D>
+<Simulation version="3.5.1">
+   <XMLScript Type="XMLScript">Simulation/MultiSourceCompiledSteppablesDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MultiSourceCompiledSteppablesDemo.py</PythonScript>
+   <Resource Type="CppSteppable">Native_GrowthSteppable/GrowthClassSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native_SharedNumpyFieldsSteppable/SharedNumpyFieldsCompiledSteppable.cpp</Resource>
+   <Resource Type="Python">Simulation/MultiSourceCompiledSteppablesSteppables.py</Resource>
+</Simulation>

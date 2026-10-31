@@ -4,7 +4,7 @@
 
     <PythonScript>Simulation/BoundaryPixelTrackerExample.py</PythonScript> 
 
-   <Resource Type="Cpp">Native/BoundaryPixelTrackerCompiledSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/BoundaryPixelTrackerCompiledSteppable.cpp</Resource>
    <Resource Type="Python">Simulation/BoundaryPixelTrackerExampleSteppables.py</Resource>    
 
     <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>

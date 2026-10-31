@@ -1,5 +1,5 @@
 <CompuCell3D>
     <XMLScript>Simulation/XmlSteeringCompiledDemo.xml</XMLScript>
     <PythonScript>Simulation/XmlSteeringCompiledDemo.py</PythonScript>
-    <Resource Type="Cpp">Native/XmlSteeringCompiledSteppable.cpp</Resource>
+    <Resource Type="CppSteppable">Native/XmlSteeringCompiledSteppable.cpp</Resource>
 </CompuCell3D>

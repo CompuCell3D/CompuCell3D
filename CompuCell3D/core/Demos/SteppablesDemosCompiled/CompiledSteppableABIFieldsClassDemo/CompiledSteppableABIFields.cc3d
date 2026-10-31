@@ -2,7 +2,7 @@
    <XMLScript Type="XMLScript">Simulation/CompiledSteppableABIFields.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/CompiledSteppableABIFields.py</PythonScript>
    <Resource Type="Python">Simulation/CompiledSteppableABIFieldsSteppables.py</Resource>
-   <Resource Type="Cpp">Native/FieldDrivenGrowthClassSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/FieldDrivenGrowthClassSteppable.cpp</Resource>
    <Resource Type="Field">Simulation/fgf_2D.pulse.txt</Resource>
 </Simulation>
 

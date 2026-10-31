@@ -121,7 +121,13 @@ class CompiledSteppableProjectStatus:
 def compiled_steppable_sources_from_cc3d(cc3d_project_path: Path | str) -> list[Path]:
     handler = CC3DSimulationDataHandler(None)
     handler.read_cc3_d_file_format(str(cc3d_project_path))
-    resources = handler.cc3dSimulationData.getResourcesByType("Cpp")
+    # CppSteppable is the explicit type for compiled C++ steppables. Keep
+    # accepting Cpp so projects created before this type was introduced still
+    # compile, while preferring the new type when both are present.
+    resources = (
+        handler.cc3dSimulationData.getResourcesByType("CppSteppable")
+
+    )
     return [Path(resource.path).resolve() for resource in resources]
 
 

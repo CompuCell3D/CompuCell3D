@@ -4,7 +4,7 @@
 
     <PythonScript>Simulation/PixelTrackerExample.py</PythonScript> 
 
-   <Resource Type="Cpp">Native/PixelTrackerClassSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/PixelTrackerClassSteppable.cpp</Resource>
    <Resource Type="Python">Simulation/PixelTrackerExampleSteppables.py</Resource>    
 
     <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>

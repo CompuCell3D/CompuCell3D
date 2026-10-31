@@ -2,5 +2,5 @@
    <XMLScript Type="XMLScript">Simulation/NeighborIterationCompiledNoTracker.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/NeighborIterationCompiled.py</PythonScript>
    <Resource Type="Python">Simulation/NeighborIterationCompiledSteppables.py</Resource>
-   <Resource Type="Cpp">Native/NeighborIterationSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/NeighborIterationSteppable.cpp</Resource>
 </Simulation>

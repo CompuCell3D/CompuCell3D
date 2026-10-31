@@ -1,5 +1,5 @@
 <Simulation version="4.0.0">
    <XMLScript>Simulation/ClusterSurfaceTrackerCompiledDemo.xml</XMLScript>
    <PythonScript>Simulation/ClusterSurfaceTrackerCompiledDemo.py</PythonScript>
-   <Resource Type="Cpp">Native/ClusterSurfaceTrackerCompiledSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native/ClusterSurfaceTrackerCompiledSteppable.cpp</Resource>
 </Simulation>

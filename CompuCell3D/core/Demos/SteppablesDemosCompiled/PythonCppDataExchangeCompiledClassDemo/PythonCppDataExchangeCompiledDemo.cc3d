@@ -1,7 +1,7 @@
 <CompuCell3D>
     <XMLScript>Simulation/PythonCppDataExchangeCompiledDemo.xml</XMLScript>
     <PythonScript>Simulation/PythonCppDataExchangeCompiledDemo.py</PythonScript>
-    <Resource Type="Cpp">Native/PythonCppDataExchangeClassSteppable.cpp</Resource>
+    <Resource Type="CppSteppable">Native/PythonCppDataExchangeClassSteppable.cpp</Resource>
 </CompuCell3D>
 
 
