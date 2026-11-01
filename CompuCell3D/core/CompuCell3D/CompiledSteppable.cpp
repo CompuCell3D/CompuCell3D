@@ -2538,7 +2538,7 @@ public:
         handle_ = dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
 #endif
         if (!handle_) {
-            throw CC3DException(buildLoadError("Failed to load compiled steppable library"));
+            throw CC3DException(buildLoadError());
         }
     }
 
@@ -2567,13 +2567,39 @@ public:
     }
 
 private:
-    std::string buildLoadError(const std::string &prefix) const {
+    std::string buildLoadError() const {
         std::ostringstream message;
-        message << prefix << ": " << path_;
-#ifndef CC3D_ISWIN
+        message << "Failed to load compiled steppable library: " << path_ << ".\n"
+                << "The register_compiled_steppable(...) entry in the simulation's main Python script "
+                << "may be stale, or the shared library may be missing. Verify that the registered path "
+                << "points to an existing .dll, .so, or .dylib, then rebuild the compiled steppable if necessary.";
+#ifdef CC3D_ISWIN
+        const DWORD errorCode = GetLastError();
+        if (errorCode != 0) {
+            char errorBuffer[512] = {};
+            const DWORD length = FormatMessageA(
+                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr,
+                errorCode,
+                0,
+                errorBuffer,
+                static_cast<DWORD>(sizeof(errorBuffer)),
+                nullptr);
+            if (length > 0) {
+                std::string nativeError(errorBuffer, length);
+                while (!nativeError.empty() &&
+                       (nativeError.back() == '\r' || nativeError.back() == '\n' || nativeError.back() == ' ')) {
+                    nativeError.pop_back();
+                }
+                message << " Native loader error: " << nativeError;
+            } else {
+                message << " Native loader error code: " << errorCode;
+            }
+        }
+#else
         const char *error = dlerror();
         if (error) {
-            message << " (" << error << ")";
+            message << " Native loader error: " << error;
         }
 #endif
         return message.str();
