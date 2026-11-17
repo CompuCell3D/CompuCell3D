@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript>Simulation/OrientedGrowthCompiledDemo.xml</XMLScript>
+   <PythonScript>Simulation/OrientedGrowthCompiledDemo.py</PythonScript>
+   <Resource Type="CppSteppable">Native/OrientedGrowthCompiledSteppable.cpp</Resource>
+</Simulation>

@@ -1,1 +1,1 @@
-ADD_COMPUCELL3D_PLUGIN(CellOrientation LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} cc3d::PolarizationVector)
+ADD_COMPUCELL3D_PLUGIN(CellOrientation CellOrientationCompiledBridge.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} cc3d::PolarizationVector)

@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+    <XMLScript>Simulation/MitosisCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/MitosisCompiledDemo.py</PythonScript>
+    <Resource Type="CppSteppable">Native/MitosisCompiledSteppable.cpp</Resource>
+</Simulation>

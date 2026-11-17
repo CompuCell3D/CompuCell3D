@@ -4,6 +4,10 @@
 using namespace CompuCell3D;
 
 #include "OrientedGrowthPlugin.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_register_oriented_growth_plugin(void *, void *);
+extern "C" void cc3d_unregister_oriented_growth_callbacks(void *);
 
 
 OrientedGrowthPlugin::OrientedGrowthPlugin() :
@@ -14,6 +18,7 @@ OrientedGrowthPlugin::OrientedGrowthPlugin() :
         boundaryStrategy(0) {}
 
 OrientedGrowthPlugin::~OrientedGrowthPlugin() {
+    cc3d_unregister_oriented_growth_callbacks(this);
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr = 0;
@@ -22,6 +27,7 @@ OrientedGrowthPlugin::~OrientedGrowthPlugin() {
 void OrientedGrowthPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     sim = simulator;
+    cc3d_register_oriented_growth_plugin(simulator, this);
     potts = simulator->getPotts();
     cellFieldG = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();

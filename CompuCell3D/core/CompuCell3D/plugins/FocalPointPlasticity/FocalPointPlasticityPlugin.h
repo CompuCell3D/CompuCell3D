@@ -172,6 +172,16 @@ namespace CompuCell3D {
 
         FPPAnchorInventory *getAnchorInventory() { return &linkInvAnchor; }
 
+        std::vector<FocalPointPlasticityLink *> getFPPLinkList(CellG *_cell = nullptr);
+        std::vector<FocalPointPlasticityInternalLink *> getFPPInternalLinkList(CellG *_cell = nullptr);
+        std::vector<FocalPointPlasticityAnchor *> getFPPAnchorList(CellG *_cell = nullptr);
+        FocalPointPlasticityLink *getFPPLinkByCells(CellG *_cell0, CellG *_cell1);
+        FocalPointPlasticityInternalLink *getFPPInternalLinkByCells(CellG *_cell0, CellG *_cell1);
+        std::vector<CellG *> getFPPLinkedCells(CellG *_cell, bool _internal = false);
+        size_t getFPPLinkCount(CellG *_cell = nullptr);
+        size_t getFPPInternalLinkCount(CellG *_cell = nullptr);
+        size_t getFPPAnchorCount(CellG *_cell = nullptr);
+
         //used for serialization and restart
         void insertFPPData(CellG *_cell, FocalPointPlasticityTrackerData *_fpptd);
 

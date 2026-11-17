@@ -12,6 +12,9 @@ using namespace std;
 #include "ChemotaxisData.h"
 #include "ChemotaxisPlugin.h"
 
+extern "C" void cc3d_register_chemotaxis_plugin(void *, void *);
+extern "C" void cc3d_unregister_chemotaxis_callbacks(void *);
+
 #include <math.h>
 
 
@@ -32,10 +35,12 @@ ChemotaxisPlugin::ChemotaxisPlugin():algorithmPtr(&ChemotaxisPlugin::merksChemot
 }
 
 ChemotaxisPlugin::~ChemotaxisPlugin() {
+    cc3d_unregister_chemotaxis_callbacks(this);
 }
 
 
 void ChemotaxisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+	cc3d_register_chemotaxis_plugin(simulator, this);
 
 	xmlData=_xmlData;
 

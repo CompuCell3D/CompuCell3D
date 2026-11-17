@@ -34,7 +34,7 @@
 
     <Plugin Name="VectorFieldPolarization">
         <Field Name="Fibers"/>
-        <PolarizationLambda>2.0</PolarizationLambda>
+        <PolarizationLambda>2.0</PolarizationLambda>C
     </Plugin>
 
 

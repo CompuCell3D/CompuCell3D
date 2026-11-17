@@ -173,6 +173,19 @@ class FieldFetcher:
 
             return field_registry.get_field_adapter(field_name=item)
         except KeyError:
+            # C++ compiled steppables may create simulator-owned shared NumPy fields.
+            if field_registry.discover_engine_owned_field(item):
+                field_adapter = field_registry.get_field_adapter(field_name=item)
+                if self.use_raw_fields:
+                    return field_adapter
+                if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
+                    pad = field_adapter.kwds.get("padding", 0)
+                    padding_vec = field_adapter.kwds.get("padding_vec", np.array([0, 0, 0]))
+                    if pad > 0:
+                        slices = [slice(padding, -padding) if padding else slice(None) for padding in padding_vec]
+                        return field_adapter[slices[0], slices[1], slices[2]]
+                return field_adapter
+
             # trying C++ concentration fields - e.g. diffusion solvers but not shared numpy concentration fields
             # - those are managed byfield_registry
             field = CompuCell.getConcentrationField(pg.simulator, item)
@@ -2759,7 +2772,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
 
                 # FocalPointPLasticityPlugin - this plugin has to be handled manually -
-                # there is no good way to figure out which links shuold be copied from parent to child cell
+                # there is no good way to figure out which links should be copied from parent to child cell
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):

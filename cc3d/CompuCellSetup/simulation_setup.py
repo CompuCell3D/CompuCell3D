@@ -190,6 +190,55 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
+def compiled_library_path(library_path):
+    """
+    Resolves a compiled-steppable shared library path.
+
+    Relative paths are interpreted relative to the active ``.cc3d`` project's
+    base directory, so ``Native/MySteppable`` resolves to the project's
+    sibling ``Native`` directory next to ``Simulation``.
+
+    :param str library_path: absolute or project-relative library path, with or without platform suffix
+    :return: absolute path string to the platform-specific shared library
+    """
+    suffix = {
+        'darwin': '.dylib',
+        'win32': '.dll'
+    }.get(os.sys.platform, '.so')
+
+    path = Path(library_path)
+    if not path.is_absolute():
+        cc3d_sim_data = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData
+        path = Path(cc3d_sim_data.basePath) / path
+
+    if path.suffix != suffix:
+        path = path.with_suffix(suffix)
+
+    return str(path)
+
+
+def register_compiled_steppable(library_path, frequency=1, entry_point='cc3d_get_steppable_v1', name=None):
+    """
+    Registers a compiled kernel ABI steppable in the normal Python scheduling path.
+
+    :param str library_path: shared library path, absolute or relative to the active ``.cc3d`` project
+    :param int frequency: execution frequency
+    :param str entry_point: exported ABI symbol name
+    :param str name: optional display name
+    :return: wrapper steppable instance
+    """
+    from cc3d.core.CompiledSteppable import CompiledSteppable
+
+    steppable = CompiledSteppable(
+        library_path=compiled_library_path(library_path),
+        frequency=frequency,
+        entry_point=entry_point,
+        name=name
+    )
+    register_steppable(steppable=steppable)
+    return steppable
+
+
 def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
     """
     Generates profiling information string after simulation finishes running

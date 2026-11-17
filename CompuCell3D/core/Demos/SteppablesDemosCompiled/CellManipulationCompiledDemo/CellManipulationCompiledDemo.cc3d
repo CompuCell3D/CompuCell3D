@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+    <XMLScript>Simulation/CellManipulationCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/CellManipulationCompiledDemo.py</PythonScript>
+    <Resource Type="CppSteppable">Native/CellManipulationCompiledSteppable.cpp</Resource>
+</Simulation>

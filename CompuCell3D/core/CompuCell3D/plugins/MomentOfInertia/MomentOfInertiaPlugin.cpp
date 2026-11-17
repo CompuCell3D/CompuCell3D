@@ -5,6 +5,10 @@
 using namespace CompuCell3D;
 
 #include "MomentOfInertiaPlugin.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_register_moment_of_inertia_plugin(void *, void *);
+extern "C" void cc3d_unregister_moment_of_inertia_callbacks(void *);
 #include <Logger/CC3DLogger.h>
 
 using namespace std;
@@ -34,11 +38,14 @@ vector<double> CompuCell3D::getSemiaxes12(const double& i11, const double& i22, 
 
 MomentOfInertiaPlugin::MomentOfInertiaPlugin():potts(0),simulator(0),boundaryStrategy(0),lastMCSPrintedWarning(-1),cellOrientationFcnPtr(0) {}
 
-MomentOfInertiaPlugin::~MomentOfInertiaPlugin() {}
+MomentOfInertiaPlugin::~MomentOfInertiaPlugin() {
+    cc3d_unregister_moment_of_inertia_callbacks(this);
+}
 
 void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	CC3D_Log(LOG_DEBUG) << std::endl << std::endl << std::endl << "  \t\t\t CALLING INIT OF MOMENT OF INERTIA PLUGIN" << std::endl << std::endl << std::endl;
 	this->simulator=simulator;
+	cc3d_register_moment_of_inertia_plugin(simulator, this);
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
     //this will load VolumeTracker plugin if it is not already loaded

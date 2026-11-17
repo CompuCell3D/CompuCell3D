@@ -5,6 +5,10 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/ClusterSurfaceTracker/ClusterSurfaceTrackerPlugin.h>
 
 #include "ClusterSurfacePlugin.h"
+#include <cc3d/CompiledSteppablePluginAPI.h>
+
+extern "C" void cc3d_unregister_cluster_surface_callbacks(void *);
+extern "C" void cc3d_register_cluster_surface_plugin(void *, void *);
 
 
 ClusterSurfacePlugin::ClusterSurfacePlugin() :
@@ -17,6 +21,7 @@ ClusterSurfacePlugin::ClusterSurfacePlugin() :
         changeEnergyFcnPtr(&ClusterSurfacePlugin::changeEnergyByCellId) {}
 
 ClusterSurfacePlugin::~ClusterSurfacePlugin() {
+    cc3d_unregister_cluster_surface_callbacks(this);
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr = 0;
@@ -25,6 +30,7 @@ ClusterSurfacePlugin::~ClusterSurfacePlugin() {
 void ClusterSurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     sim = simulator;
+    cc3d_register_cluster_surface_plugin(simulator, this);
     potts = simulator->getPotts();
     cellFieldG = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();
@@ -78,6 +84,11 @@ void ClusterSurfacePlugin::setTargetAndLambdaClusterSurface(CellG *_cell, float 
 }
 
 pair<float, float> ClusterSurfacePlugin::getTargetAndLambdaVolume(const CellG *_cell) const {
+    return make_pair(_cell->targetClusterSurface, _cell->lambdaClusterSurface);
+}
+
+pair<float, float>
+ClusterSurfacePlugin::getTargetAndLambdaClusterSurface(const CellG *_cell) const {
     return make_pair(_cell->targetClusterSurface, _cell->lambdaClusterSurface);
 }
 

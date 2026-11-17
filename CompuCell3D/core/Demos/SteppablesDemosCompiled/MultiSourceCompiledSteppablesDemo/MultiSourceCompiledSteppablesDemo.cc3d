@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+   <XMLScript Type="XMLScript">Simulation/MultiSourceCompiledSteppablesDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MultiSourceCompiledSteppablesDemo.py</PythonScript>
+   <Resource Type="CppSteppable">Native_GrowthSteppable/GrowthClassSteppable.cpp</Resource>
+   <Resource Type="CppSteppable">Native_SharedNumpyFieldsSteppable/SharedNumpyFieldsCompiledSteppable.cpp</Resource>
+   <Resource Type="Python">Simulation/MultiSourceCompiledSteppablesSteppables.py</Resource>
+</Simulation>

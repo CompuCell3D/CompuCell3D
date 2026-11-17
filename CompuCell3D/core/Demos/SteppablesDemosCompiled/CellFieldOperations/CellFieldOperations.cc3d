@@ -1,0 +1,7 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/CellFieldOperations.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CellFieldOperations.py</PythonScript>
+   <Resource Type="Python">Simulation/CellFieldOperationsSteppables.py</Resource>
+   <Resource Type="CppSteppable">Native/CellFieldOperationsSteppableCompiled.cpp</Resource>
+   <Resource Type="Field">Simulation/fgf_2D.pulse.txt</Resource>
+</Simulation>

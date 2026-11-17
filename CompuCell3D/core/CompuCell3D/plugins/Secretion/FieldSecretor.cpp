@@ -51,7 +51,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellTotalCount(CellG *_cell, fl
 
 
 bool FieldSecretor::_secreteInsideCell(CellG *_cell, float _amount) {
-
+    cerr<<"_secreteInsideCell="<<_amount<<" cell.type="<<(int)_cell->type<<endl;
     FieldSecretorResult res = _secreteInsideCellTotalCount(_cell, _amount);
     return res.success_flag;
 

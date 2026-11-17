@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+    <XMLScript Type="XMLScript">Simulation/ChemotaxisCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/ChemotaxisCompiledDemo.py</PythonScript>
+    <Resource Type="CppSteppable">Native/ChemotaxisCompiledSteppable.cpp</Resource>
+</Simulation>

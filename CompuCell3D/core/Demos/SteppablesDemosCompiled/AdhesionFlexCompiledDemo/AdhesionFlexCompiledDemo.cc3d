@@ -1,0 +1,8 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/AdhesionFlexCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/AdhesionFlexCompiledDemo.py</PythonScript>
+
+    <Resource Type="CppSteppable">Native/AdhesionFlexCompiledSteppable.cpp</Resource>
+
+</Simulation>

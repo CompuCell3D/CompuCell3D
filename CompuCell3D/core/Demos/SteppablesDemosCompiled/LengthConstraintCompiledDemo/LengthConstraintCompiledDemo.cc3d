@@ -1,0 +1,5 @@
+<Simulation version="3.6.1">
+    <XMLScript Type="XMLScript">Simulation/LengthConstraintCompiledDemo.xml</XMLScript>
+    <PythonScript>Simulation/LengthConstraintCompiledDemo.py</PythonScript>
+    <Resource Type="CppSteppable">Native/LengthConstraintCompiledSteppable.cpp</Resource>
+</Simulation>

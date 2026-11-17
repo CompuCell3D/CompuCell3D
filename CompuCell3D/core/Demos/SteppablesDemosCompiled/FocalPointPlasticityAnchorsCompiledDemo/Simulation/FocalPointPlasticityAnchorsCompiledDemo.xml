@@ -1,0 +1,32 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="50" y="50" z="1"/>
+        <Steps>1000</Steps>
+        <Temperature>5</Temperature>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Cell" TypeId="1"/>
+    </Plugin>
+    <Plugin Name="Volume">
+        <TargetVolume>150</TargetVolume>
+        <LambdaVolume>2</LambdaVolume>
+    </Plugin>
+    <Plugin Name="CenterOfMass"/>
+    <Plugin Name="FocalPointPlasticity">
+        <Lambda>5</Lambda>
+        <ActivationEnergy>-10</ActivationEnergy>
+        <TargetDistance>10</TargetDistance>
+        <MaxDistance>30</MaxDistance>
+    </Plugin>
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="25" y="25" z="0"/>
+            <Width>5</Width>
+            <Radius>12</Radius>
+            <Gap>0</Gap>
+            <Types>Cell</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>
