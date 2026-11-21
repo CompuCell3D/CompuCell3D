@@ -50,7 +50,13 @@ ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${
 
 TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PUBLIC ${INCLUDE_DIRS})
 TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PRIVATE ${Python3_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(${CompuCellLibLib} ${Python3_LIBRARIES})
+if(APPLE)
+  # Conda's macOS Python executable contains the interpreter. Resolve Python
+  # symbols from that process instead of loading a second libpython runtime.
+  TARGET_LINK_OPTIONS(${CompuCellLibLib} PRIVATE "LINKER:-undefined,dynamic_lookup")
+else()
+  TARGET_LINK_LIBRARIES(${CompuCellLibLib} ${Python3_LIBRARIES})
+endif()
 
 install(FILES ${COMPUCELL3D_SOURCE_DIR}/core/cc3d/kernel.h
         DESTINATION ${COMPUCELL3D_INSTALL_INCLUDE_DIR}/cc3d)

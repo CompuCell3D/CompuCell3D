@@ -156,6 +156,12 @@ def run():
             persistent_globals.steppable_registry.core_init()
             check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
+            max_mcs = persistent_globals.max_mcs
+            if max_mcs is not None:
+                if max_mcs < 0:
+                    raise ValueError('--max-mcs must be non-negative')
+                persistent_globals.simulator.setNumSteps(max_mcs)
+
             # initializing extra visualization fields
             field_registry = persistent_globals.field_registry
             potts = persistent_globals.simulator.getPotts()

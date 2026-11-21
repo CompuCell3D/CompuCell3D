@@ -16,7 +16,6 @@ if(APPLE)
     message(STATUS "Configuring macOS compile options")
 
     add_compile_options(
-            -mmacosx-version-min=10.6
             -fpermissive
             -m64
             -Wno-implicit-function-declaration
@@ -84,9 +83,9 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 10)
+set(COMPUCELL3D_MINOR_VERSION 11)
 set(COMPUCELL3D_BUILD_VERSION 0)
-set(COMPUCELL3D_REV_NUMBER 20260626)
+set(COMPUCELL3D_REV_NUMBER 20261121)
 set(COMPUCELL3D_BUILD_NUMBER 0)
 
 ## Specify a version for all libs to use
