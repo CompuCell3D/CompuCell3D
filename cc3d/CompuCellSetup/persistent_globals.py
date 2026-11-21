@@ -53,6 +53,8 @@ class PersistentGlobals:
         self.simulation_initialized = False
         self.simulation_file_name = None
         self.python_script_file_name = None
+        # Optional command-line override for the number of MCS to execute.
+        self.max_mcs = None
         self.user_stop_simulation_flag = False
 
         self.__output_dir = None

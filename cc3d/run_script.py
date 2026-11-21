@@ -67,6 +67,9 @@ def process_cml(known_args=None):
         help='Execute step at MCS 0 when this flag is present.'
     )
 
+    cml_parser.add_argument('--max-mcs', required=False, type=int, default=None,
+                            help='override the number of Monte Carlo Steps to run')
+
     cml_parser.add_argument('--log-level', required=False, type=str, default='',
                             choices=['', 'FATAL', 'CRITICAL', 'ERROR',
                                      'WARNING', 'NOTICE', 'INFORMATION',
@@ -189,6 +192,7 @@ def main(args:argparse.Namespace=None):
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
     persistent_globals.parameter_scan_iteration = args.parameter_scan_iteration
+    persistent_globals.max_mcs = getattr(args, 'max_mcs', None)
 
     if args.log_level:
         persistent_globals.log_level = "LOG_" + args.log_level

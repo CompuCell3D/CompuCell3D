@@ -16,6 +16,9 @@
    <Plugin Name="Volume"/>
    <Plugin Name="CenterOfMass"/>
 
+   <!--   comment out the NeighborTracker plugin to observe the behavior of the simulation when the needed module is missing-->
+   <Plugin Name="NeighborTracker"/>
+
    <Plugin Name="Contact">
       <Energy Type1="Medium" Type2="Medium">10.0</Energy>
       <Energy Type1="Medium" Type2="A">16.0</Energy>
