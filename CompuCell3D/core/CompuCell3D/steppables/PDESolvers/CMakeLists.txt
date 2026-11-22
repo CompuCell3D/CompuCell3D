@@ -16,6 +16,7 @@ find_package(Eigen3 REQUIRED)
 SET(INCLUDE_DIRS $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>)
 
 SET (HEADER_FILES
+  ConcentrationFieldIO.h
   DiffSecrData.h
   DiffusableGraph.h
   ReactionDiffusionSolverFE_SavHog.h

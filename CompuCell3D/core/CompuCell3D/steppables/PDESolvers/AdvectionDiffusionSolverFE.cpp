@@ -23,6 +23,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "AdvectionDiffusionSolverFE.h"
+#include "ConcentrationFieldIO.h"
 #include <Logger/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,25 +220,7 @@ void AdvectionDiffusionSolverFE::initializeConcentration() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
 AdvectionDiffusionSolverFE::readConcentrationField(std::string fileName, ConcentrationField_t *concentrationField) {
-
-    std::string basePath = simulator->getBasePath();
-    std::string fn = fileName;
-    if (basePath != "") {
-        fn = basePath + "/" + fileName;
-    }
-
-    ifstream in(fn.c_str());
-
-    if (!in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn + "'!");
-
-
-    Point3D pt;
-    float c;
-    while (!in.eof()) {
-        in >> pt.x >> pt.y >> pt.z >> c;
-        if (!in.fail())
-            concentrationField->set(pt, c);
-    }
+    read_field(fileName, simulator->getBasePath(), fieldDim, concentrationField, false);
 
 }
 

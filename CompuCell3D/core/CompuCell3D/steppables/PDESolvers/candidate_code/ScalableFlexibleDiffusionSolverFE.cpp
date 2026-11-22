@@ -40,6 +40,7 @@ using namespace std;
 
 
 #include "ScalableFlexibleDiffusionSolverFE.h"
+#include "../ConcentrationFieldIO.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ScalableFlexibleDiffusionSolverSerializer::serialize() {
@@ -1521,33 +1522,7 @@ void ScalableFlexibleDiffusionSolverFE::outputField(std::ostream &_out, Concentr
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ScalableFlexibleDiffusionSolverFE::readConcentrationField(std::string fileName,
                                                                ConcentrationField_t *concentrationField) {
-
-    std::string basePath = simulator->getBasePath();
-    std::string fn = fileName;
-    if (basePath != "") {
-        fn = basePath + "/" + fileName;
-    }
-
-    ifstream in(fn.c_str());
-
-    ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-                    fn + "'!", in.is_open());
-
-    Point3D pt;
-    float c;
-    //Zero entire field
-    for (pt.z = 0; pt.z < fieldDim.z; pt.z++)
-        for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
-            for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                CC3D_Log(LOG_TRACE) << "pt="<<pt;
-                concentrationField->set(pt, 0);
-            }
-
-    while (!in.eof()) {
-        in >> pt.x >> pt.y >> pt.z >> c;
-        if (!in.fail())
-            concentrationField->set(pt, c);
-    }
+    read_field(fileName, simulator->getBasePath(), fieldDim, concentrationField);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
