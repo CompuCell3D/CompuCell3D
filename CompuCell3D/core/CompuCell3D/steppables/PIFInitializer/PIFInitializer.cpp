@@ -28,7 +28,10 @@ void PIFInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
     std::string basePath = simulator->getBasePath();
     CC3D_Log(LOG_DEBUG) << "basePath=simulator->getBasePath()=" << simulator->getBasePath();
-    if (basePath != "") {
+    const bool pifPathIsAbsolute = !pifname.empty() &&
+                                   (pifname[0] == '/' || pifname[0] == '\\' ||
+                                    (pifname.size() > 1 && pifname[1] == ':'));
+    if (basePath != "" && !pifPathIsAbsolute) {
         pifname = basePath + "/" + pifname;
     }
 
@@ -44,8 +47,14 @@ void PIFInitializer::start() {
 
     std::ifstream piffile(pifname.c_str(), ios::in);
     CC3D_Log(LOG_DEBUG) << "opened pid file";
-    if (!piffile.good())
-        throw CC3DException(string("Could not open\n" + pifname + "\nMake sure it exists and is in correct directory"));
+    if (!piffile.is_open()) {
+        std::ostringstream message;
+        message << "PIF file cannot be found or opened. Requested path: '"
+                << pifname << "'.";
+        CC3D_Log(LOG_ERROR) << message.str();
+
+        throw CC3DException(message.str());
+    }
     WatchableField3D < CellG * > *cellFieldG = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();
     if (!cellFieldG) throw CC3DException("initField() Cell field cannot be null!");

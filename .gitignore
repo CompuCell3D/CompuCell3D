@@ -29,6 +29,8 @@ CompuCell3D/Twedit++5/EditorWindow_old.py
 # Compiled steppable build artifacts
 **/*.cc3d-build.json
 **/*.dll
+**/*.dylib.yml
+**/info.plist
 **/*.exp
 **/*.ilk
 **/*.lib

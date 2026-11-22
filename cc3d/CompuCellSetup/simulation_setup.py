@@ -642,6 +642,10 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
             lc.log()
 
             sim.start()
+            # Simulator::start() records CC3DException failures in Player
+            # mode instead of rethrowing them. Surface those failures before
+            # the Player proceeds to Python steppables and MCS 0/1.
+            check_for_cpp_errors(sim)
 
     with LoggedContext() as lc:
 

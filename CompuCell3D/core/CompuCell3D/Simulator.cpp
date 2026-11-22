@@ -19,6 +19,7 @@ using namespace CompuCell3D;
 #include <sstream>
 #include <chrono>
 #include <random>
+#include <iostream>
 
 #include <XMLUtils/CC3DXMLElement.h>
 #include <Logger/CC3DLogger.h>
@@ -469,11 +470,15 @@ void Simulator::start()
 
         simulatorIsStepping = true; //initialize flag that simulator is stepping
     } catch (const CC3DException &e) {
+        std::cerr << "Simulator::start caught CC3DException: "
+                  << e.getMessage() << std::endl;
         CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
         unloadModules();
-        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        formatErrorMessage(e);
+        std::cerr << "Simulator::start recentErrorMessage now: "
+                  << recentErrorMessage << std::endl;
         if (!newPlayerFlag) {
-            throw e;
+            throw;
         }
     }
 
